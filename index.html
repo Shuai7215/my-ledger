@@ -61,8 +61,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .switch input:checked+.slider{background:#2563eb}
 .switch input:checked+.slider:before{transform:translateX(20px)}
 .module-hidden{display:none!important}
-
-/* 统计卡片 + 筛选栏 */
 .stats-wrapper{margin-bottom:1.2rem}
 .stats-filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.8rem;padding:.6rem .9rem;background:#fff;border-radius:14px;border:1px solid #f0f2f5;box-shadow:0 2px 8px rgba(0,0,0,.03)}
 .stats-filter-tab{padding:.3rem .9rem;border:none;background:transparent;border-radius:40px;font-size:.8rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
@@ -80,7 +78,15 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .accent-rose .stat-value{color:#e11d48}
 .accent-amber .stat-value{color:#d97706}
 .accent-purple .stat-value{color:#7c3aed}
-
+/* 可点击的应收/应付卡片 */
+.stat-card.clickable{cursor:pointer;position:relative;overflow:hidden}
+.stat-card.clickable::after{content:"💵";position:absolute;right:.7rem;bottom:.6rem;font-size:1.1rem;opacity:.35;transition:all .2s}
+.stat-card.clickable:hover::after{opacity:1;transform:scale(1.15)}
+.stat-card.clickable:hover{border-color:#fcd34d;box-shadow:0 4px 14px rgba(245,158,11,.15)}
+.stat-card.clickable.accent-purple:hover{border-color:#c4b5fd;box-shadow:0 4px 14px rgba(124,58,237,.15)}
+.stat-card.clickable .repay-tip{font-size:.68rem;color:#0ea5e9;margin-top:.35rem;font-weight:500;display:inline-flex;align-items:center;gap:.2rem}
+.stat-card.clickable.has-debt .repay-tip{color:#d97706}
+.stat-card.clickable.accent-purple.has-debt .repay-tip{color:#7c3aed}
 .budget-section,.template-section,.form-section,.savings-section,.chart-section{background:#fff;border-radius:20px;padding:1.5rem 1.8rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
 .budget-section-title,.template-header h3,.chart-header h3{font-weight:600;font-size:1rem;color:#0f172a;margin-bottom:.8rem}
 .budget-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:.5rem 0;border-bottom:1px solid #f1f4f8}
@@ -107,8 +113,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-amount{font-weight:600;color:#2563eb}
 .tpl-del{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:0 .2rem}
 .tpl-del:hover{color:#ef4444}
-
-/* 图表筛选 */
 .chart-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.6rem}
 .chart-tabs{display:flex;gap:.4rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
 .chart-tab{padding:.35rem 1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
@@ -133,7 +137,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .legend-amount{font-weight:600;color:#0f172a;font-variant-numeric:tabular-nums}
 .chart-empty{text-align:center;padding:2rem 1rem;color:#94a3b8;width:100%}
 .chart-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
-
 .goal-item{background:#f8fafc;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;border:1px solid #f1f4f8;transition:transform .15s}
 .goal-item:hover{transform:translateY(-1px)}
 .goal-item:last-child{margin-bottom:0}
@@ -219,6 +222,27 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .import-preview{margin-top:.8rem;padding:.7rem;background:#f8fafc;border-radius:10px;font-size:.85rem;color:#475569;max-height:120px;overflow-y:auto}
 .import-preview strong{color:#16a34a}
 .import-preview .err{color:#dc2626}
+
+/* 欠款列表弹窗 */
+.debt-list{display:flex;flex-direction:column;gap:.6rem;max-height:50vh;overflow-y:auto;padding-right:.3rem}
+.debt-item{background:#f8fafc;border-radius:14px;padding:.9rem 1rem;border:1px solid #f1f4f8;transition:all .15s;display:flex;flex-direction:column;gap:.5rem}
+.debt-item:hover{background:#f1f5f9;border-color:#e2e8f0}
+.debt-item-header{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.debt-item-desc{font-weight:600;font-size:.92rem;color:#0f172a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.debt-item-date{font-size:.72rem;color:#94a3b8;font-weight:normal;margin-left:.3rem}
+.debt-item-info{display:flex;justify-content:space-between;font-size:.8rem;color:#475569;flex-wrap:wrap;gap:.4rem}
+.debt-item-info .remaining{color:#dc2626;font-weight:700;font-size:.88rem}
+.debt-item-progress{height:6px;background:#e2e8f0;border-radius:20px;overflow:hidden}
+.debt-item-progress .fill{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:20px;transition:width .4s ease}
+.debt-item-actions{display:flex;justify-content:flex-end;gap:.4rem}
+.debt-empty{text-align:center;padding:2.5rem 1rem;color:#94a3b8}
+.debt-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
+.debt-summary{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:.7rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem}
+.debt-summary.purple{background:linear-gradient(135deg,#ede9fe,#ddd6fe)}
+.debt-summary .label{font-size:.8rem;font-weight:600;color:#78350f}
+.debt-summary.purple .label{color:#5b21b6}
+.debt-summary .amount{font-size:1.1rem;font-weight:700;color:#dc2626}
+
 @media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}}
 </style>
 </head>
@@ -301,6 +325,19 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
+  <!-- 欠款列表弹窗（新增） -->
+  <div class="modal-overlay" id="debtListModal">
+    <div class="modal-box" style="max-width:480px;">
+      <button class="close-btn" id="debtListClose">✕</button>
+      <h2 id="debtListTitle">💰 应收款项</h2>
+      <div class="debt-summary" id="debtListSummary">
+        <span class="label">合计未还</span>
+        <span class="amount" id="debtListTotal">¥0.00</span>
+      </div>
+      <div class="debt-list" id="debtListBody"></div>
+    </div>
+  </div>
+
   <!-- 攒钱弹窗 -->
   <div class="modal-overlay" id="saveAmountModal">
     <div class="modal-box" style="max-width:340px;">
@@ -316,7 +353,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 还款弹窗 -->
+  <!-- 还款金额弹窗 -->
   <div class="modal-overlay" id="repayModal">
     <div class="modal-box" style="max-width:380px;">
       <button class="close-btn" id="repayClose">✕</button>
@@ -331,7 +368,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 统计卡片（含时间筛选） -->
+  <!-- 统计卡片（含时间筛选，应收/应付可点击） -->
   <section class="stats-wrapper" id="statsContainer">
     <div class="stats-filters">
       <div class="filter-tabs">
@@ -351,15 +388,17 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <div class="stat-card accent-green"><div class="stat-label">总收入</div><div class="stat-value"><span class="currency">¥</span><span id="totalIncome">0.00</span></div></div>
       <div class="stat-card accent-rose"><div class="stat-label">总支出</div><div class="stat-value"><span class="currency">¥</span><span id="totalExpense">0.00</span></div></div>
       <div class="stat-card accent-blue"><div class="stat-label">净余额</div><div class="stat-value"><span class="currency">¥</span><span id="netBalance">0.00</span></div></div>
-      <div class="stat-card accent-amber">
+      <div class="stat-card accent-amber clickable" id="statCardLent" title="点击查看应收明细并收款">
         <div class="stat-label">应收（别人欠我）</div>
         <div class="stat-value"><span class="currency">¥</span><span id="totalLent">0.00</span></div>
         <div class="stat-hint" id="totalLentHint"></div>
+        <div class="repay-tip" id="lentRepayTip"></div>
       </div>
-      <div class="stat-card accent-purple">
+      <div class="stat-card accent-purple clickable" id="statCardBorrowed" title="点击查看应付明细并还款">
         <div class="stat-label">应付（我欠别人）</div>
         <div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div>
         <div class="stat-hint" id="totalBorrowedHint"></div>
+        <div class="repay-tip" id="borrowedRepayTip"></div>
       </div>
     </div>
   </section>
@@ -537,6 +576,8 @@ const entryForm=$('entryForm'),entryType=$('entryType'),entryDebtType=$('entryDe
 const tbody=$('entriesBody');
 const totalIncomeEl=$('totalIncome'),totalExpenseEl=$('totalExpense'),netBalanceEl=$('netBalance'),totalLentEl=$('totalLent'),totalBorrowedEl=$('totalBorrowed');
 const totalLentHint=$('totalLentHint'),totalBorrowedHint=$('totalBorrowedHint');
+const lentRepayTip=$('lentRepayTip'),borrowedRepayTip=$('borrowedRepayTip');
+const statCardLent=$('statCardLent'),statCardBorrowed=$('statCardBorrowed');
 const budgetDailyInput=$('budgetDailyInput'),budgetWeeklyInput=$('budgetWeeklyInput'),budgetMonthlyInput=$('budgetMonthlyInput');
 const budgetDailyStatus=$('budgetDailyStatus'),budgetWeeklyStatus=$('budgetWeeklyStatus'),budgetMonthlyStatus=$('budgetMonthlyStatus');
 const tplNameInput=$('tplName'),tplAmountInput=$('tplAmount'),tplCategorySelect=$('tplCategory'),addTemplateBtn=$('addTemplateBtn'),templateListEl=$('templateList'),applyTemplatesBtn=$('applyTemplatesBtn');
@@ -546,6 +587,7 @@ const toggleStats=$('toggleStats'),toggleChart=$('toggleChart'),toggleBudget=$('
 const statsContainer=$('statsContainer'),chartSection=$('chartSection'),budgetSection=$('budgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
 const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),saveAmountGoalName=$('saveAmountGoalName'),saveAmountInput=$('saveAmountInput'),saveAmountConfirm=$('saveAmountConfirm'),saveAmountCancel=$('saveAmountCancel'),saveAmountClose=$('saveAmountClose');
 const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
+const debtListModal=$('debtListModal'),debtListTitle=$('debtListTitle'),debtListSummary=$('debtListSummary'),debtListTotal=$('debtListTotal'),debtListBody=$('debtListBody'),debtListClose=$('debtListClose');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
 const toastEl=$('toast');
@@ -707,7 +749,6 @@ function calc(){
     daily,dailyExpense};
 }
 
-// ===== 统计卡片筛选 =====
 function getStatsFiltered(){
   let list=entries;
   if(statsPeriod==='year'&&statsYear){
@@ -750,12 +791,11 @@ function updateStatsFilterUI(){
   di.style.display=statsPeriod==='day'?'':'none';
   yi.value=statsYear;
   mi.value=statsMonth;
-  di.value=statsDate||today();
   if(!statsDate)statsDate=today();
+  di.value=statsDate;
   if(hint)hint.textContent=statsPeriod==='all'?'（统计全部记录）':'';
 }
 
-// ===== 图表筛选 =====
 function getChartFilteredEntries(){
   let list=entries.filter(e=>(e.type||'expense')===chartType);
   if(chartPeriod==='year'&&chartYear){
@@ -775,8 +815,8 @@ function updateChartFilterUI(){
   di.style.display=chartPeriod==='day'?'':'none';
   yi.value=chartYear;
   mi.value=chartMonth;
-  di.value=chartDate||today();
   if(!chartDate)chartDate=today();
+  di.value=chartDate;
   if(hint)hint.textContent=chartPeriod==='all'?'（统计全部记录）':'';
 }
 
@@ -1037,7 +1077,6 @@ function makeGroupHeader(level,key,label,count,summaryHtml,isOver,ancestors){
   </tr>`;
 }
 
-// ===== 三种视图 =====
 function renderDayView(sorted,c){
   const groups={};
   sorted.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e)});
@@ -1188,8 +1227,6 @@ function renderYearView(sorted,c){
 // ===== 表格渲染 =====
 function renderEntries(){
   const c=calc();
-
-  // 统计卡片（用筛选后的独立计算）
   const s=calcStats(getStatsFiltered());
   totalIncomeEl.textContent=fmtMoney(s.totalIncome);
   totalExpenseEl.textContent=fmtMoney(s.totalExpense);
@@ -1202,6 +1239,24 @@ function renderEntries(){
   if(s.totalBorrowedOriginal>0){
     totalBorrowedHint.textContent=`原始 ¥${fmtMoney(s.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(s.totalBorrowedRepaid)}`;
   }else{totalBorrowedHint.textContent=''}
+
+  // 更新卡片的可点击提示
+  const lentCount=entries.filter(e=>e.type==='debt'&&e.debtType==='lent'&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001).length;
+  const borrowedCount=entries.filter(e=>e.type==='debt'&&e.debtType==='borrowed'&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001).length;
+  if(lentCount>0){
+    statCardLent.classList.add('has-debt');
+    lentRepayTip.textContent=`💰 ${lentCount} 笔待收，点击处理`;
+  }else{
+    statCardLent.classList.remove('has-debt');
+    lentRepayTip.textContent='暂无待收款项';
+  }
+  if(borrowedCount>0){
+    statCardBorrowed.classList.add('has-debt');
+    borrowedRepayTip.textContent=`💸 ${borrowedCount} 笔待还，点击处理`;
+  }else{
+    statCardBorrowed.classList.remove('has-debt');
+    borrowedRepayTip.textContent='暂无待还欠款';
+  }
 
   updateBudgetStatus(c);
 
@@ -1277,7 +1332,62 @@ function setBudgetLine(el,limit,used){
   el.innerHTML=`<span class="remaining ${cls}">${txt}</span> <span class="limit-info">（上限 ¥${fmtMoney(limit)}）</span>`;
 }
 
-// ===== 还款 =====
+// ===== 欠款列表弹窗 =====
+function openDebtList(direction){
+  // direction: 'lent' | 'borrowed'
+  const isLent=direction==='lent';
+  const list=entries.filter(e=>e.type==='debt'&&e.debtType===direction&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001);
+  // 按日期降序
+  list.sort((a,b)=>b.date.localeCompare(a.date));
+
+  debtListTitle.textContent=isLent?'💰 应收款项（点击收款）':'💸 应付款项（点击还款）';
+  debtListSummary.className='debt-summary'+(isLent?'':' purple');
+  const total=list.reduce((s,e)=>s+Math.max(0,Number(e.amount)-(Number(e.repaid)||0)),0);
+  debtListTotal.textContent=`¥${fmtMoney(total)}`;
+
+  if(list.length===0){
+    debtListBody.innerHTML=`<div class="debt-empty"><div class="icon">${isLent?'🎉':'✅'}</div><div>${isLent?'暂无待收款项':'暂无待还欠款'}</div></div>`;
+    debtListModal.classList.add('active');
+    return;
+  }
+
+  let html='';
+  list.forEach(e=>{
+    const amt=Number(e.amount)||0;
+    const repaid=Number(e.repaid)||0;
+    const remaining=Math.max(0,amt-repaid);
+    const pct=amt>0?Math.min(100,(repaid/amt)*100):0;
+    html+=`<div class="debt-item">
+      <div class="debt-item-header">
+        <div class="debt-item-desc">
+          ${esc(e.description||'无描述')}
+          <span class="debt-item-date">${fmtDate(e.date)}</span>
+        </div>
+      </div>
+      <div class="debt-item-info">
+        <span>原始 ¥${fmtMoney(amt)} · 已${isLent?'收':'还'} ¥${fmtMoney(repaid)}</span>
+        <span class="remaining">未${isLent?'收':'还'} ¥${fmtMoney(remaining)}</span>
+      </div>
+      <div class="debt-item-progress"><div class="fill" style="width:${pct}%"></div></div>
+      <div class="debt-item-actions">
+        <button class="btn btn-success btn-sm debt-repay-btn" data-id="${e.id}">${isLent?'💰 收款':'💸 还款'}</button>
+      </div>
+    </div>`;
+  });
+  debtListBody.innerHTML=html;
+
+  debtListBody.querySelectorAll('.debt-repay-btn').forEach(b=>{
+    b.addEventListener('click',function(){
+      const id=Number(this.dataset.id);
+      debtListModal.classList.remove('active');
+      setTimeout(()=>openRepayModal(id),100);
+    });
+  });
+
+  debtListModal.classList.add('active');
+}
+
+// ===== 还款金额弹窗 =====
 function openRepayModal(id){
   const e=entries.find(x=>x.id===id);
   if(!e||e.type!=='debt')return;
@@ -1549,6 +1659,13 @@ function init(){
   $('clearAllBtn').addEventListener('click',clearAll);
   $('exportBtn').addEventListener('click',exportCSV);
 
+  // 应收/应付卡片点击
+  statCardLent.addEventListener('click',()=>openDebtList('lent'));
+  statCardBorrowed.addEventListener('click',()=>openDebtList('borrowed'));
+  // 欠款列表弹窗关闭
+  debtListClose.addEventListener('click',()=>debtListModal.classList.remove('active'));
+  debtListModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
+
   // 导入
   $('importBtn').addEventListener('click',()=>{resetImportUI();importHelpModal.classList.add('active')});
   importHelpClose.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
@@ -1604,7 +1721,6 @@ function init(){
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
   settingsModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
 
-  // 图表支出/收入切换
   document.querySelectorAll('.chart-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
       document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
@@ -1614,7 +1730,6 @@ function init(){
     });
   });
 
-  // 图表时间维度筛选
   document.querySelectorAll('.filter-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
       document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
@@ -1629,7 +1744,6 @@ function init(){
   if(cmi)cmi.addEventListener('change',function(){if(this.value){chartMonth=this.value;renderChart()}});
   if(cdi)cdi.addEventListener('change',function(){if(this.value){chartDate=this.value;renderChart()}});
 
-  // 统计卡片时间筛选
   document.querySelectorAll('.stats-filter-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
       document.querySelectorAll('.stats-filter-tab').forEach(t=>t.classList.remove('active'));
@@ -1644,7 +1758,6 @@ function init(){
   if(smi)smi.addEventListener('change',function(){if(this.value){statsMonth=this.value;renderEntries()}});
   if(sdi)sdi.addEventListener('change',function(){if(this.value){statsDate=this.value;renderEntries()}});
 
-  // 表格视图切换
   document.querySelectorAll('.view-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
       viewMode=this.dataset.view;
@@ -1655,7 +1768,6 @@ function init(){
     });
   });
 
-  // 展开/收起全部
   $('expandAllBtn').addEventListener('click',()=>{
     tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=true});
     saveLocal();renderEntries();pushCloud();
