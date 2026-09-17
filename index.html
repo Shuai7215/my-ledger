@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
 <title>📒 个人云端记账本</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -61,6 +62,11 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .switch input:checked+.slider{background:#2563eb}
 .switch input:checked+.slider:before{transform:translateX(20px)}
 .module-hidden{display:none!important}
+.stats-wrapper{margin-bottom:1.2rem}
+.stats-filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.8rem;padding:.6rem .9rem;background:#fff;border-radius:14px;border:1px solid #f0f2f5;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.stats-filter-tab{padding:.3rem .9rem;border:none;background:transparent;border-radius:40px;font-size:.8rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+.stats-filter-tab:hover{color:#334155}
+.stats-filter-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.2rem}
 .stat-card{background:#fff;padding:1.2rem;border-radius:18px;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1px solid #f0f2f5;transition:transform .15s}
 .stat-card:hover{transform:translateY(-2px)}
@@ -99,7 +105,14 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-amount{font-weight:600;color:#2563eb}
 .tpl-del{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:0 .2rem}
 .tpl-del:hover{color:#ef4444}
-.chart-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1rem}
+.chart-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:1rem}.chart-filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid #f1f4f8}
+.filter-tabs{display:flex;gap:.3rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
+.filter-tab{padding:.3rem .9rem;border:none;background:transparent;border-radius:40px;font-size:.8rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+.filter-tab:hover{color:#334155}
+.filter-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.filter-inputs{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.filter-inputs input{padding:.35rem .7rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.85rem;background:#fafbfc;font-family:inherit;color:#0f172a}
+.filter-inputs input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);background:#fff}
 .chart-tabs{display:flex;gap:.4rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
 .chart-tab{padding:.35rem 1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
 .chart-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -317,30 +330,61 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 统计卡片 -->
-  <section class="stats" id="statsContainer">
-    <div class="stat-card accent-green"><div class="stat-label">总收入</div><div class="stat-value"><span class="currency">¥</span><span id="totalIncome">0.00</span></div></div>
-    <div class="stat-card accent-rose"><div class="stat-label">总支出</div><div class="stat-value"><span class="currency">¥</span><span id="totalExpense">0.00</span></div></div>
-    <div class="stat-card accent-blue"><div class="stat-label">净余额</div><div class="stat-value"><span class="currency">¥</span><span id="netBalance">0.00</span></div></div>
-    <div class="stat-card accent-amber">
-      <div class="stat-label">应收（别人欠我）</div>
-      <div class="stat-value"><span class="currency">¥</span><span id="totalLent">0.00</span></div>
-      <div class="stat-hint" id="totalLentHint"></div>
+  <!-- 统计卡片（含时间筛选） -->
+  <section class="stats-wrapper" id="statsContainer">
+    <div class="stats-filters">
+      <div class="filter-tabs">
+        <button class="stats-filter-tab active" data-stats-period="all">全部</button>
+        <button class="stats-filter-tab" data-stats-period="year">年</button>
+        <button class="stats-filter-tab" data-stats-period="month">月</button>
+        <button class="stats-filter-tab" data-stats-period="day">日</button>
+      </div>
+      <div class="filter-inputs">
+        <input type="number" id="statsYearInput" min="2000" max="2100" placeholder="年份" style="display:none" />
+        <input type="month" id="statsMonthInput" style="display:none" />
+        <input type="date" id="statsDateInput" style="display:none" />
+        <span id="statsFilterHint" style="font-size:.8rem;color:#94a3b8;"></span>
+      </div>
     </div>
-    <div class="stat-card accent-purple">
-      <div class="stat-label">应付（我欠别人）</div>
-      <div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div>
-      <div class="stat-hint" id="totalBorrowedHint"></div>
+    <div class="stats">
+      <div class="stat-card accent-green"><div class="stat-label">总收入</div><div class="stat-value"><span class="currency">¥</span><span id="totalIncome">0.00</span></div></div>
+      <div class="stat-card accent-rose"><div class="stat-label">总支出</div><div class="stat-value"><span class="currency">¥</span><span id="totalExpense">0.00</span></div></div>
+      <div class="stat-card accent-blue"><div class="stat-label">净余额</div><div class="stat-value"><span class="currency">¥</span><span id="netBalance">0.00</span></div></div>
+      <div class="stat-card accent-amber">
+        <div class="stat-label">应收（别人欠我）</div>
+        <div class="stat-value"><span class="currency">¥</span><span id="totalLent">0.00</span></div>
+        <div class="stat-hint" id="totalLentHint"></div>
+      </div>
+      <div class="stat-card accent-purple">
+        <div class="stat-label">应付（我欠别人）</div>
+        <div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div>
+        <div class="stat-hint" id="totalBorrowedHint"></div>
+      </div>
     </div>
   </section>
 
-  <!-- 分类扇形图 -->
+    <!-- 分类扇形图 -->
   <section class="chart-section" id="chartSection">
     <div class="chart-header">
       <h3>📈 分类占比</h3>
       <div class="chart-tabs">
         <button class="chart-tab active" data-type="expense">支出</button>
         <button class="chart-tab" data-type="income">收入</button>
+      </div>
+    </div>
+    <!-- 新增：时间维度筛选 -->
+    <div class="chart-filters">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-period="all">全部</button>
+        <button class="filter-tab" data-period="year">年</button>
+        <button class="filter-tab" data-period="month">月</button>
+        <button class="filter-tab" data-period="day">日</button>
+      </div>
+      <div class="filter-inputs">
+        <input type="number" id="chartYearInput" min="2000" max="2100" placeholder="年份" style="display:none" />
+        <input type="month" id="chartMonthInput" style="display:none" />
+        <input type="date" id="chartDateInput" style="display:none" />
+        <span id="chartFilterHint" style="font-size:.8rem;color:#94a3b8;"></span>
       </div>
     </div>
     <div class="chart-body" id="chartBody">
@@ -474,9 +518,17 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
 let viewMode='month';
+let statsPeriod='all'; // 'all' | 'year' | 'month' | 'day'
+let statsYear=new Date().getFullYear();
+let statsMonth=`${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
+let statsDate=today();
 let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
+let chartPeriod='all'; // 'all' | 'year' | 'month' | 'day'
+let chartYear=new Date().getFullYear();
+let chartMonth=`${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
+let chartDate=today();
 
 const $=id=>document.getElementById(id);
 const authArea=$('authArea'),mainApp=$('mainApp'),authForm=$('authForm'),authEmail=$('authEmail'),authPassword=$('authPassword'),authSubmitBtn=$('authSubmitBtn'),authMessage=$('authMessage'),authToggleLink=$('authToggleLink'),authToggleText=$('authToggleText');
@@ -658,6 +710,62 @@ function calc(){
     daily,dailyExpense};
 }
 
+// 根据筛选条件过滤记录（仅用于统计卡片）
+function getStatsFiltered(){
+  let list=entries;
+  if(statsPeriod==='year'&&statsYear){
+    list=list.filter(e=>e.date.startsWith(String(statsYear)));
+  }else if(statsPeriod==='month'&&statsMonth){
+    list=list.filter(e=>e.date.startsWith(statsMonth));
+  }else if(statsPeriod==='day'&&statsDate){
+    list=list.filter(e=>e.date===statsDate);
+  }
+  return list;
+}
+
+// 只计算统计卡片所需的数据（不影响表格和预算）
+function calcStats(list){
+  let totalIncome=0,totalExpense=0;
+  let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
+  let totalBorrowedOriginal=0,totalBorrowedRepaid=0,totalBorrowedRemaining=0;
+  for(const e of list){
+    const amt=Number(e.amount)||0;
+    const type=e.type||'expense';
+    if(type==='income')totalIncome+=amt;
+    else if(type==='expense')totalExpense+=amt;
+    else if(type==='debt'){
+      const repaid=Number(e.repaid)||0;
+      const remaining=Math.max(0,amt-repaid);
+      if(e.debtType==='lent'){
+        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;
+      }else{
+        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;
+      }
+    }
+  }
+  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,
+    totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,
+    totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
+}
+
+// 更新统计筛选栏UI
+function updateStatsFilterUI(){
+  const yi=$('statsYearInput'),mi=$('statsMonthInput'),di=$('statsDateInput'),hint=$('statsFilterHint');
+  if(!yi||!mi||!di)return;
+  yi.style.display=statsPeriod==='year'?'':'none';
+  mi.style.display=statsPeriod==='month'?'':'none';
+  di.style.display=statsPeriod==='day'?'':'none';
+  yi.value=statsYear;
+  mi.value=statsMonth;
+  di.value=statsDate;
+  if(hint){
+    if(statsPeriod==='all')hint.textContent='（统计全部记录）';
+    else if(statsPeriod==='year')hint.textContent='';
+    else if(statsPeriod==='month')hint.textContent='';
+    else hint.textContent='';
+  }
+}
+  
 // ===== 表格导入 =====
 function normalizeDate(val){
   if(!val)return null;
@@ -831,14 +939,49 @@ function resetImportUI(){
 }
 
 // ===== 图表 =====
+function getChartFilteredEntries(){
+  let list=entries.filter(e=>(e.type||'expense')===chartType);
+  if(chartPeriod==='year'&&chartYear){
+    list=list.filter(e=>e.date.startsWith(String(chartYear)));
+  }else if(chartPeriod==='month'&&chartMonth){
+    list=list.filter(e=>e.date.startsWith(chartMonth));
+  }else if(chartPeriod==='day'&&chartDate){
+    list=list.filter(e=>e.date===chartDate);
+  }
+  return list;
+}
+
+function updateChartFilterUI(){
+  // 显示/隐藏输入框
+  const yi=document.getElementById('chartYearInput');
+  const mi=document.getElementById('chartMonthInput');
+  const di=document.getElementById('chartDateInput');
+  const hint=document.getElementById('chartFilterHint');
+  if(!yi||!mi||!di)return;
+  yi.style.display=chartPeriod==='year'?'':'none';
+  mi.style.display=chartPeriod==='month'?'':'none';
+  di.style.display=chartPeriod==='day'?'':'none';
+  // 同步值
+  yi.value=chartYear;
+  mi.value=chartMonth;
+  di.value=chartDate;
+  // 提示文字
+  if(chartPeriod==='all')hint.textContent='（统计全部记录）';
+  else if(chartPeriod==='year')hint.textContent='';
+  else if(chartPeriod==='month')hint.textContent='';
+  else if(chartPeriod==='day')hint.textContent='';
+}
+
 function renderChart(){
   const canvas=document.getElementById('categoryChart');
   const legendEl=document.getElementById('chartLegend');
   const emptyEl=document.getElementById('chartEmpty');
   const chartBody=$('chartBody');
   if(!canvas||!legendEl)return;
+
+  const filtered=getChartFilteredEntries();
   const map={};
-  entries.filter(e=>(e.type||'expense')===chartType).forEach(e=>{
+  filtered.forEach(e=>{
     const cat=e.category||'其他';
     map[cat]=(map[cat]||0)+Number(e.amount);
   });
@@ -1097,19 +1240,21 @@ function renderYearView(sorted,c){
   return html;
 }
 
-// ===== 表格主渲染 =====
 function renderEntries(){
-  const c=calc();
-  totalIncomeEl.textContent=fmtMoney(c.totalIncome);
-  totalExpenseEl.textContent=fmtMoney(c.totalExpense);
-  netBalanceEl.textContent=fmtMoney(c.netBalance);
-  totalLentEl.textContent=fmtMoney(c.totalLent);
-  totalBorrowedEl.textContent=fmtMoney(c.totalBorrowed);
-  if(c.totalLentOriginal>0){
-    totalLentHint.textContent=`原始 ¥${fmtMoney(c.totalLentOriginal)} · 已收 ¥${fmtMoney(c.totalLentRepaid)}`;
+  const c=calc(); // 用于表格渲染和预算
+
+  // 统计卡片改用筛选后的独立计算
+  const s=calcStats(getStatsFiltered());
+  totalIncomeEl.textContent=fmtMoney(s.totalIncome);
+  totalExpenseEl.textContent=fmtMoney(s.totalExpense);
+  netBalanceEl.textContent=fmtMoney(s.netBalance);
+  totalLentEl.textContent=fmtMoney(s.totalLent);
+  totalBorrowedEl.textContent=fmtMoney(s.totalBorrowed);
+  if(s.totalLentOriginal>0){
+    totalLentHint.textContent=`原始 ¥${fmtMoney(s.totalLentOriginal)} · 已收 ¥${fmtMoney(s.totalLentRepaid)}`;
   }else{totalLentHint.textContent=''}
-  if(c.totalBorrowedOriginal>0){
-    totalBorrowedHint.textContent=`原始 ¥${fmtMoney(c.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(c.totalBorrowedRepaid)}`;
+  if(s.totalBorrowedOriginal>0){
+    totalBorrowedHint.textContent=`原始 ¥${fmtMoney(s.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(s.totalBorrowedRepaid)}`;
   }else{totalBorrowedHint.textContent=''}
 
   updateBudgetStatus(c);
@@ -1524,6 +1669,25 @@ function init(){
     });
   });
 
+    // 时间维度筛选
+  document.querySelectorAll('.filter-tab').forEach(tab=>{
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+      chartPeriod=this.dataset.period;
+      updateChartFilterUI();
+      renderChart();
+    });
+  });
+  const cyi=$('chartYearInput'),cmi=$('chartMonthInput'),cdi=$('chartDateInput');
+  if(cyi)cyi.addEventListener('change',function(){
+    const v=parseInt(this.value);
+    if(!isNaN(v)&&v>=2000&&v<=2100){chartYear=v;renderChart()}
+  });
+  if(cmi)cmi.addEventListener('change',function(){if(this.value){chartMonth=this.value;renderChart()}});
+  if(cdi)cdi.addEventListener('change',function(){if(this.value){chartDate=this.value;renderChart()}});
+  updateChartFilterUI();
+  
   // 视图切换
   document.querySelectorAll('.view-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
@@ -1535,6 +1699,22 @@ function init(){
     });
   });
 
+  // 统计卡片时间筛选
+  document.querySelectorAll('.stats-filter-tab').forEach(tab=>{
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.stats-filter-tab').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+      statsPeriod=this.dataset.statsPeriod;
+      updateStatsFilterUI();
+      renderEntries();
+    });
+  });
+  const syi=$('statsYearInput'),smi=$('statsMonthInput'),sdi=$('statsDateInput');
+  if(syi)syi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){statsYear=v;renderEntries()}});
+  if(smi)smi.addEventListener('change',function(){if(this.value){statsMonth=this.value;renderEntries()}});
+  if(sdi)sdi.addEventListener('change',function(){if(this.value){statsDate=this.value;renderEntries()}});
+  updateStatsFilterUI();
+  
   // 展开/收起全部
   $('expandAllBtn').addEventListener('click',()=>{
     tbody.querySelectorAll('.group-header').forEach(h=>{
