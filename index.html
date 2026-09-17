@@ -68,7 +68,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .accent-rose .stat-value{color:#e11d48}
 .accent-amber .stat-value{color:#d97706}
 .accent-purple .stat-value{color:#7c3aed}
-.budget-section,.template-section,.form-section{background:#fff;border-radius:20px;padding:1.5rem 1.8rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
+.accent-teal .stat-value{color:#0d9488}
+.budget-section,.template-section,.form-section,.savings-section{background:#fff;border-radius:20px;padding:1.5rem 1.8rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
 .budget-section-title,.template-header h3{font-weight:600;font-size:1rem;color:#0f172a;margin-bottom:.8rem}
 .budget-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:.5rem 0;border-bottom:1px solid #f1f4f8}
 .budget-row:last-child{border-bottom:none}
@@ -94,6 +95,23 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-amount{font-weight:600;color:#2563eb}
 .tpl-del{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:0 .2rem}
 .tpl-del:hover{color:#ef4444}
+/* 攒钱目标 */
+.goal-item{background:#f8fafc;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;border:1px solid #f1f4f8;transition:transform .15s}
+.goal-item:hover{transform:translateY(-1px)}
+.goal-item:last-child{margin-bottom:0}
+.goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;gap:.6rem;flex-wrap:wrap}
+.goal-name{font-weight:600;font-size:.95rem;color:#0f172a;display:flex;align-items:center;gap:.4rem}
+.goal-actions{display:flex;gap:.4rem;align-items:center}
+.progress-bar{height:10px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-bottom:.55rem}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:20px;transition:width .4s ease}
+.progress-fill.done{background:linear-gradient(90deg,#16a34a,#22c55e)}
+.goal-info{display:flex;justify-content:space-between;font-size:.85rem;color:#475569;flex-wrap:wrap;gap:.4rem}
+.goal-gap{font-weight:700;color:#d97706}
+.goal-gap.done{color:#16a34a}
+.goal-del{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;padding:0 .2rem;transition:color .15s}
+.goal-del:hover{color:#ef4444}
+.goal-total{font-size:.85rem;color:#64748b;margin-top:.5rem;text-align:right}
+/* 表格 */
 .form-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem}
 .form-actions{display:flex;gap:.6rem;flex:0 0 auto;align-items:center;padding-bottom:2px}
 .table-wrapper{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
@@ -127,7 +145,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .empty-state .icon{font-size:3rem;margin-bottom:.5rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0f172a;color:#f8fafc;padding:.7rem 1.8rem;border-radius:60px;font-size:.9rem;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;max-width:90%;text-align:center}
 .toast.show{opacity:1}
-@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}}
+@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}}
 </style>
 </head>
 <body>
@@ -177,9 +195,28 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <p style="color:#64748b;font-size:.9rem;margin-bottom:1rem;">关闭开关即可隐藏对应模块</p>
       <div class="toggle-item"><span class="label">📊 统计卡片</span><label class="switch"><input type="checkbox" id="toggleStats" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">🎯 预算设置</span><label class="switch"><input type="checkbox" id="toggleBudget" checked /><span class="slider"></span></label></div>
+      <div class="toggle-item"><span class="label">💰 攒钱目标</span><label class="switch"><input type="checkbox" id="toggleSavings" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">📋 固定模板</span><label class="switch"><input type="checkbox" id="toggleTemplate" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">✏️ 添加记录</span><label class="switch"><input type="checkbox" id="toggleForm" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">📄 记账表格</span><label class="switch"><input type="checkbox" id="toggleTable" checked /><span class="slider"></span></label></div>
+    </div>
+  </div>
+
+  <!-- 攒钱金额弹窗 -->
+  <div class="modal-overlay" id="saveAmountModal">
+    <div class="modal-box" style="max-width:340px;">
+      <button class="close-btn" id="saveAmountClose">✕</button>
+      <h2 id="saveAmountTitle">💰 存钱</h2>
+      <p id="saveAmountGoalName" style="color:#64748b;font-size:.9rem;margin-bottom:1rem;"></p>
+      <div class="form-group">
+        <label for="saveAmountInput">金额(¥)</label>
+        <input type="number" id="saveAmountInput" placeholder="0.00" step="0.01" />
+      </div>
+      <p style="font-size:.8rem;color:#94a3b8;margin-top:.5rem;">💡 输入负数可取出金额</p>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary" id="saveAmountConfirm" style="flex:1;justify-content:center;">确认</button>
+        <button class="btn btn-outline" id="saveAmountCancel" style="flex:1;justify-content:center;">取消</button>
+      </div>
     </div>
   </div>
 
@@ -192,7 +229,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     <div class="stat-card accent-purple"><div class="stat-label">应付（我欠别人）</div><div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div></div>
   </section>
 
-  <!-- 预算设置（仅统计支出） -->
+  <!-- 预算设置 -->
   <section class="budget-section" id="budgetSection">
     <div class="budget-section-title">🎯 预算剩余额度（仅统计支出，自动扣减）</div>
     <div class="budget-row">
@@ -212,6 +249,22 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <input type="number" class="budget-input" id="budgetMonthlyInput" placeholder="0" min="0" step="0.01" />
       <button class="btn btn-success btn-sm budget-set-btn" data-period="monthly">设定</button>
       <span class="budget-status-text" id="budgetMonthlyStatus"><span class="unset">未设置</span></span>
+    </div>
+  </section>
+
+  <!-- 攒钱目标 -->
+  <section class="savings-section" id="savingsSection">
+    <div class="template-header">
+      <h3>💰 攒钱目标</h3>
+      <span class="goal-total" id="savingsTotal">总储蓄：¥0.00</span>
+    </div>
+    <div class="template-form" id="savingsForm">
+      <div class="form-group"><label for="goalName">目标名称</label><input type="text" id="goalName" placeholder="如：买手机" maxlength="20" /></div>
+      <div class="form-group"><label for="goalTarget">目标金额(¥)</label><input type="number" id="goalTarget" placeholder="0.00" min="0.01" step="0.01" /></div>
+      <button class="btn btn-primary btn-sm" id="addGoalBtn">➕ 添加目标</button>
+    </div>
+    <div class="goals-list" id="goalsList">
+      <div class="empty-state" style="padding:1.5rem;"><div class="icon">🎯</div><div>还没有攒钱目标，添加一个吧！</div></div>
     </div>
   </section>
 
@@ -301,7 +354,8 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 'use strict';
 
 // ---------- 状态 ----------
-let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], hiddenModules=[], groupState={}, isSyncing=false;
+let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
+let activeGoalId=null;
 
 // ---------- DOM ----------
 const $=id=>document.getElementById(id);
@@ -313,15 +367,17 @@ const totalIncomeEl=$('totalIncome'),totalExpenseEl=$('totalExpense'),netBalance
 const budgetDailyInput=$('budgetDailyInput'),budgetWeeklyInput=$('budgetWeeklyInput'),budgetMonthlyInput=$('budgetMonthlyInput');
 const budgetDailyStatus=$('budgetDailyStatus'),budgetWeeklyStatus=$('budgetWeeklyStatus'),budgetMonthlyStatus=$('budgetMonthlyStatus');
 const tplNameInput=$('tplName'),tplAmountInput=$('tplAmount'),tplCategorySelect=$('tplCategory'),addTemplateBtn=$('addTemplateBtn'),templateListEl=$('templateList'),applyTemplatesBtn=$('applyTemplatesBtn');
+const goalNameInput=$('goalName'),goalTargetInput=$('goalTarget'),addGoalBtn=$('addGoalBtn'),goalsListEl=$('goalsList'),savingsTotalEl=$('savingsTotal');
 const settingsModal=$('settingsModal'),settingsToggleBtn=$('settingsToggleBtn'),settingsCloseBtn=$('settingsCloseBtn');
-const toggleStats=$('toggleStats'),toggleBudget=$('toggleBudget'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
-const statsContainer=$('statsContainer'),budgetSection=$('budgetSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
+const toggleStats=$('toggleStats'),toggleBudget=$('toggleBudget'),toggleSavings=$('toggleSavings'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
+const statsContainer=$('statsContainer'),budgetSection=$('budgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
+const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),saveAmountGoalName=$('saveAmountGoalName'),saveAmountInput=$('saveAmountInput'),saveAmountConfirm=$('saveAmountConfirm'),saveAmountCancel=$('saveAmountCancel'),saveAmountClose=$('saveAmountClose');
 const toastEl=$('toast');
 
 const moduleMap={
   'stats':{el:statsContainer,toggle:toggleStats},'budget':{el:budgetSection,toggle:toggleBudget},
-  'template':{el:templateSection,toggle:toggleTemplate},'form':{el:entryFormSection,toggle:toggleForm},
-  'table':{el:tableWrapper,toggle:toggleTable}
+  'savings':{el:savingsSection,toggle:toggleSavings},'template':{el:templateSection,toggle:toggleTemplate},
+  'form':{el:entryFormSection,toggle:toggleForm},'table':{el:tableWrapper,toggle:toggleTable}
 };
 
 // ---------- 工具 ----------
@@ -333,17 +389,15 @@ function weekStart(s){const d=new Date(s+'T00:00:00');const day=d.getDay();const
 function monthKey(s){return s.substring(0,7)}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function catClass(c){const m={'餐饮':'food','交通':'transport','购物':'shopping','娱乐':'entertainment','居住':'housing','健康':'health','教育':'education','其他':'other'};return m[c]||'other'}
+function uid(){return Date.now()+Math.random()*1000}
 
 let toastTimer=null;
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),3000)}
 function setSync(st,msg){syncStatusEl.className='sync-status '+st;syncStatusEl.textContent=msg}
 
-// ---------- 数据迁移：旧数据补充type字段 ----------
 function migrate(){
-  entries.forEach(e=>{
-    if(!e.type) e.type='expense';
-    if(e.type==='debt'&&!e.debtType) e.debtType='lent';
-  });
+  entries.forEach(e=>{if(!e.type)e.type='expense';if(e.type==='debt'&&!e.debtType)e.debtType='lent'});
+  if(!Array.isArray(savingsGoals))savingsGoals=[];
 }
 
 // ---------- 本地存储 ----------
@@ -352,6 +406,7 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_entries'));if(r){const p=JSON.parse(r);if(Array.isArray(p))entries=p}}catch(_){entries=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_budget'));if(r){const p=JSON.parse(r);if(typeof p==='number')budget={daily:p,weekly:null,monthly:null};else if(p&&typeof p==='object')budget=p}}catch(_){budget={daily:null,weekly:null,monthly:null}}
   try{const r=localStorage.getItem(localKey('dailyLedger_templates'));if(r){const p=JSON.parse(r);if(Array.isArray(p))templates=p}}catch(_){templates=[]}
+  try{const r=localStorage.getItem(localKey('dailyLedger_savings'));if(r){const p=JSON.parse(r);if(Array.isArray(p))savingsGoals=p}}catch(_){savingsGoals=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_hiddenModules'));if(r){const p=JSON.parse(r);if(Array.isArray(p))hiddenModules=p}}catch(_){hiddenModules=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_groupState'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')groupState=p}}catch(_){groupState={}}
   migrate();
@@ -361,6 +416,7 @@ function saveLocal(){
   try{localStorage.setItem(localKey('dailyLedger_entries'),JSON.stringify(entries))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_budget'),JSON.stringify(budget))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_templates'),JSON.stringify(templates))}catch(_){}
+  try{localStorage.setItem(localKey('dailyLedger_savings'),JSON.stringify(savingsGoals))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_hiddenModules'),JSON.stringify(hiddenModules))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_groupState'),JSON.stringify(groupState))}catch(_){}
 }
@@ -368,7 +424,7 @@ function saveLocal(){
 // ---------- 云端同步 ----------
 async function pushCloud(){
   if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,hiddenModules,groupState};
+  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState};
   try{
     const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
     if(qe)throw qe;
@@ -391,6 +447,7 @@ async function pullCloud(){
       if(c.entries)entries=c.entries;
       if(c.budget)budget=c.budget;
       if(c.templates)templates=c.templates;
+      if(c.savingsGoals)savingsGoals=c.savingsGoals;
       if(c.hiddenModules)hiddenModules=c.hiddenModules;
       if(c.groupState)groupState=c.groupState;
       migrate();saveLocal();renderAll();setSync('synced','✅ 已同步');toast('✅ 已从云端加载数据');
@@ -411,10 +468,8 @@ function calc(){
     const d=e.date;
     if(!daily[d])daily[d]={income:0,expense:0,lent:0,borrowed:0};
     if(type==='income'){totalIncome+=amt;daily[d].income+=amt}
-    else if(type==='expense'){
-      totalExpense+=amt;daily[d].expense+=amt;
-      dailyExpense[d]=(dailyExpense[d]||0)+amt;
-    }else if(type==='debt'){
+    else if(type==='expense'){totalExpense+=amt;daily[d].expense+=amt;dailyExpense[d]=(dailyExpense[d]||0)+amt}
+    else if(type==='debt'){
       if(e.debtType==='lent'){totalLent+=amt;daily[d].lent+=amt}
       else{totalBorrowed+=amt;daily[d].borrowed+=amt}
     }
@@ -422,7 +477,7 @@ function calc(){
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent,totalBorrowed,daily,dailyExpense};
 }
 
-// ---------- 渲染表格 ----------
+// ---------- 渲染 ----------
 function renderEntries(){
   const c=calc();
   totalIncomeEl.textContent=fmtMoney(c.totalIncome);
@@ -437,7 +492,6 @@ function renderEntries(){
     return;
   }
 
-  // 按日期分组
   const groups={};
   entries.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e)});
   const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
@@ -450,7 +504,6 @@ function renderEntries(){
     const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
     const collapsed=groupState[date]===false;
 
-    // 汇总信息
     let summary=[];
     if(dc.income>0)summary.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
     if(dc.expense>0)summary.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
@@ -485,7 +538,6 @@ function renderEntries(){
   }
   tbody.innerHTML=html;
 
-  // 绑定折叠
   tbody.querySelectorAll('.group-header').forEach(h=>{
     h.addEventListener('click',function(){
       const date=this.dataset.date;
@@ -500,7 +552,6 @@ function renderEntries(){
       pushCloud();
     });
   });
-  // 绑定删除
   tbody.querySelectorAll('.delete-btn').forEach(b=>{
     b.addEventListener('click',function(e){
       e.stopPropagation();
@@ -515,18 +566,99 @@ function updateBudgetStatus(c){
   setBudgetLine(budgetWeeklyStatus,budget.weekly,sumExpenseWeek(c.dailyExpense,wk));
   setBudgetLine(budgetMonthlyStatus,budget.monthly,sumExpenseMonth(c.dailyExpense,mo));
 }
-function sumExpenseWeek(de,wk){
-  let s=0;for(const d in de){if(weekStart(d)===wk)s+=de[d]}return s;
-}
-function sumExpenseMonth(de,mo){
-  let s=0;for(const d in de){if(monthKey(d)===mo)s+=de[d]}return s;
-}
+function sumExpenseWeek(de,wk){let s=0;for(const d in de){if(weekStart(d)===wk)s+=de[d]}return s}
+function sumExpenseMonth(de,mo){let s=0;for(const d in de){if(monthKey(d)===mo)s+=de[d]}return s}
 function setBudgetLine(el,limit,used){
   if(limit===null||limit===0){el.innerHTML='<span class="unset">未设置</span>';return}
   const rem=limit-used;const abs=fmtMoney(Math.abs(rem));
   const cls=rem>=0?'positive':'negative';
   const txt=rem>=0?`剩余 ¥${abs}`:`超支 ¥${abs}`;
   el.innerHTML=`<span class="remaining ${cls}">${txt}</span> <span class="limit-info">（上限 ¥${fmtMoney(limit)}）</span>`;
+}
+
+// ---------- 攒钱目标渲染 ----------
+function renderGoals(){
+  if(!Array.isArray(savingsGoals))savingsGoals=[];
+  const totalSaved=savingsGoals.reduce((s,g)=>s+(g.saved||0),0);
+  savingsTotalEl.textContent=`总储蓄：¥${fmtMoney(totalSaved)}`;
+
+  if(savingsGoals.length===0){
+    goalsListEl.innerHTML=`<div class="empty-state" style="padding:1.5rem;"><div class="icon">🎯</div><div>还没有攒钱目标，添加一个吧！</div></div>`;
+    return;
+  }
+  let html='';
+  savingsGoals.forEach(g=>{
+    const target=Number(g.target)||0;
+    const saved=Number(g.saved)||0;
+    const pct=target>0?Math.min(100,(saved/target)*100):0;
+    const gap=Math.max(0,target-saved);
+    const done=saved>=target;
+    html+=`<div class="goal-item">
+      <div class="goal-header">
+        <span class="goal-name">🎯 ${esc(g.name)}</span>
+        <div class="goal-actions">
+          <button class="btn btn-success btn-sm goal-save-btn" data-id="${g.id}">💰 存钱</button>
+          <button class="goal-del" data-id="${g.id}" title="删除">✕</button>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${done?'done':''}" style="width:${pct}%"></div></div>
+      <div class="goal-info">
+        <span>已存 <strong>¥${fmtMoney(saved)}</strong> / 目标 ¥${fmtMoney(target)}</span>
+        ${done?`<span class="goal-gap done">✅ 已达成！</span>`:`<span class="goal-gap">还差 ¥${fmtMoney(gap)}</span>`}
+      </div>
+    </div>`;
+  });
+  goalsListEl.innerHTML=html;
+
+  goalsListEl.querySelectorAll('.goal-save-btn').forEach(b=>{
+    b.addEventListener('click',function(){openSaveModal(this.dataset.id)});
+  });
+  goalsListEl.querySelectorAll('.goal-del').forEach(b=>{
+    b.addEventListener('click',function(){delGoal(this.dataset.id)});
+  });
+}
+
+function addGoal(){
+  const name=goalNameInput.value.trim();
+  const target=parseFloat(goalTargetInput.value);
+  if(!name){toast('⚠️ 请输入目标名称');return}
+  if(!target||isNaN(target)||target<=0){toast('⚠️ 请输入有效目标金额');return}
+  savingsGoals.push({id:'g_'+uid(),name:name,target:Math.round(target*100)/100,saved:0});
+  saveLocal();renderGoals();pushCloud();
+  goalNameInput.value='';goalTargetInput.value='';goalNameInput.focus();toast('✅ 目标已添加');
+}
+function delGoal(id){
+  if(!confirm('确定删除该攒钱目标吗？'))return;
+  savingsGoals=savingsGoals.filter(g=>g.id!==id);
+  saveLocal();renderGoals();pushCloud();toast('🗑 目标已删除');
+}
+function openSaveModal(id){
+  const g=savingsGoals.find(g=>g.id===id);
+  if(!g)return;
+  activeGoalId=id;
+  const gap=Math.max(0,Number(g.target)-Number(g.saved));
+  saveAmountGoalName.textContent=`目标：${g.name}  ·  还差 ¥${fmtMoney(gap)}`;
+  saveAmountInput.value='';
+  saveAmountInput.placeholder='如：500';
+  saveAmountModal.classList.add('active');
+  setTimeout(()=>saveAmountInput.focus(),100);
+}
+function confirmSaveAmount(){
+  if(!activeGoalId)return;
+  const g=savingsGoals.find(g=>g.id===activeGoalId);
+  if(!g)return;
+  const amt=parseFloat(saveAmountInput.value);
+  if(isNaN(amt)||amt===0){toast('⚠️ 请输入有效金额');return}
+  const rounded=Math.round(amt*100)/100;
+  const newSaved=(Number(g.saved)||0)+rounded;
+  if(newSaved<0){toast('⚠️ 取出金额不能超过已存金额');return}
+  g.saved=Math.round(newSaved*100)/100;
+  saveLocal();renderGoals();pushCloud();
+  saveAmountModal.classList.remove('active');
+  activeGoalId=null;
+  const target=Number(g.target)||0;
+  if(g.saved>=target)toast(`🎉 恭喜！「${g.name}」已达成目标！`);
+  else toast(rounded>0?`✅ 已存入 ¥${fmtMoney(rounded)}`:`✅ 已取出 ¥${fmtMoney(Math.abs(rounded))}`);
 }
 
 // ---------- 模板 ----------
@@ -552,7 +684,7 @@ function applyTemplates(){
   if(templates.length===0){toast('📭 暂无模板');return}
   const t=today();let n=0;
   templates.forEach((tpl,i)=>{
-    entries.push({id:Date.now()+Math.random()*1000+i,date:t,type:'expense',category:tpl.category,description:tpl.name+'（固定）',amount:tpl.amount});
+    entries.push({id:uid()+i,date:t,type:'expense',category:tpl.category,description:tpl.name+'（固定）',amount:tpl.amount});
     n++;
   });
   saveLocal();renderAll();pushCloud();toast(`✅ 已添加今日 ${n} 笔固定消费`);
@@ -568,7 +700,7 @@ function addEntry(){
   if(!date){toast('⚠️ 请选择日期');return}
   if(!amt||isNaN(amt)||amt<=0){toast('⚠️ 请输入有效金额');return}
   if(date>today()){toast('⚠️ 日期不能是未来');return}
-  const rec={id:Date.now()+Math.random()*1000,date,type,category:cat,description:desc,amount:Math.round(amt*100)/100};
+  const rec={id:uid(),date,type,category:cat,description:desc,amount:Math.round(amt*100)/100};
   if(type==='debt')rec.debtType=entryDebtType.value;
   entries.push(rec);
   saveLocal();renderAll();pushCloud();toast('✅ 记录已添加');
@@ -633,7 +765,15 @@ function applyModules(){
   for(const k in moduleMap){moduleMap[k].el.classList.remove('module-hidden');moduleMap[k].toggle.checked=true}
   hiddenModules.forEach(id=>{if(moduleMap[id]){moduleMap[id].el.classList.add('module-hidden');moduleMap[id].toggle.checked=false}});
 }
-function renderAll(){applyModules();renderEntries();renderTemplates();budgetDailyInput.value=budget.daily!==null?budget.daily:'';budgetWeeklyInput.value=budget.weekly!==null?budget.weekly:'';budgetMonthlyInput.value=budget.monthly!==null?budget.monthly:''}
+function renderAll(){
+  applyModules();
+  renderEntries();
+  renderGoals();
+  renderTemplates();
+  budgetDailyInput.value=budget.daily!==null?budget.daily:'';
+  budgetWeeklyInput.value=budget.weekly!==null?budget.weekly:'';
+  budgetMonthlyInput.value=budget.monthly!==null?budget.monthly:'';
+}
 
 // ---------- 认证 ----------
 let isLogin=true;
@@ -691,6 +831,15 @@ function init(){
   addTemplateBtn.addEventListener('click',addTemplate);
   tplAmountInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTemplate()}});
   applyTemplatesBtn.addEventListener('click',applyTemplates);
+
+  addGoalBtn.addEventListener('click',addGoal);
+  goalTargetInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addGoal()}});
+
+  saveAmountConfirm.addEventListener('click',confirmSaveAmount);
+  saveAmountCancel.addEventListener('click',()=>{saveAmountModal.classList.remove('active');activeGoalId=null});
+  saveAmountClose.addEventListener('click',()=>{saveAmountModal.classList.remove('active');activeGoalId=null});
+  saveAmountModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');activeGoalId=null}});
+  saveAmountInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmSaveAmount()}});
 
   settingsToggleBtn.addEventListener('click',()=>settingsModal.classList.add('active'));
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
