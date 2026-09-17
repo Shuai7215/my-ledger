@@ -133,19 +133,39 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .form-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem}
 .form-actions{display:flex;gap:.6rem;flex:0 0 auto;align-items:center;padding-bottom:2px}
 .table-wrapper{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
+.table-header-bar{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;border-bottom:1px solid #f1f4f8;flex-wrap:wrap;gap:.6rem;background:#fbfcfe}
+.view-tabs{display:flex;gap:.3rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
+.view-tab{padding:.35rem 1.1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+.view-tab:hover{color:#334155}
+.view-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.table-actions{display:flex;gap:.4rem}
 .table-scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:600px}
 thead{background:#f8fafc;border-bottom:1.5px solid #e9edf2}
 th{text-align:left;padding:.9rem 1rem;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
-tr.group-header{background:#f1f5f9;cursor:pointer;border-bottom:1px solid #e2e8f0}
-tr.group-header:hover{background:#e2e8f0}
+tr.group-header{cursor:pointer;border-bottom:1px solid #e2e8f0;transition:background .15s}
 tr.group-header td{padding:.6rem 1rem;font-weight:600;font-size:.95rem}
-.group-toggle{font-size:1.2rem;transition:transform .25s;display:inline-block;margin-right:.5rem}
+.group-toggle{font-size:1.05rem;transition:transform .25s;display:inline-block;margin-right:.5rem;color:#64748b}
 .group-toggle.collapsed{transform:rotate(-90deg)}
-tr.group-header.over-budget{background:#fef2f2}
+/* 年度组头 */
+tr.group-header.level-year{background:linear-gradient(90deg,#e0e7ff,#ede9fe)}
+tr.group-header.level-year:hover{background:linear-gradient(90deg,#c7d2fe,#ddd6fe)}
+tr.group-header.level-year td{font-size:1rem}
+tr.group-header.level-year .group-date{color:#3730a3;font-weight:700;font-size:1.05rem}
+/* 月度组头 */
+tr.group-header.level-month{background:#f1f5f9}
+tr.group-header.level-month:hover{background:#e2e8f0}
+tr.group-header.level-month .group-date{color:#0f172a;font-weight:600}
+/* 日度组头 */
+tr.group-header.level-day{background:#f8fafc}
+tr.group-header.level-day:hover{background:#eef2f7}
+tr.group-header.level-day td{padding:.5rem 1rem;padding-left:1.6rem;font-size:.9rem}
+tr.group-header.level-day .group-date{color:#334155;font-weight:600}
+/* 超支标红 */
+tr.group-header.over-budget{background:#fef2f2!important}
+tr.group-header.over-budget:hover{background:#fde2e2!important}
 tr.group-header.over-budget .group-total{color:#dc2626}
 tr.detail-row td{padding:.7rem 1rem;border-bottom:1px solid #f1f4f8;vertical-align:middle}
-tr.detail-row.collapsed{display:none}
 tr.detail-row.over-budget{background-color:#fef2f2}
 .amount{font-weight:600;font-variant-numeric:tabular-nums}
 .amount.income{color:#16a34a}
@@ -185,7 +205,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .import-preview{margin-top:.8rem;padding:.7rem;background:#f8fafc;border-radius:10px;font-size:.85rem;color:#475569;max-height:120px;overflow-y:auto}
 .import-preview strong{color:#16a34a}
 .import-preview .err{color:#dc2626}
-@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}}
+@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}}
 </style>
 </head>
 <body>
@@ -242,12 +262,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <h2>📤 导入表格数据</h2>
       <div class="help-text">
         <strong>支持的格式：</strong>
-        <div class="format-tags">
-          <span class="format-tag">.xlsx</span>
-          <span class="format-tag">.xls</span>
-          <span class="format-tag">.csv</span>
-          <span class="format-tag">.txt</span>
-        </div>
+        <div class="format-tags"><span class="format-tag">.xlsx</span><span class="format-tag">.xls</span><span class="format-tag">.csv</span><span class="format-tag">.txt</span></div>
         <strong>列顺序要求：</strong><br/>
         <code>日期, 类型, 类别, 描述, 金额</code>
         <ul>
@@ -255,7 +270,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
           <li>类型：<code>收入</code> / <code>支出</code> / <code>借出</code> / <code>借入</code></li>
           <li>金额：数字，如 <code>58.50</code></li>
         </ul>
-        <strong>智能特性：</strong>自动跳过重复记录（按日期+类型+类别+描述+金额判断）
+        <strong>智能特性：</strong>自动跳过重复记录
       </div>
       <div class="file-drop" id="fileDrop">
         <div class="icon">📁</div>
@@ -426,6 +441,17 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 
   <!-- 表格 -->
   <section class="table-wrapper" id="tableWrapper">
+    <div class="table-header-bar">
+      <div class="view-tabs">
+        <button class="view-tab" data-view="year">📆 按年</button>
+        <button class="view-tab active" data-view="month">📅 按月</button>
+        <button class="view-tab" data-view="day">📋 按日</button>
+      </div>
+      <div class="table-actions">
+        <button class="btn btn-outline btn-sm" id="expandAllBtn">⬇️ 展开全部</button>
+        <button class="btn btn-outline btn-sm" id="collapseAllBtn">⬆️ 收起全部</button>
+      </div>
+    </div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>日期 / 描述</th><th>类型</th><th>类别</th><th style="text-align:right;">金额</th><th style="text-align:center;">操作</th></tr></thead>
@@ -447,8 +473,8 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 'use strict';
 
 let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
-let activeGoalId=null;
-let activeRepayId=null;
+let viewMode='month';
+let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
 
@@ -494,6 +520,7 @@ function fmtMoney(v){return Number(v).toFixed(2)}
 function today(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function weekStart(s){const d=new Date(s+'T00:00:00');const day=d.getDay();const diff=day===0?6:day-1;d.setDate(d.getDate()-diff);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function monthKey(s){return s.substring(0,7)}
+function yearKey(s){return s.substring(0,4)}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function catClass(c){const m={'餐饮':'food','交通':'transport','购物':'shopping','娱乐':'entertainment','居住':'housing','健康':'health','教育':'education','其他':'other'};return m[c]||'other'}
 function uid(){return Date.now()+Math.random()*1000}
@@ -502,16 +529,45 @@ let toastTimer=null;
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),3500)}
 function setSync(st,msg){syncStatusEl.className='sync-status '+st;syncStatusEl.textContent=msg}
 
+// 判断组默认是否展开（今天/本月/本年默认展开）
+function getDefaultExpanded(key){
+  const d=new Date();
+  const todayStr=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const monthStr=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  const yearStr=String(d.getFullYear());
+  if(key===`year:${yearStr}`)return true;
+  if(key===`month:${monthStr}`)return true;
+  if(key===`day:${todayStr}`)return true;
+  return false;
+}
+function isExpanded(key){
+  if(groupState[key]===undefined)return getDefaultExpanded(key);
+  return groupState[key]!==false;
+}
+
 function migrate(){
   entries.forEach(e=>{
     if(!e.type)e.type='expense';
     if(e.type==='debt'){
       if(!e.debtType)e.debtType='lent';
-      // 旧数据没有 repaid 字段 → 初始化为 0
       if(typeof e.repaid!=='number')e.repaid=0;
     }
   });
   if(!Array.isArray(savingsGoals))savingsGoals=[];
+  // 迁移 groupState
+  const newGS={};
+  for(const k in groupState){
+    if(k.startsWith('year:')||k.startsWith('month:')||k.startsWith('day:')){
+      newGS[k]=groupState[k];
+    }else if(/^\d{4}-\d{2}-\d{2}$/.test(k)){
+      newGS['day:'+k]=groupState[k];
+    }else if(/^\d{4}-\d{2}$/.test(k)){
+      newGS['month:'+k]=groupState[k];
+    }else if(/^\d{4}$/.test(k)){
+      newGS['year:'+k]=groupState[k];
+    }
+  }
+  groupState=newGS;
 }
 
 function localKey(k){return currentUser?`${k}_${currentUser.id}`:k}
@@ -522,6 +578,7 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_savings'));if(r){const p=JSON.parse(r);if(Array.isArray(p))savingsGoals=p}}catch(_){savingsGoals=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_hiddenModules'));if(r){const p=JSON.parse(r);if(Array.isArray(p))hiddenModules=p}}catch(_){hiddenModules=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_groupState'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')groupState=p}}catch(_){groupState={}}
+  try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day'].includes(r))viewMode=r}catch(_){}
   migrate();
 }
 function saveLocal(){
@@ -532,11 +589,12 @@ function saveLocal(){
   try{localStorage.setItem(localKey('dailyLedger_savings'),JSON.stringify(savingsGoals))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_hiddenModules'),JSON.stringify(hiddenModules))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_groupState'),JSON.stringify(groupState))}catch(_){}
+  try{localStorage.setItem(localKey('dailyLedger_viewMode'),viewMode)}catch(_){}
 }
 
 async function pushCloud(){
   if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState};
+  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode};
   try{
     const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
     if(qe)throw qe;
@@ -562,6 +620,7 @@ async function pullCloud(){
       if(c.savingsGoals)savingsGoals=c.savingsGoals;
       if(c.hiddenModules)hiddenModules=c.hiddenModules;
       if(c.groupState)groupState=c.groupState;
+      if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
       migrate();saveLocal();renderAll();setSync('synced','✅ 已同步');toast('✅ 已从云端加载数据');
     }else{await pushCloud()}
     isSyncing=false;
@@ -570,7 +629,7 @@ async function pullCloud(){
   }
 }
 
-// ===== 自动计算（应收/应付按未还余额统计） =====
+// ===== 计算 =====
 function calc(){
   let totalIncome=0,totalExpense=0;
   let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
@@ -587,15 +646,9 @@ function calc(){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
       if(e.debtType==='lent'){
-        totalLentOriginal+=amt;
-        totalLentRepaid+=repaid;
-        totalLentRemaining+=remaining;
-        daily[d].lent+=amt;
+        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt;
       }else{
-        totalBorrowedOriginal+=amt;
-        totalBorrowedRepaid+=repaid;
-        totalBorrowedRemaining+=remaining;
-        daily[d].borrowed+=amt;
+        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt;
       }
     }
   }
@@ -605,7 +658,7 @@ function calc(){
     daily,dailyExpense};
 }
 
-// ===== 表格导入核心 =====
+// ===== 表格导入 =====
 function normalizeDate(val){
   if(!val)return null;
   if(typeof val==='string'){
@@ -613,20 +666,12 @@ function normalizeDate(val){
     const m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
     if(m)return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
     const n=parseFloat(s);
-    if(!isNaN(n)&&n>10000&&n<100000){
-      const dt=new Date((n-25569)*86400*1000);
-      return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
-    }
+    if(!isNaN(n)&&n>10000&&n<100000){const dt=new Date((n-25569)*86400*1000);return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`}
     const d=new Date(s);
     if(!isNaN(d.getTime()))return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   }
-  if(val instanceof Date&&!isNaN(val.getTime())){
-    return `${val.getFullYear()}-${pad(val.getMonth()+1)}-${pad(val.getDate())}`;
-  }
-  if(typeof val==='number'&&val>10000&&val<100000){
-    const dt=new Date((val-25569)*86400*1000);
-    return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
-  }
+  if(val instanceof Date&&!isNaN(val.getTime()))return `${val.getFullYear()}-${pad(val.getMonth()+1)}-${pad(val.getDate())}`;
+  if(typeof val==='number'&&val>10000&&val<100000){const dt=new Date((val-25569)*86400*1000);return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`}
   return null;
 }
 function normalizeAmount(val){
@@ -647,11 +692,10 @@ function parseRows(rows){
   if(!rows||rows.length===0)return {records:[],errors:['文件为空']};
   rows=rows.filter(r=>r&&r.some(c=>c!==null&&c!==undefined&&String(c).trim()!==''));
   if(rows.length===0)return {records:[],errors:['文件为空']};
-  const first=rows[0];
-  const firstStr=String(first[0]||'').toLowerCase();
+  const firstStr=String(rows[0][0]||'').toLowerCase();
   const hasHeader=firstStr.includes('日期')||firstStr.includes('date')||firstStr.includes('时间');
   const dataRows=hasHeader?rows.slice(1):rows;
-  const records=[];const errors=[];
+  const records=[],errors=[];
   dataRows.forEach((row,idx)=>{
     const rowNum=hasHeader?idx+2:idx+1;
     if(!row||row.length<5){
@@ -673,8 +717,8 @@ function parseRows(rows){
     const descStr=String(row[3]||'').trim();
     const amountVal=normalizeAmount(row[4]);
     if(!dateVal){errors.push(`第${rowNum}行日期无效`);return}
-    if(!typeVal){errors.push(`第${rowNum}行类型无法识别：${row[1]}`);return}
-    if(isNaN(amountVal)||amountVal<=0){errors.push(`第${rowNum}行金额无效：${row[4]}`);return}
+    if(!typeVal){errors.push(`第${rowNum}行类型无法识别`);return}
+    if(isNaN(amountVal)||amountVal<=0){errors.push(`第${rowNum}行金额无效`);return}
     const rec={id:uid(),date:dateVal,type:typeVal.type,category:catStr,description:descStr,amount:Math.round(amountVal*100)/100};
     if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0}
     records.push(rec);
@@ -684,8 +728,7 @@ function parseRows(rows){
 function parseCSVText(text){
   text=text.replace(/^\uFEFF/,'');
   const lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');
-  const rows=[];
-  lines.forEach(line=>{
+  return lines.map(line=>{
     const cols=[];let cur='';let inQ=false;
     for(let i=0;i<line.length;i++){
       const ch=line[i];
@@ -693,9 +736,8 @@ function parseCSVText(text){
       else if((ch===','||ch==='\t'||ch===';')&&!inQ){cols.push(cur);cur=''}
       else cur+=ch;
     }
-    cols.push(cur);rows.push(cols);
+    cols.push(cur);return cols;
   });
-  return rows;
 }
 function getFileType(file){
   const name=(file.name||'').toLowerCase();
@@ -741,7 +783,7 @@ function isDuplicate(rec,pool){
   );
 }
 function performImport(records,errors){
-  if(records.length===0){toast('⚠️ 未解析到有效记录，请检查文件格式');if(errors.length>0)console.warn('导入错误:',errors);return}
+  if(records.length===0){toast('⚠️ 未解析到有效记录');if(errors.length>0)console.warn('导入错误:',errors);return}
   let added=0,skipped=0;
   records.forEach(rec=>{
     if(isDuplicate(rec,entries)){skipped++}
@@ -771,8 +813,8 @@ function handleFileSelected(file){
       if(errors.length>0)html+=`<br/><span class="err">${errors.length} 行格式问题（将被跳过）</span>`;
       html+='<br/><span style="color:#94a3b8;">预览前3条：</span>';
       result.records.slice(0,3).forEach(r=>{
-        const typeLabel=r.type==='income'?'收入':r.type==='debt'?(r.debtType==='lent'?'借出':'借入'):'支出';
-        html+=`<br/>• ${r.date} ${typeLabel} ${r.category} ¥${fmtMoney(r.amount)}`;
+        const tl=r.type==='income'?'收入':r.type==='debt'?(r.debtType==='lent'?'借出':'借入'):'支出';
+        html+=`<br/>• ${r.date} ${tl} ${r.category} ¥${fmtMoney(r.amount)}`;
       });
       importPreview.innerHTML=html;
     }
@@ -823,7 +865,239 @@ function renderChart(){
   legendEl.innerHTML=legendHtml;
 }
 
-// ===== 表格渲染（含还款按钮） =====
+// ===== 明细行渲染 =====
+function getDetailRowHtml(e,ancestors){
+  const type=e.type||'expense';
+  let typeBadge='';
+  if(type==='income')typeBadge='<span class="type-badge income">收入</span>';
+  else if(type==='expense')typeBadge='<span class="type-badge expense">支出</span>';
+  else if(type==='debt')typeBadge=e.debtType==='lent'?'<span class="type-badge debt-lent">借出</span>':'<span class="type-badge debt-borrowed">借入</span>';
+
+  let descSubHtml='',actionHtml='',amtExtraHtml='';
+  let amtCls=type==='income'?'income':type==='expense'?'expense':'debt';
+  let sign=type==='income'?'+':type==='expense'?'-':'';
+
+  if(type==='debt'){
+    const repaid=Number(e.repaid)||0;
+    const remaining=Math.max(0,Number(e.amount)-repaid);
+    const isPaidOff=remaining<=0.001;
+    if(repaid>0){
+      descSubHtml=isPaidOff
+        ?`<div class="desc-sub"><span class="paid-off-tag">✅ 已还清</span>（已还 ¥${fmtMoney(repaid)}）</div>`
+        :`<div class="desc-sub">已还 ¥${fmtMoney(repaid)} · <span class="progress-text">未还 ¥${fmtMoney(remaining)}</span></div>`;
+      if(!isPaidOff)amtExtraHtml=`<div style="font-size:.72rem;color:#dc2626;margin-top:.1rem;">未还 ¥${fmtMoney(remaining)}</div>`;
+      if(isPaidOff)amtCls+=' paid-off';
+    }else{
+      descSubHtml=`<div class="desc-sub" style="color:#94a3b8;">未还 ¥${fmtMoney(remaining)}</div>`;
+    }
+    if(!isPaidOff)actionHtml=`<button class="repay-btn" data-id="${e.id}" title="${e.debtType==='lent'?'收回款项':'归还欠款'}">💰</button>`;
+  }
+
+  const ancAttr=ancestors.join(',');
+  return `<tr class="detail-row" data-ancestors="${ancAttr}">
+    <td>${esc(e.description||'-')}${descSubHtml}</td>
+    <td>${typeBadge}</td>
+    <td><span class="category-badge ${catClass(e.category)}">${esc(e.category||'其他')}</span></td>
+    <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${fmtMoney(e.amount)}</span>${amtExtraHtml}</td>
+    <td style="text-align:center;">${actionHtml}<button class="delete-btn" data-id="${e.id}">✕</button></td>
+  </tr>`;
+}
+
+// 组头 HTML 生成工具
+function makeGroupHeader(level,key,label,count,summaryHtml,isOver,ancestors){
+  const expanded=isExpanded(key);
+  const arrowClass=expanded?'':'collapsed';
+  const overClass=isOver?'over-budget':'';
+  const ancAttr=ancestors.join(',');
+  return `<tr class="group-header level-${level} ${overClass}" data-level="${level}" data-key="${key}" data-ancestors="${ancAttr}">
+    <td colspan="5">
+      <span class="group-toggle ${arrowClass}">▶</span>
+      <span class="group-date">${label}</span>
+      <span style="margin-left:1rem;font-weight:400;color:#64748b;font-size:.85rem;">共 ${count} 笔</span>
+      <span style="float:right;font-weight:500;font-size:.85rem;">${summaryHtml}</span>
+    </td>
+  </tr>`;
+}
+
+// 生成某天的所有明细行
+function renderDayDetails(date,items,c){
+  const dayKey=`day:${date}`;
+  const dc=c.daily[date]||{income:0,expense:0,lent:0,borrowed:0};
+  const dayExpense=c.dailyExpense[date]||0;
+  const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
+  let sum=[];
+  if(dc.income>0)sum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
+  if(dc.expense>0)sum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
+  if(dc.lent>0)sum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(dc.lent)}</span>`);
+  if(dc.borrowed>0)sum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(dc.borrowed)}</span>`);
+  let html=makeGroupHeader('day',dayKey,`📅 ${fmtDate(date)}`,items.length,sum.join(' | '),over,[]);
+  // 需要注意：这里的 ancestors 需要上级决定，所以这个函数应该接受 ancestors 参数
+  return {html,sum};
+}
+
+// ===== 三种视图 =====
+// 按日视图（顶层就是日期组头）
+function renderDayView(sorted,c){
+  const groups={};
+  sorted.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e)});
+  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  dates.forEach(date=>{
+    const items=groups[date].sort((a,b)=>(b.id||0)-(a.id||0));
+    const dayKey=`day:${date}`;
+    const dc=c.daily[date]||{income:0,expense:0,lent:0,borrowed:0};
+    const dayExpense=c.dailyExpense[date]||0;
+    const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
+    let sum=[];
+    if(dc.income>0)sum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
+    if(dc.expense>0)sum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
+    if(dc.lent>0)sum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(dc.lent)}</span>`);
+    if(dc.borrowed>0)sum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(dc.borrowed)}</span>`);
+    html+=makeGroupHeader('day',dayKey,`📅 ${fmtDate(date)}`,items.length,sum.join(' | '),over,[]);
+    items.forEach(e=>{
+      html+=getDetailRowHtml(e,[dayKey]);
+    });
+  });
+  return html;
+}
+
+// 按月视图（月 → 日 → 明细）
+function renderMonthView(sorted,c){
+  const months={};
+  sorted.forEach(e=>{
+    const mo=monthKey(e.date);
+    if(!months[mo])months[mo]={};
+    if(!months[mo][e.date])months[mo][e.date]=[];
+    months[mo][e.date].push(e);
+  });
+  const moKeys=Object.keys(months).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  moKeys.forEach(mo=>{
+    const days=months[mo];
+    const mKey=`month:${mo}`;
+    let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,totalCount=0;
+    Object.values(days).forEach(items=>{
+      items.forEach(e=>{
+        totalCount++;
+        const amt=Number(e.amount)||0;
+        if(e.type==='income')mIncome+=amt;
+        else if(e.type==='expense')mExpense+=amt;
+        else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
+      });
+    });
+    const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
+    let sum=[];
+    if(mIncome>0)sum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
+    if(mExpense>0)sum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(mExpense)}</span>`);
+    if(mLent>0)sum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(mLent)}</span>`);
+    if(mBorrowed>0)sum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(mBorrowed)}</span>`);
+    const [y,m]=mo.split('-');
+    const monthLabel=`${y}年${parseInt(m)}月`;
+    html+=makeGroupHeader('month',mKey,monthLabel,totalCount,sum.join(' | '),monthOver,[]);
+    // 该月的日期分组
+    const sortedDays=Object.keys(days).sort((a,b)=>b.localeCompare(a));
+    sortedDays.forEach(date=>{
+      const items=days[date].sort((a,b)=>(b.id||0)-(a.id||0));
+      const dayKey=`day:${date}`;
+      const dc=c.daily[date]||{income:0,expense:0,lent:0,borrowed:0};
+      const dayExpense=c.dailyExpense[date]||0;
+      const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
+      let dSum=[];
+      if(dc.income>0)dSum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
+      if(dc.expense>0)dSum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
+      if(dc.lent>0)dSum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(dc.lent)}</span>`);
+      if(dc.borrowed>0)dSum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(dc.borrowed)}</span>`);
+      html+=makeGroupHeader('day',dayKey,fmtDate(date),items.length,dSum.join(' | '),over,[mKey]);
+      items.forEach(e=>{
+        html+=getDetailRowHtml(e,[mKey,dayKey]);
+      });
+    });
+  });
+  return html;
+}
+
+// 按年视图（年 → 月 → 日 → 明细）
+function renderYearView(sorted,c){
+  const years={};
+  sorted.forEach(e=>{
+    const y=yearKey(e.date);
+    if(!years[y])years[y]={};
+    const mo=monthKey(e.date);
+    if(!years[y][mo])years[y][mo]={};
+    if(!years[y][mo][e.date])years[y][mo][e.date]=[];
+    years[y][mo][e.date].push(e);
+  });
+  const yKeys=Object.keys(years).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  yKeys.forEach(y=>{
+    const yKey=`year:${y}`;
+    const months=years[y];
+    // 年汇总
+    let yIncome=0,yExpense=0,yLent=0,yBorrowed=0,yCount=0;
+    Object.values(months).forEach(days=>{
+      Object.values(days).forEach(items=>{
+        items.forEach(e=>{
+          yCount++;
+          const amt=Number(e.amount)||0;
+          if(e.type==='income')yIncome+=amt;
+          else if(e.type==='expense')yExpense+=amt;
+          else if(e.type==='debt'){if(e.debtType==='lent')yLent+=amt;else yBorrowed+=amt}
+        });
+      });
+    });
+    let ySum=[];
+    if(yIncome>0)ySum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(yIncome)}</span>`);
+    if(yExpense>0)ySum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(yExpense)}</span>`);
+    if(yLent>0)ySum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(yLent)}</span>`);
+    if(yBorrowed>0)ySum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(yBorrowed)}</span>`);
+    html+=makeGroupHeader('year',yKey,`📅 ${y}年`,yCount,ySum.join(' | '),false,[]);
+    // 月份
+    const moKeys=Object.keys(months).sort((a,b)=>b.localeCompare(a));
+    moKeys.forEach(mo=>{
+      const days=months[mo];
+      const mKey=`month:${mo}`;
+      let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,mCount=0;
+      Object.values(days).forEach(items=>{
+        items.forEach(e=>{
+          mCount++;
+          const amt=Number(e.amount)||0;
+          if(e.type==='income')mIncome+=amt;
+          else if(e.type==='expense')mExpense+=amt;
+          else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
+        });
+      });
+      const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
+      let mSum=[];
+      if(mIncome>0)mSum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
+      if(mExpense>0)mSum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(mExpense)}</span>`);
+      if(mLent>0)mSum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(mLent)}</span>`);
+      if(mBorrowed>0)mSum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(mBorrowed)}</span>`);
+      const [yy,mm]=mo.split('-');
+      html+=makeGroupHeader('month',mKey,`${parseInt(mm)}月`,mCount,mSum.join(' | '),monthOver,[yKey]);
+      // 日期
+      const sortedDays=Object.keys(days).sort((a,b)=>b.localeCompare(a));
+      sortedDays.forEach(date=>{
+        const items=days[date].sort((a,b)=>(b.id||0)-(a.id||0));
+        const dayKey=`day:${date}`;
+        const dc=c.daily[date]||{income:0,expense:0,lent:0,borrowed:0};
+        const dayExpense=c.dailyExpense[date]||0;
+        const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
+        let dSum=[];
+        if(dc.income>0)dSum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
+        if(dc.expense>0)dSum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
+        if(dc.lent>0)dSum.push(`<span style="color:#d97706">借出 ¥${fmtMoney(dc.lent)}</span>`);
+        if(dc.borrowed>0)dSum.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(dc.borrowed)}</span>`);
+        html+=makeGroupHeader('day',dayKey,fmtDate(date),items.length,dSum.join(' | '),over,[yKey,mKey]);
+        items.forEach(e=>{
+          html+=getDetailRowHtml(e,[yKey,mKey,dayKey]);
+        });
+      });
+    });
+  });
+  return html;
+}
+
+// ===== 表格主渲染 =====
 function renderEntries(){
   const c=calc();
   totalIncomeEl.textContent=fmtMoney(c.totalIncome);
@@ -831,7 +1105,6 @@ function renderEntries(){
   netBalanceEl.textContent=fmtMoney(c.netBalance);
   totalLentEl.textContent=fmtMoney(c.totalLent);
   totalBorrowedEl.textContent=fmtMoney(c.totalBorrowed);
-  // 应收/应付提示
   if(c.totalLentOriginal>0){
     totalLentHint.textContent=`原始 ¥${fmtMoney(c.totalLentOriginal)} · 已收 ¥${fmtMoney(c.totalLentRepaid)}`;
   }else{totalLentHint.textContent=''}
@@ -840,96 +1113,65 @@ function renderEntries(){
   }else{totalBorrowedHint.textContent=''}
 
   updateBudgetStatus(c);
+
   if(entries.length===0){
     tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
     return;
   }
-  const groups={};
-  entries.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e)});
-  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+
+  // 按日期降序，同日期按 id 降序
+  const sorted=[...entries].sort((a,b)=>{
+    if(a.date!==b.date)return b.date.localeCompare(a.date);
+    return (b.id||0)-(a.id||0);
+  });
+
   let html='';
-  for(const date of dates){
-    const items=groups[date].sort((a,b)=>(b.id||0)-(a.id||0));
-    const dc=c.daily[date]||{income:0,expense:0,lent:0,borrowed:0};
-    const dayExpense=c.dailyExpense[date]||0;
-    const over=(budget.daily!==null&&budget.daily>0&&dayExpense>budget.daily);
-    const collapsed=groupState[date]===false;
-    let summary=[];
-    if(dc.income>0)summary.push(`<span style="color:#16a34a">收 ¥${fmtMoney(dc.income)}</span>`);
-    if(dc.expense>0)summary.push(`<span style="color:#dc2626">支 ¥${fmtMoney(dc.expense)}</span>`);
-    if(dc.lent>0)summary.push(`<span style="color:#d97706">借出 ¥${fmtMoney(dc.lent)}</span>`);
-    if(dc.borrowed>0)summary.push(`<span style="color:#7c3aed">借入 ¥${fmtMoney(dc.borrowed)}</span>`);
-    html+=`<tr class="group-header ${over?'over-budget':''}" data-date="${date}">
-      <td colspan="5">
-        <span class="group-toggle ${collapsed?'collapsed':''}">▶</span>
-        <span class="group-date">📅 ${fmtDate(date)}</span>
-        <span style="margin-left:1rem;font-weight:400;color:#64748b;">共 ${items.length} 笔</span>
-        <span style="float:right;font-weight:500;font-size:.85rem;">${summary.join(' | ')}</span>
-      </td></tr>`;
-    const dcls=collapsed?'collapsed':'';
-    for(const e of items){
-      const type=e.type||'expense';
-      let typeBadge='';
-      if(type==='income')typeBadge='<span class="type-badge income">收入</span>';
-      else if(type==='expense')typeBadge='<span class="type-badge expense">支出</span>';
-      else if(type==='debt')typeBadge=e.debtType==='lent'?'<span class="type-badge debt-lent">借出</span>':'<span class="type-badge debt-borrowed">借入</span>';
+  if(viewMode==='year')html=renderYearView(sorted,c);
+  else if(viewMode==='month')html=renderMonthView(sorted,c);
+  else html=renderDayView(sorted,c);
 
-      let descSubHtml='';
-      let actionHtml='';
-      let amtExtraHtml='';
-      let amtCls=type==='income'?'income':type==='expense'?'expense':'debt';
-      let sign=type==='income'?'+':type==='expense'?'-':'';
-
-      if(type==='debt'){
-        const repaid=Number(e.repaid)||0;
-        const remaining=Math.max(0,Number(e.amount)-repaid);
-        const isPaidOff=remaining<=0.001;
-        if(repaid>0){
-          descSubHtml=isPaidOff
-            ?`<div class="desc-sub"><span class="paid-off-tag">✅ 已还清</span>（已还 ¥${fmtMoney(repaid)}）</div>`
-            :`<div class="desc-sub">已还 ¥${fmtMoney(repaid)} · <span class="progress-text">未还 ¥${fmtMoney(remaining)}</span></div>`;
-          if(!isPaidOff)amtExtraHtml=`<div style="font-size:.72rem;color:#dc2626;margin-top:.1rem;">未还 ¥${fmtMoney(remaining)}</div>`;
-          if(isPaidOff)amtCls+=' paid-off';
-        }else{
-          descSubHtml=`<div class="desc-sub" style="color:#94a3b8;">未还 ¥${fmtMoney(remaining)}</div>`;
-        }
-        if(!isPaidOff){
-          actionHtml=`<button class="repay-btn" data-id="${e.id}" title="${e.debtType==='lent'?'收回款项':'归还欠款'}">💰</button>`;
-        }
-      }
-
-      html+=`<tr class="detail-row ${dcls}" data-date="${date}">
-        <td>${esc(e.description||'-')}${descSubHtml}</td>
-        <td>${typeBadge}</td>
-        <td><span class="category-badge ${catClass(e.category)}">${esc(e.category||'其他')}</span></td>
-        <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${fmtMoney(e.amount)}</span>${amtExtraHtml}</td>
-        <td style="text-align:center;">${actionHtml}<button class="delete-btn" data-id="${e.id}">✕</button></td>
-      </tr>`;
-    }
-  }
   tbody.innerHTML=html;
+
+  // 绑定组头点击
   tbody.querySelectorAll('.group-header').forEach(h=>{
     h.addEventListener('click',function(){
-      const date=this.dataset.date;
-      const nowCollapsed=!this.querySelector('.group-toggle').classList.contains('collapsed');
-      groupState[date]=!nowCollapsed;saveLocal();
-      tbody.querySelectorAll(`.detail-row[data-date="${date}"]`).forEach(r=>{
-        if(nowCollapsed)r.classList.add('collapsed');else r.classList.remove('collapsed');
-      });
-      const t=this.querySelector('.group-toggle');
-      if(nowCollapsed)t.classList.add('collapsed');else t.classList.remove('collapsed');
+      const key=this.dataset.key;
+      const cur=isExpanded(key);
+      groupState[key]=!cur;
+      saveLocal();
+      const toggle=this.querySelector('.group-toggle');
+      if(groupState[key])toggle.classList.remove('collapsed');
+      else toggle.classList.add('collapsed');
+      updateVisibility();
       pushCloud();
     });
   });
+  // 删除按钮
   tbody.querySelectorAll('.delete-btn').forEach(b=>{
     b.addEventListener('click',function(e){
       e.stopPropagation();delEntry(Number(this.dataset.id));
     });
   });
+  // 还款按钮
   tbody.querySelectorAll('.repay-btn').forEach(b=>{
     b.addEventListener('click',function(e){
       e.stopPropagation();openRepayModal(Number(this.dataset.id));
     });
+  });
+
+  updateVisibility();
+}
+
+// 根据折叠状态批量控制可见性
+function updateVisibility(){
+  Array.from(tbody.children).forEach(tr=>{
+    if(!tr.classList.contains('group-header')&&!tr.classList.contains('detail-row'))return;
+    const ancestors=(tr.dataset.ancestors||'').split(',').filter(Boolean);
+    let hidden=false;
+    for(const a of ancestors){
+      if(!isExpanded(a)){hidden=true;break}
+    }
+    tr.style.display=hidden?'none':'';
   });
 }
 
@@ -949,7 +1191,7 @@ function setBudgetLine(el,limit,used){
   el.innerHTML=`<span class="remaining ${cls}">${txt}</span> <span class="limit-info">（上限 ¥${fmtMoney(limit)}）</span>`;
 }
 
-// ===== 还款逻辑 =====
+// ===== 还款 =====
 function openRepayModal(id){
   const e=entries.find(x=>x.id===id);
   if(!e||e.type!=='debt')return;
@@ -985,8 +1227,7 @@ function confirmRepay(){
   const rounded=Math.round(input*100)/100;
   e.repaid=Math.round((repaid+rounded)*100)/100;
   saveLocal();renderAll();pushCloud();
-  repayModal.classList.remove('active');
-  activeRepayId=null;
+  repayModal.classList.remove('active');activeRepayId=null;
   const newRemaining=Math.max(0,amt-e.repaid);
   if(newRemaining<=0.001){
     toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
@@ -1122,11 +1363,7 @@ function setBudget(period){
 function exportCSV(){
   if(entries.length===0){toast('📭 没有记录');return}
   const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
-  const typeLabel=e=>{
-    if(e.type==='income')return'收入';
-    if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';
-    return'支出';
-  };
+  const typeLabel=e=>{if(e.type==='income')return'收入';if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';return'支出'};
   const rows=[['日期','类型','类别','描述','金额','已还金额','剩余未还']];
   sorted.forEach(e=>{
     const repaid=Number(e.repaid)||0;
@@ -1160,8 +1397,14 @@ function applyModules(){
   for(const k in moduleMap){moduleMap[k].el.classList.remove('module-hidden');moduleMap[k].toggle.checked=true}
   hiddenModules.forEach(id=>{if(moduleMap[id]){moduleMap[id].el.classList.add('module-hidden');moduleMap[id].toggle.checked=false}});
 }
+function applyViewTabs(){
+  document.querySelectorAll('.view-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.view===viewMode);
+  });
+}
 function renderAll(){
   applyModules();
+  applyViewTabs();
   renderEntries();
   renderChart();
   renderGoals();
@@ -1216,6 +1459,7 @@ function init(){
   $('clearAllBtn').addEventListener('click',clearAll);
   $('exportBtn').addEventListener('click',exportCSV);
 
+  // 导入
   $('importBtn').addEventListener('click',()=>{resetImportUI();importHelpModal.classList.add('active')});
   importHelpClose.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
   importCancelBtn.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
@@ -1260,7 +1504,6 @@ function init(){
   saveAmountModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');activeGoalId=null}});
   saveAmountInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmSaveAmount()}});
 
-  // 还款弹窗事件
   repayConfirm.addEventListener('click',confirmRepay);
   repayCancel.addEventListener('click',()=>{repayModal.classList.remove('active');activeRepayId=null});
   repayClose.addEventListener('click',()=>{repayModal.classList.remove('active');activeRepayId=null});
@@ -1271,6 +1514,7 @@ function init(){
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
   settingsModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
 
+  // 图表切换
   document.querySelectorAll('.chart-tab').forEach(tab=>{
     tab.addEventListener('click',function(){
       document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
@@ -1278,6 +1522,33 @@ function init(){
       chartType=this.dataset.type;
       renderChart();
     });
+  });
+
+  // 视图切换
+  document.querySelectorAll('.view-tab').forEach(tab=>{
+    tab.addEventListener('click',function(){
+      viewMode=this.dataset.view;
+      saveLocal();
+      applyViewTabs();
+      renderEntries();
+      pushCloud();
+    });
+  });
+
+  // 展开/收起全部
+  $('expandAllBtn').addEventListener('click',()=>{
+    tbody.querySelectorAll('.group-header').forEach(h=>{
+      groupState[h.dataset.key]=true;
+    });
+    saveLocal();renderEntries();pushCloud();
+    toast('⬇️ 已展开全部');
+  });
+  $('collapseAllBtn').addEventListener('click',()=>{
+    tbody.querySelectorAll('.group-header').forEach(h=>{
+      groupState[h.dataset.key]=false;
+    });
+    saveLocal();renderEntries();pushCloud();
+    toast('⬆️ 已收起全部');
   });
 
   for(const k in moduleMap){
