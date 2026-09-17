@@ -67,6 +67,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .stat-label{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin-bottom:.25rem}
 .stat-value{font-size:1.7rem;font-weight:700;color:#0f172a}
 .stat-value .currency{font-size:1rem;font-weight:500;color:#94a3b8;margin-right:2px}
+.stat-hint{font-size:.7rem;color:#94a3b8;margin-top:.2rem}
 .accent-blue .stat-value{color:#2563eb}
 .accent-green .stat-value{color:#16a34a}
 .accent-rose .stat-value{color:#e11d48}
@@ -150,19 +151,24 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .amount.income{color:#16a34a}
 .amount.expense{color:#dc2626}
 .amount.debt{color:#d97706}
+.amount.paid-off{text-decoration:line-through;opacity:.6}
 .type-badge{display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.7rem;font-weight:600}
 .type-badge.income{background:#dcfce7;color:#16a34a}
 .type-badge.expense{background:#fef2f2;color:#dc2626}
 .type-badge.debt-lent{background:#fef3c7;color:#d97706}
 .type-badge.debt-borrowed{background:#ede9fe;color:#7c3aed}
 .category-badge{display:inline-block;padding:.2rem .7rem;border-radius:30px;font-size:.75rem;font-weight:500;background:#eef2ff;color:#4338ca}
+.desc-sub{font-size:.72rem;color:#64748b;margin-top:.15rem;line-height:1.4}
+.desc-sub .paid-off-tag{color:#16a34a;font-weight:600}
+.desc-sub .progress-text{color:#d97706;font-weight:600}
 .delete-btn{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:1.1rem;padding:.2rem .4rem;border-radius:8px}
 .delete-btn:hover{color:#ef4444;background:#fef2f2}
+.repay-btn{background:#fef3c7;border:none;color:#d97706;cursor:pointer;font-size:.9rem;padding:.25rem .5rem;border-radius:8px;font-weight:600;margin-right:.2rem;transition:all .15s}
+.repay-btn:hover{background:#fde68a;transform:scale(1.05)}
 .empty-state{text-align:center;padding:3rem 1rem;color:#94a3b8}
 .empty-state .icon{font-size:3rem;margin-bottom:.5rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0f172a;color:#f8fafc;padding:.7rem 1.8rem;border-radius:60px;font-size:.9rem;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;max-width:90%;text-align:center}
 .toast.show{opacity:1}
-/* 导入相关 */
 .help-text{font-size:.8rem;color:#64748b;line-height:1.7;margin-bottom:1rem;padding:.8rem;background:#f8fafc;border-radius:10px;border-left:3px solid #2563eb}
 .help-text code{background:#e2e8f0;padding:.1rem .4rem;border-radius:4px;font-size:.75rem;color:#334155}
 .help-text ul{margin-left:1rem;margin-top:.3rem}
@@ -234,7 +240,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     <div class="modal-box" style="max-width:520px;">
       <button class="close-btn" id="importHelpClose">✕</button>
       <h2>📤 导入表格数据</h2>
-
       <div class="help-text">
         <strong>支持的格式：</strong>
         <div class="format-tags">
@@ -249,11 +254,9 @@ tr.detail-row.over-budget{background-color:#fef2f2}
           <li>日期：<code>2025-01-15</code> 或 <code>2025/1/15</code></li>
           <li>类型：<code>收入</code> / <code>支出</code> / <code>借出</code> / <code>借入</code></li>
           <li>金额：数字，如 <code>58.50</code></li>
-          <li>首行可以是表头，也可以直接是数据</li>
         </ul>
         <strong>智能特性：</strong>自动跳过重复记录（按日期+类型+类别+描述+金额判断）
       </div>
-
       <div class="file-drop" id="fileDrop">
         <div class="icon">📁</div>
         <div class="text">点击选择文件 或 拖拽到此处</div>
@@ -261,9 +264,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <div class="hint">支持 .xlsx / .xls / .csv / .txt</div>
       </div>
       <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" style="display:none;" />
-
       <div class="import-preview" id="importPreview" style="display:none;"></div>
-
       <div style="display:flex;gap:.5rem;margin-top:1rem;">
         <button class="btn btn-primary" id="importConfirmBtn" style="flex:1;justify-content:center;">开始导入</button>
         <button class="btn btn-outline" id="importCancelBtn" style="flex:1;justify-content:center;">取消</button>
@@ -286,13 +287,36 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
+  <!-- 还款弹窗 -->
+  <div class="modal-overlay" id="repayModal">
+    <div class="modal-box" style="max-width:380px;">
+      <button class="close-btn" id="repayClose">✕</button>
+      <h2 id="repayTitle">💵 还款</h2>
+      <div id="repayInfo" style="color:#475569;font-size:.9rem;line-height:1.7;margin-bottom:1rem;padding:.8rem;background:#f8fafc;border-radius:10px;"></div>
+      <div class="form-group"><label for="repayInput">本次还款金额(¥)</label><input type="number" id="repayInput" placeholder="0.00" step="0.01" min="0.01" /></div>
+      <p style="font-size:.8rem;color:#94a3b8;margin-top:.5rem;">💡 最多可还至剩余未还金额</p>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary" id="repayConfirm" style="flex:1;justify-content:center;">确认还款</button>
+        <button class="btn btn-outline" id="repayCancel" style="flex:1;justify-content:center;">取消</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 统计卡片 -->
   <section class="stats" id="statsContainer">
     <div class="stat-card accent-green"><div class="stat-label">总收入</div><div class="stat-value"><span class="currency">¥</span><span id="totalIncome">0.00</span></div></div>
     <div class="stat-card accent-rose"><div class="stat-label">总支出</div><div class="stat-value"><span class="currency">¥</span><span id="totalExpense">0.00</span></div></div>
     <div class="stat-card accent-blue"><div class="stat-label">净余额</div><div class="stat-value"><span class="currency">¥</span><span id="netBalance">0.00</span></div></div>
-    <div class="stat-card accent-amber"><div class="stat-label">应收（别人欠我）</div><div class="stat-value"><span class="currency">¥</span><span id="totalLent">0.00</span></div></div>
-    <div class="stat-card accent-purple"><div class="stat-label">应付（我欠别人）</div><div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div></div>
+    <div class="stat-card accent-amber">
+      <div class="stat-label">应收（别人欠我）</div>
+      <div class="stat-value"><span class="currency">¥</span><span id="totalLent">0.00</span></div>
+      <div class="stat-hint" id="totalLentHint"></div>
+    </div>
+    <div class="stat-card accent-purple">
+      <div class="stat-label">应付（我欠别人）</div>
+      <div class="stat-value"><span class="currency">¥</span><span id="totalBorrowed">0.00</span></div>
+      <div class="stat-hint" id="totalBorrowedHint"></div>
+    </div>
   </section>
 
   <!-- 分类扇形图 -->
@@ -424,6 +448,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
 let activeGoalId=null;
+let activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
 
@@ -433,6 +458,7 @@ const userEmailDisplay=$('userEmailDisplay'),logoutBtn=$('logoutBtn'),syncStatus
 const entryForm=$('entryForm'),entryType=$('entryType'),entryDebtType=$('entryDebtType'),debtTypeGroup=$('debtTypeGroup'),entryDate=$('entryDate'),entryCategory=$('entryCategory'),entryDesc=$('entryDesc'),entryAmount=$('entryAmount');
 const tbody=$('entriesBody');
 const totalIncomeEl=$('totalIncome'),totalExpenseEl=$('totalExpense'),netBalanceEl=$('netBalance'),totalLentEl=$('totalLent'),totalBorrowedEl=$('totalBorrowed');
+const totalLentHint=$('totalLentHint'),totalBorrowedHint=$('totalBorrowedHint');
 const budgetDailyInput=$('budgetDailyInput'),budgetWeeklyInput=$('budgetWeeklyInput'),budgetMonthlyInput=$('budgetMonthlyInput');
 const budgetDailyStatus=$('budgetDailyStatus'),budgetWeeklyStatus=$('budgetWeeklyStatus'),budgetMonthlyStatus=$('budgetMonthlyStatus');
 const tplNameInput=$('tplName'),tplAmountInput=$('tplAmount'),tplCategorySelect=$('tplCategory'),addTemplateBtn=$('addTemplateBtn'),templateListEl=$('templateList'),applyTemplatesBtn=$('applyTemplatesBtn');
@@ -441,6 +467,7 @@ const settingsModal=$('settingsModal'),settingsToggleBtn=$('settingsToggleBtn'),
 const toggleStats=$('toggleStats'),toggleChart=$('toggleChart'),toggleBudget=$('toggleBudget'),toggleSavings=$('toggleSavings'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
 const statsContainer=$('statsContainer'),chartSection=$('chartSection'),budgetSection=$('budgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
 const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),saveAmountGoalName=$('saveAmountGoalName'),saveAmountInput=$('saveAmountInput'),saveAmountConfirm=$('saveAmountConfirm'),saveAmountCancel=$('saveAmountCancel'),saveAmountClose=$('saveAmountClose');
+const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
 const toastEl=$('toast');
@@ -476,7 +503,14 @@ function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearT
 function setSync(st,msg){syncStatusEl.className='sync-status '+st;syncStatusEl.textContent=msg}
 
 function migrate(){
-  entries.forEach(e=>{if(!e.type)e.type='expense';if(e.type==='debt'&&!e.debtType)e.debtType='lent'});
+  entries.forEach(e=>{
+    if(!e.type)e.type='expense';
+    if(e.type==='debt'){
+      if(!e.debtType)e.debtType='lent';
+      // 旧数据没有 repaid 字段 → 初始化为 0
+      if(typeof e.repaid!=='number')e.repaid=0;
+    }
+  });
   if(!Array.isArray(savingsGoals))savingsGoals=[];
 }
 
@@ -536,8 +570,11 @@ async function pullCloud(){
   }
 }
 
+// ===== 自动计算（应收/应付按未还余额统计） =====
 function calc(){
-  let totalIncome=0,totalExpense=0,totalLent=0,totalBorrowed=0;
+  let totalIncome=0,totalExpense=0;
+  let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
+  let totalBorrowedOriginal=0,totalBorrowedRepaid=0,totalBorrowedRemaining=0;
   const daily={},dailyExpense={};
   for(const e of entries){
     const amt=Number(e.amount)||0;
@@ -547,59 +584,56 @@ function calc(){
     if(type==='income'){totalIncome+=amt;daily[d].income+=amt}
     else if(type==='expense'){totalExpense+=amt;daily[d].expense+=amt;dailyExpense[d]=(dailyExpense[d]||0)+amt}
     else if(type==='debt'){
-      if(e.debtType==='lent'){totalLent+=amt;daily[d].lent+=amt}
-      else{totalBorrowed+=amt;daily[d].borrowed+=amt}
+      const repaid=Number(e.repaid)||0;
+      const remaining=Math.max(0,amt-repaid);
+      if(e.debtType==='lent'){
+        totalLentOriginal+=amt;
+        totalLentRepaid+=repaid;
+        totalLentRemaining+=remaining;
+        daily[d].lent+=amt;
+      }else{
+        totalBorrowedOriginal+=amt;
+        totalBorrowedRepaid+=repaid;
+        totalBorrowedRemaining+=remaining;
+        daily[d].borrowed+=amt;
+      }
     }
   }
-  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent,totalBorrowed,daily,dailyExpense};
+  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,
+    totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,
+    totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,
+    daily,dailyExpense};
 }
 
-// ============================================================
-// 表格导入核心（支持 xlsx / xls / csv / txt）
-// ============================================================
-
-// 日期归一化：支持 2025-01-15、2025/1/15、2025.1.15、Date对象等
+// ===== 表格导入核心 =====
 function normalizeDate(val){
   if(!val)return null;
-  // 已经是日期字符串
   if(typeof val==='string'){
     const s=val.trim();
-    // 2025-01-15 或 2025/1/15 或 2025.1.15
     const m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
     if(m)return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
-    // 纯数字日期时间戳
     const n=parseFloat(s);
     if(!isNaN(n)&&n>10000&&n<100000){
-      // Excel 序列日期（从1900-01-01起算）
       const dt=new Date((n-25569)*86400*1000);
       return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
     }
-    // 尝试 Date 解析
     const d=new Date(s);
     if(!isNaN(d.getTime()))return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   }
   if(val instanceof Date&&!isNaN(val.getTime())){
     return `${val.getFullYear()}-${pad(val.getMonth()+1)}-${pad(val.getDate())}`;
   }
-  if(typeof val==='number'){
-    // Excel 序列日期
-    if(val>10000&&val<100000){
-      const dt=new Date((val-25569)*86400*1000);
-      return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
-    }
+  if(typeof val==='number'&&val>10000&&val<100000){
+    const dt=new Date((val-25569)*86400*1000);
+    return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
   }
   return null;
 }
-
-// 金额解析
 function normalizeAmount(val){
   if(val===null||val===undefined)return NaN;
   if(typeof val==='number')return val;
-  const s=String(val).replace(/[¥￥,\s]/g,'').trim();
-  return parseFloat(s);
+  return parseFloat(String(val).replace(/[¥￥,\s]/g,'').trim());
 }
-
-// 类型归一化
 function normalizeType(val){
   if(!val)return {type:'expense',debtType:null};
   const s=String(val).trim().toLowerCase();
@@ -609,66 +643,44 @@ function normalizeType(val){
   if(s==='借入'||s==='borrowed')return {type:'debt',debtType:'borrowed'};
   return null;
 }
-
-// 解析二维数组（来自CSV或Excel）为记录
 function parseRows(rows){
   if(!rows||rows.length===0)return {records:[],errors:['文件为空']};
-  // 跳过完全空行
   rows=rows.filter(r=>r&&r.some(c=>c!==null&&c!==undefined&&String(c).trim()!==''));
   if(rows.length===0)return {records:[],errors:['文件为空']};
-
-  // 判断是否有表头（首行第一列含“日期”或“date”）
   const first=rows[0];
   const firstStr=String(first[0]||'').toLowerCase();
   const hasHeader=firstStr.includes('日期')||firstStr.includes('date')||firstStr.includes('时间');
   const dataRows=hasHeader?rows.slice(1):rows;
-
   const records=[];const errors=[];
   dataRows.forEach((row,idx)=>{
     const rowNum=hasHeader?idx+2:idx+1;
-    // 列：日期, 类型, 类别, 描述, 金额
     if(!row||row.length<5){
-      // 尝试更少列的情况：日期, 类型, 金额
       if(row&&row.length>=3){
-        // 尝试判断
         const dateVal=normalizeDate(row[0]);
         const amountVal=normalizeAmount(row[row.length-1]);
         const typeVal=normalizeType(row[1]);
         if(dateVal&&typeVal&&!isNaN(amountVal)&&amountVal>0){
           const rec={id:uid(),date:dateVal,type:typeVal.type,category:'其他',description:'',amount:Math.round(amountVal*100)/100};
-          if(typeVal.debtType)rec.debtType=typeVal.debtType;
-          records.push(rec);
-          return;
+          if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0}
+          records.push(rec);return;
         }
       }
-      errors.push(`第${rowNum}行列数不足`);
-      return;
+      errors.push(`第${rowNum}行列数不足`);return;
     }
     const dateVal=normalizeDate(row[0]);
     const typeVal=normalizeType(row[1]);
     const catStr=String(row[2]||'').trim()||'其他';
     const descStr=String(row[3]||'').trim();
     const amountVal=normalizeAmount(row[4]);
-
     if(!dateVal){errors.push(`第${rowNum}行日期无效`);return}
     if(!typeVal){errors.push(`第${rowNum}行类型无法识别：${row[1]}`);return}
     if(isNaN(amountVal)||amountVal<=0){errors.push(`第${rowNum}行金额无效：${row[4]}`);return}
-
-    const rec={
-      id:uid(),
-      date:dateVal,
-      type:typeVal.type,
-      category:catStr,
-      description:descStr,
-      amount:Math.round(amountVal*100)/100
-    };
-    if(typeVal.debtType)rec.debtType=typeVal.debtType;
+    const rec={id:uid(),date:dateVal,type:typeVal.type,category:catStr,description:descStr,amount:Math.round(amountVal*100)/100};
+    if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0}
     records.push(rec);
   });
   return {records,errors};
 }
-
-// 解析CSV文本为二维数组
 function parseCSVText(text){
   text=text.replace(/^\uFEFF/,'');
   const lines=text.split(/\r?\n/).filter(l=>l.trim()!=='');
@@ -677,71 +689,47 @@ function parseCSVText(text){
     const cols=[];let cur='';let inQ=false;
     for(let i=0;i<line.length;i++){
       const ch=line[i];
-      if(ch==='"'){
-        if(inQ&&line[i+1]==='"'){cur+='"';i++}
-        else inQ=!inQ;
-      }else if((ch===','||ch==='\t'||ch===';')&&!inQ){cols.push(cur);cur=''}
+      if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else inQ=!inQ}
+      else if((ch===','||ch==='\t'||ch===';')&&!inQ){cols.push(cur);cur=''}
       else cur+=ch;
     }
-    cols.push(cur);
-    rows.push(cols);
+    cols.push(cur);rows.push(cols);
   });
   return rows;
 }
-
-// 判断文件类型
 function getFileType(file){
   const name=(file.name||'').toLowerCase();
   if(name.endsWith('.xlsx'))return 'xlsx';
   if(name.endsWith('.xls'))return 'xls';
   if(name.endsWith('.csv'))return 'csv';
   if(name.endsWith('.txt'))return 'txt';
-  // 根据MIME判断
   if(file.type.includes('sheet')||file.type.includes('excel'))return 'xlsx';
   if(file.type.includes('csv'))return 'csv';
   return 'unknown';
 }
-
-// 统一的文件解析入口
 function parseFile(file){
   return new Promise((resolve,reject)=>{
     const type=getFileType(file);
-    if(type==='unknown'){
-      reject(new Error('不支持的文件格式'));
-      return;
-    }
+    if(type==='unknown'){reject(new Error('不支持的文件格式'));return}
     const reader=new FileReader();
     reader.onerror=()=>reject(new Error('文件读取失败'));
     reader.onload=e=>{
       try{
         let rows=[];
         if(type==='xlsx'||type==='xls'){
-          // 使用 SheetJS 解析
           const data=new Uint8Array(e.target.result);
           const workbook=XLSX.read(data,{type:'array',cellDates:true});
           const sheetName=workbook.SheetNames[0];
           const sheet=workbook.Sheets[sheetName];
-          // 转为二维数组（header:1 表示第一行为数据行数组）
           rows=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false,defval:''});
-        }else{
-          // CSV/TXT 文本解析
-          rows=parseCSVText(e.target.result);
-        }
-        const result=parseRows(rows);
-        resolve(result);
-      }catch(err){
-        reject(err);
-      }
+        }else{rows=parseCSVText(e.target.result)}
+        resolve(parseRows(rows));
+      }catch(err){reject(err)}
     };
-    if(type==='xlsx'||type==='xls'){
-      reader.readAsArrayBuffer(file);
-    }else{
-      reader.readAsText(file,'UTF-8');
-    }
+    if(type==='xlsx'||type==='xls')reader.readAsArrayBuffer(file);
+    else reader.readAsText(file,'UTF-8');
   });
 }
-
-// 重复检测
 function isDuplicate(rec,pool){
   return pool.some(e=>
     e.date===rec.date&&
@@ -752,14 +740,8 @@ function isDuplicate(rec,pool){
     Math.abs(Number(e.amount)-Number(rec.amount))<0.001
   );
 }
-
-// 执行导入
 function performImport(records,errors){
-  if(records.length===0){
-    toast('⚠️ 未解析到有效记录，请检查文件格式');
-    if(errors.length>0)console.warn('导入错误:',errors);
-    return;
-  }
+  if(records.length===0){toast('⚠️ 未解析到有效记录，请检查文件格式');if(errors.length>0)console.warn('导入错误:',errors);return}
   let added=0,skipped=0;
   records.forEach(rec=>{
     if(isDuplicate(rec,entries)){skipped++}
@@ -771,8 +753,6 @@ function performImport(records,errors){
   toast(msg);
   if(errors.length>0)console.warn('部分行解析失败:',errors);
 }
-
-// 文件选择后预览
 let pendingFile=null;
 function handleFileSelected(file){
   if(!file)return;
@@ -780,7 +760,6 @@ function handleFileSelected(file){
   fileName.textContent=`✅ ${file.name}`;
   fileName.style.display='block';
   fileDrop.classList.add('has-file');
-  // 预览解析结果
   parseFile(file).then(result=>{
     const total=result.records.length;
     const errors=result.errors;
@@ -790,7 +769,6 @@ function handleFileSelected(file){
     }else{
       let html=`<strong>📊 解析成功：${total} 条记录</strong>`;
       if(errors.length>0)html+=`<br/><span class="err">${errors.length} 行格式问题（将被跳过）</span>`;
-      // 显示前3条预览
       html+='<br/><span style="color:#94a3b8;">预览前3条：</span>';
       result.records.slice(0,3).forEach(r=>{
         const typeLabel=r.type==='income'?'收入':r.type==='debt'?(r.debtType==='lent'?'借出':'借入'):'支出';
@@ -803,15 +781,11 @@ function handleFileSelected(file){
     importPreview.innerHTML=`<span class="err">❌ 解析失败：${err.message}</span>`;
   });
 }
-
 function resetImportUI(){
-  pendingFile=null;
-  fileInput.value='';
-  fileName.style.display='none';
-  fileName.textContent='';
+  pendingFile=null;fileInput.value='';
+  fileName.style.display='none';fileName.textContent='';
   fileDrop.classList.remove('has-file');
-  importPreview.style.display='none';
-  importPreview.innerHTML='';
+  importPreview.style.display='none';importPreview.innerHTML='';
 }
 
 // ===== 图表 =====
@@ -849,6 +823,7 @@ function renderChart(){
   legendEl.innerHTML=legendHtml;
 }
 
+// ===== 表格渲染（含还款按钮） =====
 function renderEntries(){
   const c=calc();
   totalIncomeEl.textContent=fmtMoney(c.totalIncome);
@@ -856,6 +831,14 @@ function renderEntries(){
   netBalanceEl.textContent=fmtMoney(c.netBalance);
   totalLentEl.textContent=fmtMoney(c.totalLent);
   totalBorrowedEl.textContent=fmtMoney(c.totalBorrowed);
+  // 应收/应付提示
+  if(c.totalLentOriginal>0){
+    totalLentHint.textContent=`原始 ¥${fmtMoney(c.totalLentOriginal)} · 已收 ¥${fmtMoney(c.totalLentRepaid)}`;
+  }else{totalLentHint.textContent=''}
+  if(c.totalBorrowedOriginal>0){
+    totalBorrowedHint.textContent=`原始 ¥${fmtMoney(c.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(c.totalBorrowedRepaid)}`;
+  }else{totalBorrowedHint.textContent=''}
+
   updateBudgetStatus(c);
   if(entries.length===0){
     tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
@@ -890,14 +873,37 @@ function renderEntries(){
       if(type==='income')typeBadge='<span class="type-badge income">收入</span>';
       else if(type==='expense')typeBadge='<span class="type-badge expense">支出</span>';
       else if(type==='debt')typeBadge=e.debtType==='lent'?'<span class="type-badge debt-lent">借出</span>':'<span class="type-badge debt-borrowed">借入</span>';
-      const amtCls=type==='income'?'income':type==='expense'?'expense':'debt';
-      const sign=type==='income'?'+':type==='expense'?'-':'';
+
+      let descSubHtml='';
+      let actionHtml='';
+      let amtExtraHtml='';
+      let amtCls=type==='income'?'income':type==='expense'?'expense':'debt';
+      let sign=type==='income'?'+':type==='expense'?'-':'';
+
+      if(type==='debt'){
+        const repaid=Number(e.repaid)||0;
+        const remaining=Math.max(0,Number(e.amount)-repaid);
+        const isPaidOff=remaining<=0.001;
+        if(repaid>0){
+          descSubHtml=isPaidOff
+            ?`<div class="desc-sub"><span class="paid-off-tag">✅ 已还清</span>（已还 ¥${fmtMoney(repaid)}）</div>`
+            :`<div class="desc-sub">已还 ¥${fmtMoney(repaid)} · <span class="progress-text">未还 ¥${fmtMoney(remaining)}</span></div>`;
+          if(!isPaidOff)amtExtraHtml=`<div style="font-size:.72rem;color:#dc2626;margin-top:.1rem;">未还 ¥${fmtMoney(remaining)}</div>`;
+          if(isPaidOff)amtCls+=' paid-off';
+        }else{
+          descSubHtml=`<div class="desc-sub" style="color:#94a3b8;">未还 ¥${fmtMoney(remaining)}</div>`;
+        }
+        if(!isPaidOff){
+          actionHtml=`<button class="repay-btn" data-id="${e.id}" title="${e.debtType==='lent'?'收回款项':'归还欠款'}">💰</button>`;
+        }
+      }
+
       html+=`<tr class="detail-row ${dcls}" data-date="${date}">
-        <td>${esc(e.description||'-')}</td>
+        <td>${esc(e.description||'-')}${descSubHtml}</td>
         <td>${typeBadge}</td>
         <td><span class="category-badge ${catClass(e.category)}">${esc(e.category||'其他')}</span></td>
-        <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${fmtMoney(e.amount)}</span></td>
-        <td style="text-align:center;"><button class="delete-btn" data-id="${e.id}">✕</button></td>
+        <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${fmtMoney(e.amount)}</span>${amtExtraHtml}</td>
+        <td style="text-align:center;">${actionHtml}<button class="delete-btn" data-id="${e.id}">✕</button></td>
       </tr>`;
     }
   }
@@ -920,6 +926,11 @@ function renderEntries(){
       e.stopPropagation();delEntry(Number(this.dataset.id));
     });
   });
+  tbody.querySelectorAll('.repay-btn').forEach(b=>{
+    b.addEventListener('click',function(e){
+      e.stopPropagation();openRepayModal(Number(this.dataset.id));
+    });
+  });
 }
 
 function updateBudgetStatus(c){
@@ -938,6 +949,53 @@ function setBudgetLine(el,limit,used){
   el.innerHTML=`<span class="remaining ${cls}">${txt}</span> <span class="limit-info">（上限 ¥${fmtMoney(limit)}）</span>`;
 }
 
+// ===== 还款逻辑 =====
+function openRepayModal(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e||e.type!=='debt')return;
+  const amt=Number(e.amount)||0;
+  const repaid=Number(e.repaid)||0;
+  const remaining=Math.max(0,amt-repaid);
+  if(remaining<=0.001){toast('✅ 该欠款已还清');return}
+  activeRepayId=id;
+  const dirLabel=e.debtType==='lent'?'借出（别人欠我）':'借入（我欠别人）';
+  repayTitle.textContent=e.debtType==='lent'?'💰 收回款项':'💸 归还欠款';
+  repayInfo.innerHTML=`
+    <strong>${esc(e.description||'无描述')}</strong><br/>
+    方向：${dirLabel}<br/>
+    原始金额：¥${fmtMoney(amt)}<br/>
+    已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/>
+    <span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span>
+  `;
+  repayInput.value='';
+  repayInput.placeholder=`最多 ${fmtMoney(remaining)}`;
+  repayModal.classList.add('active');
+  setTimeout(()=>repayInput.focus(),100);
+}
+function confirmRepay(){
+  if(!activeRepayId)return;
+  const e=entries.find(x=>x.id===activeRepayId);
+  if(!e)return;
+  const amt=Number(e.amount)||0;
+  const repaid=Number(e.repaid)||0;
+  const remaining=Math.max(0,amt-repaid);
+  const input=parseFloat(repayInput.value);
+  if(isNaN(input)||input<=0){toast('⚠️ 请输入有效还款金额');return}
+  if(input>remaining+0.001){toast(`⚠️ 还款金额不能超过剩余 ¥${fmtMoney(remaining)}`);return}
+  const rounded=Math.round(input*100)/100;
+  e.repaid=Math.round((repaid+rounded)*100)/100;
+  saveLocal();renderAll();pushCloud();
+  repayModal.classList.remove('active');
+  activeRepayId=null;
+  const newRemaining=Math.max(0,amt-e.repaid);
+  if(newRemaining<=0.001){
+    toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
+  }else{
+    toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}，还剩 ¥${fmtMoney(newRemaining)}`);
+  }
+}
+
+// ===== 攒钱目标 =====
 function renderGoals(){
   if(!Array.isArray(savingsGoals))savingsGoals=[];
   const totalSaved=savingsGoals.reduce((s,g)=>s+(g.saved||0),0);
@@ -997,6 +1055,7 @@ function confirmSaveAmount(){
   else toast(rounded>0?`✅ 已存入 ¥${fmtMoney(rounded)}`:`✅ 已取出 ¥${fmtMoney(Math.abs(rounded))}`);
 }
 
+// ===== 模板 =====
 function renderTemplates(){
   if(templates.length===0){templateListEl.innerHTML='<span style="color:#94a3b8;font-size:.9rem;">暂无固定模板，请添加</span>';return}
   let html='';
@@ -1025,6 +1084,7 @@ function applyTemplates(){
   saveLocal();renderAll();pushCloud();toast(`✅ 已添加今日 ${n} 笔固定消费`);
 }
 
+// ===== 记录 CRUD =====
 function addEntry(){
   const type=entryType.value;const date=entryDate.value;const cat=entryCategory.value;
   const desc=entryDesc.value.trim();const amt=parseFloat(entryAmount.value);
@@ -1032,7 +1092,7 @@ function addEntry(){
   if(!amt||isNaN(amt)||amt<=0){toast('⚠️ 请输入有效金额');return}
   if(date>today()){toast('⚠️ 日期不能是未来');return}
   const rec={id:uid(),date,type,category:cat,description:desc,amount:Math.round(amt*100)/100};
-  if(type==='debt')rec.debtType=entryDebtType.value;
+  if(type==='debt'){rec.debtType=entryDebtType.value;rec.repaid=0}
   entries.push(rec);
   saveLocal();renderAll();pushCloud();toast('✅ 记录已添加');
   entryDesc.value='';entryAmount.value='';entryDate.value=today();entryDesc.focus();
@@ -1062,9 +1122,17 @@ function setBudget(period){
 function exportCSV(){
   if(entries.length===0){toast('📭 没有记录');return}
   const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
-  const typeLabel=e=>{if(e.type==='income')return'收入';if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';return'支出'};
-  const rows=[['日期','类型','类别','描述','金额']];
-  sorted.forEach(e=>rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2)]));
+  const typeLabel=e=>{
+    if(e.type==='income')return'收入';
+    if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';
+    return'支出';
+  };
+  const rows=[['日期','类型','类别','描述','金额','已还金额','剩余未还']];
+  sorted.forEach(e=>{
+    const repaid=Number(e.repaid)||0;
+    const remaining=e.type==='debt'?Math.max(0,Number(e.amount)-repaid):'';
+    rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2),repaid?repaid.toFixed(2):'',remaining!==''?remaining.toFixed(2):'']);
+  });
   const csv=rows.map(r=>r.join(',')).join('\n');
   try{
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1148,44 +1216,28 @@ function init(){
   $('clearAllBtn').addEventListener('click',clearAll);
   $('exportBtn').addEventListener('click',exportCSV);
 
-  // ===== 导入相关 =====
-  $('importBtn').addEventListener('click',()=>{
-    resetImportUI();
-    importHelpModal.classList.add('active');
-  });
+  $('importBtn').addEventListener('click',()=>{resetImportUI();importHelpModal.classList.add('active')});
   importHelpClose.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
   importCancelBtn.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
   importHelpModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');resetImportUI()}});
-
-  // 点击拖拽区域
   fileDrop.addEventListener('click',()=>fileInput.click());
-  // 文件选择
-  fileInput.addEventListener('change',function(){
-    if(this.files&&this.files[0])handleFileSelected(this.files[0]);
-  });
-  // 拖拽支持
+  fileInput.addEventListener('change',function(){if(this.files&&this.files[0])handleFileSelected(this.files[0])});
   fileDrop.addEventListener('dragover',e=>{e.preventDefault();fileDrop.style.borderColor='#2563eb';fileDrop.style.background='#eff6ff'});
   fileDrop.addEventListener('dragleave',e=>{e.preventDefault();fileDrop.style.borderColor='';fileDrop.style.background=''});
   fileDrop.addEventListener('drop',e=>{
     e.preventDefault();fileDrop.style.borderColor='';fileDrop.style.background='';
     if(e.dataTransfer.files&&e.dataTransfer.files[0])handleFileSelected(e.dataTransfer.files[0]);
   });
-
-  // 确认导入
   importConfirmBtn.addEventListener('click',()=>{
     if(!pendingFile){toast('⚠️ 请先选择文件');return}
-    importConfirmBtn.disabled=true;
-    importConfirmBtn.textContent='导入中...';
+    importConfirmBtn.disabled=true;importConfirmBtn.textContent='导入中...';
     parseFile(pendingFile).then(result=>{
       performImport(result.records,result.errors);
-      importHelpModal.classList.remove('active');
-      resetImportUI();
-      importConfirmBtn.disabled=false;
-      importConfirmBtn.textContent='开始导入';
+      importHelpModal.classList.remove('active');resetImportUI();
+      importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入';
     }).catch(err=>{
       toast('⚠️ 导入失败：'+err.message);
-      importConfirmBtn.disabled=false;
-      importConfirmBtn.textContent='开始导入';
+      importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入';
     });
   });
 
@@ -1207,6 +1259,13 @@ function init(){
   saveAmountClose.addEventListener('click',()=>{saveAmountModal.classList.remove('active');activeGoalId=null});
   saveAmountModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');activeGoalId=null}});
   saveAmountInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmSaveAmount()}});
+
+  // 还款弹窗事件
+  repayConfirm.addEventListener('click',confirmRepay);
+  repayCancel.addEventListener('click',()=>{repayModal.classList.remove('active');activeRepayId=null});
+  repayClose.addEventListener('click',()=>{repayModal.classList.remove('active');activeRepayId=null});
+  repayModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');activeRepayId=null}});
+  repayInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmRepay()}});
 
   settingsToggleBtn.addEventListener('click',()=>settingsModal.classList.add('active'));
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
