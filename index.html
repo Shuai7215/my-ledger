@@ -78,7 +78,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .accent-rose .stat-value{color:#e11d48}
 .accent-amber .stat-value{color:#d97706}
 .accent-purple .stat-value{color:#7c3aed}
-/* 可点击的应收/应付卡片 */
 .stat-card.clickable{cursor:pointer;position:relative;overflow:hidden}
 .stat-card.clickable::after{content:"💵";position:absolute;right:.7rem;bottom:.6rem;font-size:1.1rem;opacity:.35;transition:all .2s}
 .stat-card.clickable:hover::after{opacity:1;transform:scale(1.15)}
@@ -87,7 +86,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .stat-card.clickable .repay-tip{font-size:.68rem;color:#0ea5e9;margin-top:.35rem;font-weight:500;display:inline-flex;align-items:center;gap:.2rem}
 .stat-card.clickable.has-debt .repay-tip{color:#d97706}
 .stat-card.clickable.accent-purple.has-debt .repay-tip{color:#7c3aed}
-.budget-section,.template-section,.form-section,.savings-section,.chart-section{background:#fff;border-radius:20px;padding:1.5rem 1.8rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
+.budget-section,.template-section,.form-section,.savings-section,.chart-section,.category-budget-section{background:#fff;border-radius:20px;padding:1.5rem 1.8rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
 .budget-section-title,.template-header h3,.chart-header h3{font-weight:600;font-size:1rem;color:#0f172a;margin-bottom:.8rem}
 .budget-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:.5rem 0;border-bottom:1px solid #f1f4f8}
 .budget-row:last-child{border-bottom:none}
@@ -113,6 +112,34 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-amount{font-weight:600;color:#2563eb}
 .tpl-del{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:0 .2rem}
 .tpl-del:hover{color:#ef4444}
+/* 类目可支配 */
+.cat-budget-summary{padding:1rem 1.2rem;background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-radius:14px;margin-bottom:.8rem;border:1px solid #c7d2fe}
+.cat-budget-summary.over{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fecaca}
+.cat-budget-summary .row{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:.35rem;flex-wrap:wrap;gap:.3rem}
+.cat-budget-summary .row:last-child{margin-bottom:0}
+.cat-budget-summary .label{color:#475569;font-weight:500;font-size:.85rem}
+.cat-budget-summary .value{font-weight:700;color:#1e293b}
+.cat-budget-summary.over .value{color:#dc2626}
+.cat-budget-summary .title{font-weight:600;font-size:.9rem;color:#3730a3;margin-bottom:.5rem}
+.cat-budget-summary.over .title{color:#b91c1c}
+.cat-budget-item{padding:.8rem 1rem;border-radius:12px;background:#f8fafc;border:1px solid #f1f4f8;margin-bottom:.6rem;transition:border-color .2s}
+.cat-budget-item:last-child{margin-bottom:0}
+.cat-budget-item.over{border-color:#fecaca;background:#fef2f2}
+.cat-budget-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem}
+.cat-budget-name{font-weight:600;font-size:.92rem;color:#0f172a;display:flex;align-items:center;gap:.35rem}
+.cat-budget-amounts{font-size:.83rem;color:#475569;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.cat-budget-amounts .used{font-weight:700;color:#0f172a}
+.cat-budget-amounts .limit{color:#64748b}
+.cat-budget-amounts .remain{font-weight:700;color:#16a34a;font-size:.85rem}
+.cat-budget-amounts .remain.over{color:#dc2626}
+.cat-budget-progress{height:8px;background:#e2e8f0;border-radius:20px;overflow:hidden}
+.cat-budget-progress .fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:20px;transition:width .4s ease}
+.cat-budget-progress .fill.over{background:linear-gradient(90deg,#ef4444,#dc2626)}
+.cat-budget-input-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+.cat-budget-input-row label{flex:0 0 75px;font-size:.85rem;color:#334155;font-weight:500}
+.cat-budget-input-row input{flex:1;padding:.4rem .7rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;background:#fafbfc;font-family:inherit;color:#0f172a}
+.cat-budget-input-row input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);background:#fff}
+.cat-budget-section-title{font-weight:600;font-size:.85rem;color:#475569;margin-bottom:.6rem;padding-top:.8rem;border-top:1px solid #f1f4f8}
 .chart-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.6rem}
 .chart-tabs{display:flex;gap:.4rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
 .chart-tab{padding:.35rem 1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
@@ -222,8 +249,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .import-preview{margin-top:.8rem;padding:.7rem;background:#f8fafc;border-radius:10px;font-size:.85rem;color:#475569;max-height:120px;overflow-y:auto}
 .import-preview strong{color:#16a34a}
 .import-preview .err{color:#dc2626}
-
-/* 欠款列表弹窗 */
 .debt-list{display:flex;flex-direction:column;gap:.6rem;max-height:50vh;overflow-y:auto;padding-right:.3rem}
 .debt-item{background:#f8fafc;border-radius:14px;padding:.9rem 1rem;border:1px solid #f1f4f8;transition:all .15s;display:flex;flex-direction:column;gap:.5rem}
 .debt-item:hover{background:#f1f5f9;border-color:#e2e8f0}
@@ -242,14 +267,12 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .debt-summary .label{font-size:.8rem;font-weight:600;color:#78350f}
 .debt-summary.purple .label{color:#5b21b6}
 .debt-summary .amount{font-size:1.1rem;font-weight:700;color:#dc2626}
-
-@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}}
+@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section,.category-budget-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}}
 </style>
 </head>
 <body>
 <div class="app" id="app">
 
-<!-- 登录/注册 -->
 <div id="authArea" class="auth-container">
   <h2>📒 记账本</h2>
   <form id="authForm">
@@ -261,7 +284,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
   <div class="auth-switch"><span id="authToggleText">还没有账号？</span><a id="authToggleLink">注册</a></div>
 </div>
 
-<!-- 主应用 -->
 <div id="mainApp" style="display:none;">
   <header class="header">
     <div class="header-left">
@@ -277,7 +299,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </header>
 
-  <!-- 模块管理弹窗 -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <button class="close-btn" id="settingsCloseBtn">✕</button>
@@ -286,6 +307,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <div class="toggle-item"><span class="label">📊 统计卡片</span><label class="switch"><input type="checkbox" id="toggleStats" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">📈 分类图表</span><label class="switch"><input type="checkbox" id="toggleChart" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">🎯 预算设置</span><label class="switch"><input type="checkbox" id="toggleBudget" checked /><span class="slider"></span></label></div>
+      <div class="toggle-item"><span class="label">🎨 类目可支配</span><label class="switch"><input type="checkbox" id="toggleCatBudget" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">💰 攒钱目标</span><label class="switch"><input type="checkbox" id="toggleSavings" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">📋 固定模板</span><label class="switch"><input type="checkbox" id="toggleTemplate" checked /><span class="slider"></span></label></div>
       <div class="toggle-item"><span class="label">✏️ 添加记录</span><label class="switch"><input type="checkbox" id="toggleForm" checked /><span class="slider"></span></label></div>
@@ -293,7 +315,24 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 导入弹窗 -->
+  <div class="modal-overlay" id="catBudgetModal">
+    <div class="modal-box" style="max-width:480px;">
+      <button class="close-btn" id="catBudgetClose">✕</button>
+      <h2>🎨 类目可支配金额</h2>
+      <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">为每个支出类别设置可支配上限，留空表示不限。</p>
+      <div class="form-group" style="margin-bottom:.4rem;">
+        <label style="font-weight:600;color:#7c3aed;text-transform:none;font-size:.85rem;">💰 自由支配费用（全部支出总额上限）</label>
+        <input type="number" id="freeBudgetInput" placeholder="如：1000（留空不限）" min="0" step="0.01" />
+      </div>
+      <div class="cat-budget-section-title">各类别可支配金额</div>
+      <div id="catBudgetInputs"></div>
+      <div style="display:flex;gap:.5rem;margin-top:1.2rem;">
+        <button class="btn btn-primary" id="catBudgetSave" style="flex:1;justify-content:center;">保存</button>
+        <button class="btn btn-outline" id="catBudgetCancel" style="flex:1;justify-content:center;">取消</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="importHelpModal">
     <div class="modal-box" style="max-width:520px;">
       <button class="close-btn" id="importHelpClose">✕</button>
@@ -301,8 +340,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <div class="help-text">
         <strong>支持的格式：</strong>
         <div class="format-tags"><span class="format-tag">.xlsx</span><span class="format-tag">.xls</span><span class="format-tag">.csv</span><span class="format-tag">.txt</span></div>
-        <strong>列顺序要求：</strong><br/>
-        <code>日期, 类型, 类别, 描述, 金额</code>
+        <strong>列顺序：</strong><code>日期, 类型, 类别, 描述, 金额</code>
         <ul>
           <li>日期：<code>2025-01-15</code> 或 <code>2025/1/15</code></li>
           <li>类型：<code>收入</code> / <code>支出</code> / <code>借出</code> / <code>借入</code></li>
@@ -325,7 +363,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 欠款列表弹窗（新增） -->
   <div class="modal-overlay" id="debtListModal">
     <div class="modal-box" style="max-width:480px;">
       <button class="close-btn" id="debtListClose">✕</button>
@@ -338,7 +375,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 攒钱弹窗 -->
   <div class="modal-overlay" id="saveAmountModal">
     <div class="modal-box" style="max-width:340px;">
       <button class="close-btn" id="saveAmountClose">✕</button>
@@ -353,7 +389,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 还款金额弹窗 -->
   <div class="modal-overlay" id="repayModal">
     <div class="modal-box" style="max-width:380px;">
       <button class="close-btn" id="repayClose">✕</button>
@@ -368,7 +403,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 统计卡片（含时间筛选，应收/应付可点击） -->
   <section class="stats-wrapper" id="statsContainer">
     <div class="stats-filters">
       <div class="filter-tabs">
@@ -403,7 +437,14 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </section>
 
-  <!-- 分类扇形图（含时间筛选） -->
+  <section class="category-budget-section" id="categoryBudgetSection">
+    <div class="template-header">
+      <h3>🎨 类目可支配金额</h3>
+      <button class="btn btn-primary btn-sm" id="editCatBudgetBtn">⚙️ 设置</button>
+    </div>
+    <div id="catBudgetList"></div>
+  </section>
+
   <section class="chart-section" id="chartSection">
     <div class="chart-header">
       <h3>📈 分类占比</h3>
@@ -436,7 +477,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </section>
 
-  <!-- 预算设置 -->
   <section class="budget-section" id="budgetSection">
     <div class="budget-section-title">🎯 预算剩余额度（仅统计支出，自动扣减）</div>
     <div class="budget-row">
@@ -459,7 +499,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </section>
 
-  <!-- 攒钱目标 -->
   <section class="savings-section" id="savingsSection">
     <div class="template-header">
       <h3>💰 攒钱目标</h3>
@@ -475,7 +514,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </section>
 
-  <!-- 固定模板 -->
   <section class="template-section" id="templateSection">
     <div class="template-header">
       <h3>📋 每日固定消费模板</h3>
@@ -496,7 +534,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     <div class="template-list" id="templateList"><span style="color:#94a3b8;font-size:.9rem;">暂无固定模板，请添加</span></div>
   </section>
 
-  <!-- 添加记录 -->
   <section class="form-section" id="entryFormSection">
     <form id="entryForm" class="form-row">
       <div class="form-group">
@@ -522,7 +559,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </form>
   </section>
 
-  <!-- 表格 -->
   <section class="table-wrapper" id="tableWrapper">
     <div class="table-header-bar">
       <div class="view-tabs">
@@ -555,16 +591,13 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){
 'use strict';
 
+const EXPENSE_CATEGORIES=['餐饮','交通','购物','娱乐','居住','健康','教育','其他'];
+
 let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
+let categoryBudgets={}, freeBudget=null;
 let viewMode='month';
-let statsPeriod='all';
-let statsYear=new Date().getFullYear();
-let statsMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
-let statsDate='';
-let chartPeriod='all';
-let chartYear=new Date().getFullYear();
-let chartMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
-let chartDate='';
+let statsPeriod='all', statsYear=new Date().getFullYear(), statsMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, statsDate='';
+let chartPeriod='all', chartYear=new Date().getFullYear(), chartMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, chartDate='';
 let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
@@ -583,28 +616,24 @@ const budgetDailyStatus=$('budgetDailyStatus'),budgetWeeklyStatus=$('budgetWeekl
 const tplNameInput=$('tplName'),tplAmountInput=$('tplAmount'),tplCategorySelect=$('tplCategory'),addTemplateBtn=$('addTemplateBtn'),templateListEl=$('templateList'),applyTemplatesBtn=$('applyTemplatesBtn');
 const goalNameInput=$('goalName'),goalTargetInput=$('goalTarget'),addGoalBtn=$('addGoalBtn'),goalsListEl=$('goalsList'),savingsTotalEl=$('savingsTotal');
 const settingsModal=$('settingsModal'),settingsToggleBtn=$('settingsToggleBtn'),settingsCloseBtn=$('settingsCloseBtn');
-const toggleStats=$('toggleStats'),toggleChart=$('toggleChart'),toggleBudget=$('toggleBudget'),toggleSavings=$('toggleSavings'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
-const statsContainer=$('statsContainer'),chartSection=$('chartSection'),budgetSection=$('budgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
+const toggleStats=$('toggleStats'),toggleChart=$('toggleChart'),toggleBudget=$('toggleBudget'),toggleCatBudget=$('toggleCatBudget'),toggleSavings=$('toggleSavings'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
+const statsContainer=$('statsContainer'),chartSection=$('chartSection'),budgetSection=$('budgetSection'),categoryBudgetSection=$('categoryBudgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
 const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),saveAmountGoalName=$('saveAmountGoalName'),saveAmountInput=$('saveAmountInput'),saveAmountConfirm=$('saveAmountConfirm'),saveAmountCancel=$('saveAmountCancel'),saveAmountClose=$('saveAmountClose');
 const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
 const debtListModal=$('debtListModal'),debtListTitle=$('debtListTitle'),debtListSummary=$('debtListSummary'),debtListTotal=$('debtListTotal'),debtListBody=$('debtListBody'),debtListClose=$('debtListClose');
+const catBudgetModal=$('catBudgetModal'),catBudgetClose=$('catBudgetClose'),catBudgetInputs=$('catBudgetInputs'),catBudgetSave=$('catBudgetSave'),catBudgetCancel=$('catBudgetCancel'),freeBudgetInput=$('freeBudgetInput'),editCatBudgetBtn=$('editCatBudgetBtn'),catBudgetList=$('catBudgetList');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
 const toastEl=$('toast');
 
 const moduleMap={
   'stats':{el:statsContainer,toggle:toggleStats},'chart':{el:chartSection,toggle:toggleChart},
-  'budget':{el:budgetSection,toggle:toggleBudget},'savings':{el:savingsSection,toggle:toggleSavings},
-  'template':{el:templateSection,toggle:toggleTemplate},'form':{el:entryFormSection,toggle:toggleForm},
-  'table':{el:tableWrapper,toggle:toggleTable}
+  'budget':{el:budgetSection,toggle:toggleBudget},'catBudget':{el:categoryBudgetSection,toggle:toggleCatBudget},
+  'savings':{el:savingsSection,toggle:toggleSavings},'template':{el:templateSection,toggle:toggleTemplate},
+  'form':{el:entryFormSection,toggle:toggleForm},'table':{el:tableWrapper,toggle:toggleTable}
 };
 
-const CATEGORY_COLORS={
-  '餐饮':'#f59e0b','交通':'#3b82f6','购物':'#ec4899','娱乐':'#8b5cf6','居住':'#10b981',
-  '健康':'#ef4444','教育':'#6366f1','其他':'#64748b',
-  '工资':'#16a34a','奖金':'#eab308','兼职':'#14b8a6','理财':'#0ea5e9','红包':'#f43f5e',
-  '借款':'#f97316','代付':'#a855f7'
-};
+const CATEGORY_COLORS={'餐饮':'#f59e0b','交通':'#3b82f6','购物':'#ec4899','娱乐':'#8b5cf6','居住':'#10b981','健康':'#ef4444','教育':'#6366f1','其他':'#64748b','工资':'#16a34a','奖金':'#eab308','兼职':'#14b8a6','理财':'#0ea5e9','红包':'#f43f5e','借款':'#f97316','代付':'#a855f7'};
 const FALLBACK_COLORS=['#2563eb','#7c3aed','#0891b2','#db2777','#ca8a04','#059669','#dc2626','#9333ea','#ea580c','#0284c7'];
 function getColor(cat,i){return CATEGORY_COLORS[cat]||FALLBACK_COLORS[i%FALLBACK_COLORS.length]}
 
@@ -641,23 +670,17 @@ function isExpanded(key){
 function migrate(){
   entries.forEach(e=>{
     if(!e.type)e.type='expense';
-    if(e.type==='debt'){
-      if(!e.debtType)e.debtType='lent';
-      if(typeof e.repaid!=='number')e.repaid=0;
-    }
+    if(e.type==='debt'){if(!e.debtType)e.debtType='lent';if(typeof e.repaid!=='number')e.repaid=0}
   });
   if(!Array.isArray(savingsGoals))savingsGoals=[];
+  if(!categoryBudgets||typeof categoryBudgets!=='object')categoryBudgets={};
+  if(freeBudget!==null&&(typeof freeBudget!=='number'||freeBudget<=0))freeBudget=null;
   const newGS={};
   for(const k in groupState){
-    if(k.startsWith('year:')||k.startsWith('month:')||k.startsWith('day:')){
-      newGS[k]=groupState[k];
-    }else if(/^\d{4}-\d{2}-\d{2}$/.test(k)){
-      newGS['day:'+k]=groupState[k];
-    }else if(/^\d{4}-\d{2}$/.test(k)){
-      newGS['month:'+k]=groupState[k];
-    }else if(/^\d{4}$/.test(k)){
-      newGS['year:'+k]=groupState[k];
-    }
+    if(k.startsWith('year:')||k.startsWith('month:')||k.startsWith('day:'))newGS[k]=groupState[k];
+    else if(/^\d{4}-\d{2}-\d{2}$/.test(k))newGS['day:'+k]=groupState[k];
+    else if(/^\d{4}-\d{2}$/.test(k))newGS['month:'+k]=groupState[k];
+    else if(/^\d{4}$/.test(k))newGS['year:'+k]=groupState[k];
   }
   groupState=newGS;
 }
@@ -671,6 +694,8 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_hiddenModules'));if(r){const p=JSON.parse(r);if(Array.isArray(p))hiddenModules=p}}catch(_){hiddenModules=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_groupState'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')groupState=p}}catch(_){groupState={}}
   try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day'].includes(r))viewMode=r}catch(_){}
+  try{const r=localStorage.getItem(localKey('dailyLedger_catBudgets'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')categoryBudgets=p}}catch(_){categoryBudgets={}}
+  try{const r=localStorage.getItem(localKey('dailyLedger_freeBudget'));if(r){const p=parseFloat(r);if(!isNaN(p)&&p>0)freeBudget=p}}catch(_){freeBudget=null}
   migrate();
 }
 function saveLocal(){
@@ -682,11 +707,13 @@ function saveLocal(){
   try{localStorage.setItem(localKey('dailyLedger_hiddenModules'),JSON.stringify(hiddenModules))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_groupState'),JSON.stringify(groupState))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_viewMode'),viewMode)}catch(_){}
+  try{localStorage.setItem(localKey('dailyLedger_catBudgets'),JSON.stringify(categoryBudgets))}catch(_){}
+  try{if(freeBudget!==null)localStorage.setItem(localKey('dailyLedger_freeBudget'),String(freeBudget));else localStorage.removeItem(localKey('dailyLedger_freeBudget'))}catch(_){}
 }
 
 async function pushCloud(){
   if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode};
+  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,categoryBudgets,freeBudget};
   try{
     const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
     if(qe)throw qe;
@@ -713,6 +740,8 @@ async function pullCloud(){
       if(c.hiddenModules)hiddenModules=c.hiddenModules;
       if(c.groupState)groupState=c.groupState;
       if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
+      if(c.categoryBudgets)categoryBudgets=c.categoryBudgets;
+      if(c.freeBudget!==undefined)freeBudget=c.freeBudget;
       migrate();saveLocal();renderAll();setSync('synced','✅ 已同步');toast('✅ 已从云端加载数据');
     }else{await pushCloud()}
     isSyncing=false;
@@ -736,28 +765,18 @@ function calc(){
     else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
-      if(e.debtType==='lent'){
-        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt;
-      }else{
-        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt;
-      }
+      if(e.debtType==='lent'){totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt}
+      else{totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt}
     }
   }
-  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,
-    totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,
-    totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,
-    daily,dailyExpense};
+  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,daily,dailyExpense};
 }
 
 function getStatsFiltered(){
   let list=entries;
-  if(statsPeriod==='year'&&statsYear){
-    list=list.filter(e=>e.date.startsWith(String(statsYear)));
-  }else if(statsPeriod==='month'&&statsMonth){
-    list=list.filter(e=>e.date.startsWith(statsMonth));
-  }else if(statsPeriod==='day'&&statsDate){
-    list=list.filter(e=>e.date===statsDate);
-  }
+  if(statsPeriod==='year'&&statsYear)list=list.filter(e=>e.date.startsWith(String(statsYear)));
+  else if(statsPeriod==='month'&&statsMonth)list=list.filter(e=>e.date.startsWith(statsMonth));
+  else if(statsPeriod==='day'&&statsDate)list=list.filter(e=>e.date===statsDate);
   return list;
 }
 function calcStats(list){
@@ -772,16 +791,11 @@ function calcStats(list){
     else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
-      if(e.debtType==='lent'){
-        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;
-      }else{
-        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;
-      }
+      if(e.debtType==='lent'){totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining}
+      else{totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining}
     }
   }
-  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,
-    totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,
-    totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
+  return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
 }
 function updateStatsFilterUI(){
   const yi=$('statsYearInput'),mi=$('statsMonthInput'),di=$('statsDateInput'),hint=$('statsFilterHint');
@@ -789,8 +803,7 @@ function updateStatsFilterUI(){
   yi.style.display=statsPeriod==='year'?'':'none';
   mi.style.display=statsPeriod==='month'?'':'none';
   di.style.display=statsPeriod==='day'?'':'none';
-  yi.value=statsYear;
-  mi.value=statsMonth;
+  yi.value=statsYear;mi.value=statsMonth;
   if(!statsDate)statsDate=today();
   di.value=statsDate;
   if(hint)hint.textContent=statsPeriod==='all'?'（统计全部记录）':'';
@@ -798,13 +811,9 @@ function updateStatsFilterUI(){
 
 function getChartFilteredEntries(){
   let list=entries.filter(e=>(e.type||'expense')===chartType);
-  if(chartPeriod==='year'&&chartYear){
-    list=list.filter(e=>e.date.startsWith(String(chartYear)));
-  }else if(chartPeriod==='month'&&chartMonth){
-    list=list.filter(e=>e.date.startsWith(chartMonth));
-  }else if(chartPeriod==='day'&&chartDate){
-    list=list.filter(e=>e.date===chartDate);
-  }
+  if(chartPeriod==='year'&&chartYear)list=list.filter(e=>e.date.startsWith(String(chartYear)));
+  else if(chartPeriod==='month'&&chartMonth)list=list.filter(e=>e.date.startsWith(chartMonth));
+  else if(chartPeriod==='day'&&chartDate)list=list.filter(e=>e.date===chartDate);
   return list;
 }
 function updateChartFilterUI(){
@@ -813,14 +822,112 @@ function updateChartFilterUI(){
   yi.style.display=chartPeriod==='year'?'':'none';
   mi.style.display=chartPeriod==='month'?'':'none';
   di.style.display=chartPeriod==='day'?'':'none';
-  yi.value=chartYear;
-  mi.value=chartMonth;
+  yi.value=chartYear;mi.value=chartMonth;
   if(!chartDate)chartDate=today();
   di.value=chartDate;
   if(hint)hint.textContent=chartPeriod==='all'?'（统计全部记录）':'';
 }
 
-// ===== 表格导入 =====
+// ===== 类目可支配金额渲染 =====
+function renderCategoryBudgets(){
+  if(!catBudgetList)return;
+  // 按类别计算已用（仅支出）
+  const usage={};
+  for(const e of entries){
+    if((e.type||'expense')==='expense'){
+      const cat=e.category||'其他';
+      usage[cat]=(usage[cat]||0)+(Number(e.amount)||0);
+    }
+  }
+  // 收集需要展示的类别：设置了预算的 + 有使用的支出类别
+  const cats=new Set();
+  Object.keys(categoryBudgets).forEach(c=>cats.add(c));
+  Object.keys(usage).forEach(c=>{if(EXPENSE_CATEGORIES.includes(c))cats.add(c)});
+
+  const hasFreeBudget=freeBudget!==null&&freeBudget>0;
+  if(cats.size===0&&!hasFreeBudget){
+    catBudgetList.innerHTML=`<div class="empty-state" style="padding:1.2rem;"><div class="icon">🎨</div><div style="font-size:.85rem;">点击右上角「设置」，为各类目设置可支配金额</div></div>`;
+    return;
+  }
+
+  let html='';
+  // 自由支配费用汇总
+  if(hasFreeBudget){
+    const totalUsed=Object.values(usage).reduce((s,v)=>s+v,0);
+    const remaining=freeBudget-totalUsed;
+    const isOver=remaining<0;
+    const pct=freeBudget>0?Math.min(100,(totalUsed/freeBudget)*100):0;
+    html+=`<div class="cat-budget-summary ${isOver?'over':''}">
+      <div class="title">💰 自由支配费用（总额度）</div>
+      <div class="row"><span class="label">已用 ¥${fmtMoney(totalUsed)} / 上限 ¥${fmtMoney(freeBudget)}</span>
+      <span class="value">${isOver?'超支':'剩余'} ¥${fmtMoney(Math.abs(remaining))}</span></div>
+      <div class="cat-budget-progress"><div class="fill ${isOver?'over':''}" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+
+  // 各类别
+  const sortedCats=[...cats].sort((a,b)=>{
+    const la=categoryBudgets[a],lb=categoryBudgets[b];
+    // 有超支的排前面，然后按使用量
+    const oa=(la!==undefined&&usage[a]>la)?0:1;
+    const ob=(lb!==undefined&&usage[b]>lb)?0:1;
+    if(oa!==ob)return oa-ob;
+    return (usage[b]||0)-(usage[a]||0);
+  });
+
+  sortedCats.forEach(cat=>{
+    const limit=categoryBudgets[cat];
+    const used=usage[cat]||0;
+    if(limit===undefined&&used===0)return;
+    const hasLimit=limit!==undefined&&limit>0;
+    const isOver=hasLimit&&used>limit;
+    const remain=hasLimit?limit-used:0;
+    const pct=hasLimit?Math.min(100,(used/limit)*100):0;
+    html+=`<div class="cat-budget-item ${isOver?'over':''}">
+      <div class="cat-budget-header">
+        <span class="cat-budget-name">${esc(cat)}</span>
+        <span class="cat-budget-amounts">
+          <span class="used">已用 ¥${fmtMoney(used)}</span>
+          ${hasLimit?`<span class="limit">/ ¥${fmtMoney(limit)}</span><span class="remain ${isOver?'over':''}">${isOver?'超支':'剩余'} ¥${fmtMoney(Math.abs(remain))}</span>`:`<span class="limit">（未设上限）</span>`}
+        </span>
+      </div>
+      ${hasLimit?`<div class="cat-budget-progress"><div class="fill ${isOver?'over':''}" style="width:${pct}%"></div></div>`:''}
+    </div>`;
+  });
+
+  catBudgetList.innerHTML=html;
+}
+
+function renderCatBudgetInputs(){
+  if(!catBudgetInputs)return;
+  let html='';
+  EXPENSE_CATEGORIES.forEach(cat=>{
+    const val=(categoryBudgets[cat]!==undefined&&categoryBudgets[cat]!==null)?categoryBudgets[cat]:'';
+    html+=`<div class="cat-budget-input-row"><label>${cat}</label><input type="number" data-cat="${cat}" value="${val}" placeholder="不限" min="0" step="0.01" /></div>`;
+  });
+  catBudgetInputs.innerHTML=html;
+}
+function openCatBudgetModal(){
+  renderCatBudgetInputs();
+  freeBudgetInput.value=(freeBudget!==null)?freeBudget:'';
+  catBudgetModal.classList.add('active');
+}
+function saveCatBudgetModal(){
+  const fbVal=parseFloat(freeBudgetInput.value);
+  freeBudget=(!isNaN(fbVal)&&fbVal>0)?Math.round(fbVal*100)/100:null;
+  const newBudgets={};
+  catBudgetInputs.querySelectorAll('input').forEach(inp=>{
+    const cat=inp.dataset.cat;
+    const val=parseFloat(inp.value);
+    if(!isNaN(val)&&val>0)newBudgets[cat]=Math.round(val*100)/100;
+  });
+  categoryBudgets=newBudgets;
+  saveLocal();renderAll();pushCloud();
+  catBudgetModal.classList.remove('active');
+  toast('✅ 类目可支配金额已更新');
+}
+
+// ===== 导入 =====
 function normalizeDate(val){
   if(!val)return null;
   if(typeof val==='string'){
@@ -836,11 +943,7 @@ function normalizeDate(val){
   if(typeof val==='number'&&val>10000&&val<100000){const dt=new Date((val-25569)*86400*1000);return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`}
   return null;
 }
-function normalizeAmount(val){
-  if(val===null||val===undefined)return NaN;
-  if(typeof val==='number')return val;
-  return parseFloat(String(val).replace(/[¥￥,\s]/g,'').trim());
-}
+function normalizeAmount(val){if(val===null||val===undefined)return NaN;if(typeof val==='number')return val;return parseFloat(String(val).replace(/[¥￥,\s]/g,'').trim())}
 function normalizeType(val){
   if(!val)return {type:'expense',debtType:null};
   const s=String(val).trim().toLowerCase();
@@ -935,22 +1038,12 @@ function parseFile(file){
   });
 }
 function isDuplicate(rec,pool){
-  return pool.some(e=>
-    e.date===rec.date&&
-    (e.type||'expense')===(rec.type||'expense')&&
-    (e.debtType||'')===(rec.debtType||'')&&
-    (e.category||'')===(rec.category||'')&&
-    (e.description||'')===(rec.description||'')&&
-    Math.abs(Number(e.amount)-Number(rec.amount))<0.001
-  );
+  return pool.some(e=>e.date===rec.date&&(e.type||'expense')===(rec.type||'expense')&&(e.debtType||'')===(rec.debtType||'')&&(e.category||'')===(rec.category||'')&&(e.description||'')===(rec.description||'')&&Math.abs(Number(e.amount)-Number(rec.amount))<0.001);
 }
 function performImport(records,errors){
   if(records.length===0){toast('⚠️ 未解析到有效记录');if(errors.length>0)console.warn('导入错误:',errors);return}
   let added=0,skipped=0;
-  records.forEach(rec=>{
-    if(isDuplicate(rec,entries)){skipped++}
-    else{entries.push(rec);added++}
-  });
+  records.forEach(rec=>{if(isDuplicate(rec,entries)){skipped++}else{entries.push(rec);added++}});
   saveLocal();renderAll();pushCloud();
   let msg=`✅ 导入 ${added} 条记录`;
   if(skipped>0)msg+=`，跳过 ${skipped} 条重复`;
@@ -1001,10 +1094,7 @@ function renderChart(){
   if(!canvas||!legendEl)return;
   const filtered=getChartFilteredEntries();
   const map={};
-  filtered.forEach(e=>{
-    const cat=e.category||'其他';
-    map[cat]=(map[cat]||0)+Number(e.amount);
-  });
+  filtered.forEach(e=>{const cat=e.category||'其他';map[cat]=(map[cat]||0)+Number(e.amount)});
   const labels=Object.keys(map).sort((a,b)=>map[b]-map[a]);
   const values=labels.map(l=>map[l]);
   const total=values.reduce((s,v)=>s+v,0);
@@ -1028,7 +1118,7 @@ function renderChart(){
   legendEl.innerHTML=legendHtml;
 }
 
-// ===== 明细行 =====
+// ===== 表格 =====
 function getDetailRowHtml(e,ancestors){
   const type=e.type||'expense';
   let typeBadge='';
@@ -1043,9 +1133,7 @@ function getDetailRowHtml(e,ancestors){
     const remaining=Math.max(0,Number(e.amount)-repaid);
     const isPaidOff=remaining<=0.001;
     if(repaid>0){
-      descSubHtml=isPaidOff
-        ?`<div class="desc-sub"><span class="paid-off-tag">✅ 已还清</span>（已还 ¥${fmtMoney(repaid)}）</div>`
-        :`<div class="desc-sub">已还 ¥${fmtMoney(repaid)} · <span class="progress-text">未还 ¥${fmtMoney(remaining)}</span></div>`;
+      descSubHtml=isPaidOff?`<div class="desc-sub"><span class="paid-off-tag">✅ 已还清</span>（已还 ¥${fmtMoney(repaid)}）</div>`:`<div class="desc-sub">已还 ¥${fmtMoney(repaid)} · <span class="progress-text">未还 ¥${fmtMoney(remaining)}</span></div>`;
       if(!isPaidOff)amtExtraHtml=`<div style="font-size:.72rem;color:#dc2626;margin-top:.1rem;">未还 ¥${fmtMoney(remaining)}</div>`;
       if(isPaidOff)amtCls+=' paid-off';
     }else{
@@ -1076,7 +1164,6 @@ function makeGroupHeader(level,key,label,count,summaryHtml,isOver,ancestors){
     </td>
   </tr>`;
 }
-
 function renderDayView(sorted,c){
   const groups={};
   sorted.forEach(e=>{if(!groups[e.date])groups[e.date]=[];groups[e.date].push(e)});
@@ -1098,30 +1185,16 @@ function renderDayView(sorted,c){
   });
   return html;
 }
-
 function renderMonthView(sorted,c){
   const months={};
-  sorted.forEach(e=>{
-    const mo=monthKey(e.date);
-    if(!months[mo])months[mo]={};
-    if(!months[mo][e.date])months[mo][e.date]=[];
-    months[mo][e.date].push(e);
-  });
+  sorted.forEach(e=>{const mo=monthKey(e.date);if(!months[mo])months[mo]={};if(!months[mo][e.date])months[mo][e.date]=[];months[mo][e.date].push(e)});
   const moKeys=Object.keys(months).sort((a,b)=>b.localeCompare(a));
   let html='';
   moKeys.forEach(mo=>{
     const days=months[mo];
     const mKey=`month:${mo}`;
     let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,totalCount=0;
-    Object.values(days).forEach(items=>{
-      items.forEach(e=>{
-        totalCount++;
-        const amt=Number(e.amount)||0;
-        if(e.type==='income')mIncome+=amt;
-        else if(e.type==='expense')mExpense+=amt;
-        else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
-      });
-    });
+    Object.values(days).forEach(items=>{items.forEach(e=>{totalCount++;const amt=Number(e.amount)||0;if(e.type==='income')mIncome+=amt;else if(e.type==='expense')mExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}})});
     const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
     let sum=[];
     if(mIncome>0)sum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
@@ -1148,34 +1221,16 @@ function renderMonthView(sorted,c){
   });
   return html;
 }
-
 function renderYearView(sorted,c){
   const years={};
-  sorted.forEach(e=>{
-    const y=yearKey(e.date);
-    if(!years[y])years[y]={};
-    const mo=monthKey(e.date);
-    if(!years[y][mo])years[y][mo]={};
-    if(!years[y][mo][e.date])years[y][mo][e.date]=[];
-    years[y][mo][e.date].push(e);
-  });
+  sorted.forEach(e=>{const y=yearKey(e.date);if(!years[y])years[y]={};const mo=monthKey(e.date);if(!years[y][mo])years[y][mo]={};if(!years[y][mo][e.date])years[y][mo][e.date]=[];years[y][mo][e.date].push(e)});
   const yKeys=Object.keys(years).sort((a,b)=>b.localeCompare(a));
   let html='';
   yKeys.forEach(y=>{
     const yKey=`year:${y}`;
     const months=years[y];
     let yIncome=0,yExpense=0,yLent=0,yBorrowed=0,yCount=0;
-    Object.values(months).forEach(days=>{
-      Object.values(days).forEach(items=>{
-        items.forEach(e=>{
-          yCount++;
-          const amt=Number(e.amount)||0;
-          if(e.type==='income')yIncome+=amt;
-          else if(e.type==='expense')yExpense+=amt;
-          else if(e.type==='debt'){if(e.debtType==='lent')yLent+=amt;else yBorrowed+=amt}
-        });
-      });
-    });
+    Object.values(months).forEach(days=>{Object.values(days).forEach(items=>{items.forEach(e=>{yCount++;const amt=Number(e.amount)||0;if(e.type==='income')yIncome+=amt;else if(e.type==='expense')yExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')yLent+=amt;else yBorrowed+=amt}})})});
     let ySum=[];
     if(yIncome>0)ySum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(yIncome)}</span>`);
     if(yExpense>0)ySum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(yExpense)}</span>`);
@@ -1187,15 +1242,7 @@ function renderYearView(sorted,c){
       const days=months[mo];
       const mKey=`month:${mo}`;
       let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,mCount=0;
-      Object.values(days).forEach(items=>{
-        items.forEach(e=>{
-          mCount++;
-          const amt=Number(e.amount)||0;
-          if(e.type==='income')mIncome+=amt;
-          else if(e.type==='expense')mExpense+=amt;
-          else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
-        });
-      });
+      Object.values(days).forEach(items=>{items.forEach(e=>{mCount++;const amt=Number(e.amount)||0;if(e.type==='income')mIncome+=amt;else if(e.type==='expense')mExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}})});
       const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
       let mSum=[];
       if(mIncome>0)mSum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
@@ -1224,7 +1271,6 @@ function renderYearView(sorted,c){
   return html;
 }
 
-// ===== 表格渲染 =====
 function renderEntries(){
   const c=calc();
   const s=calcStats(getStatsFiltered());
@@ -1233,50 +1279,31 @@ function renderEntries(){
   netBalanceEl.textContent=fmtMoney(s.netBalance);
   totalLentEl.textContent=fmtMoney(s.totalLent);
   totalBorrowedEl.textContent=fmtMoney(s.totalBorrowed);
-  if(s.totalLentOriginal>0){
-    totalLentHint.textContent=`原始 ¥${fmtMoney(s.totalLentOriginal)} · 已收 ¥${fmtMoney(s.totalLentRepaid)}`;
-  }else{totalLentHint.textContent=''}
-  if(s.totalBorrowedOriginal>0){
-    totalBorrowedHint.textContent=`原始 ¥${fmtMoney(s.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(s.totalBorrowedRepaid)}`;
-  }else{totalBorrowedHint.textContent=''}
+  if(s.totalLentOriginal>0)totalLentHint.textContent=`原始 ¥${fmtMoney(s.totalLentOriginal)} · 已收 ¥${fmtMoney(s.totalLentRepaid)}`;
+  else totalLentHint.textContent='';
+  if(s.totalBorrowedOriginal>0)totalBorrowedHint.textContent=`原始 ¥${fmtMoney(s.totalBorrowedOriginal)} · 已还 ¥${fmtMoney(s.totalBorrowedRepaid)}`;
+  else totalBorrowedHint.textContent='';
 
-  // 更新卡片的可点击提示
   const lentCount=entries.filter(e=>e.type==='debt'&&e.debtType==='lent'&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001).length;
   const borrowedCount=entries.filter(e=>e.type==='debt'&&e.debtType==='borrowed'&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001).length;
-  if(lentCount>0){
-    statCardLent.classList.add('has-debt');
-    lentRepayTip.textContent=`💰 ${lentCount} 笔待收，点击处理`;
-  }else{
-    statCardLent.classList.remove('has-debt');
-    lentRepayTip.textContent='暂无待收款项';
-  }
-  if(borrowedCount>0){
-    statCardBorrowed.classList.add('has-debt');
-    borrowedRepayTip.textContent=`💸 ${borrowedCount} 笔待还，点击处理`;
-  }else{
-    statCardBorrowed.classList.remove('has-debt');
-    borrowedRepayTip.textContent='暂无待还欠款';
-  }
+  if(lentCount>0){statCardLent.classList.add('has-debt');lentRepayTip.textContent=`💰 ${lentCount} 笔待收，点击处理`}
+  else{statCardLent.classList.remove('has-debt');lentRepayTip.textContent='暂无待收款项'}
+  if(borrowedCount>0){statCardBorrowed.classList.add('has-debt');borrowedRepayTip.textContent=`💸 ${borrowedCount} 笔待还，点击处理`}
+  else{statCardBorrowed.classList.remove('has-debt');borrowedRepayTip.textContent='暂无待还欠款'}
 
   updateBudgetStatus(c);
+  renderCategoryBudgets();
 
   if(entries.length===0){
     tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
     return;
   }
-
-  const sorted=[...entries].sort((a,b)=>{
-    if(a.date!==b.date)return b.date.localeCompare(a.date);
-    return (b.id||0)-(a.id||0);
-  });
-
+  const sorted=[...entries].sort((a,b)=>{if(a.date!==b.date)return b.date.localeCompare(a.date);return (b.id||0)-(a.id||0)});
   let html='';
   if(viewMode==='year')html=renderYearView(sorted,c);
   else if(viewMode==='month')html=renderMonthView(sorted,c);
   else html=renderDayView(sorted,c);
-
   tbody.innerHTML=html;
-
   tbody.querySelectorAll('.group-header').forEach(h=>{
     h.addEventListener('click',function(){
       const key=this.dataset.key;
@@ -1284,38 +1311,24 @@ function renderEntries(){
       groupState[key]=!cur;
       saveLocal();
       const toggle=this.querySelector('.group-toggle');
-      if(groupState[key])toggle.classList.remove('collapsed');
-      else toggle.classList.add('collapsed');
+      if(groupState[key])toggle.classList.remove('collapsed');else toggle.classList.add('collapsed');
       updateVisibility();
       pushCloud();
     });
   });
-  tbody.querySelectorAll('.delete-btn').forEach(b=>{
-    b.addEventListener('click',function(e){
-      e.stopPropagation();delEntry(Number(this.dataset.id));
-    });
-  });
-  tbody.querySelectorAll('.repay-btn').forEach(b=>{
-    b.addEventListener('click',function(e){
-      e.stopPropagation();openRepayModal(Number(this.dataset.id));
-    });
-  });
-
+  tbody.querySelectorAll('.delete-btn').forEach(b=>{b.addEventListener('click',function(e){e.stopPropagation();delEntry(Number(this.dataset.id))})});
+  tbody.querySelectorAll('.repay-btn').forEach(b=>{b.addEventListener('click',function(e){e.stopPropagation();openRepayModal(Number(this.dataset.id))})});
   updateVisibility();
 }
-
 function updateVisibility(){
   Array.from(tbody.children).forEach(tr=>{
     if(!tr.classList.contains('group-header')&&!tr.classList.contains('detail-row'))return;
     const ancestors=(tr.dataset.ancestors||'').split(',').filter(Boolean);
     let hidden=false;
-    for(const a of ancestors){
-      if(!isExpanded(a)){hidden=true;break}
-    }
+    for(const a of ancestors){if(!isExpanded(a)){hidden=true;break}}
     tr.style.display=hidden?'none':'';
   });
 }
-
 function updateBudgetStatus(c){
   const t=today(),wk=weekStart(t),mo=monthKey(t);
   setBudgetLine(budgetDailyStatus,budget.daily,c.dailyExpense[t]||0);
@@ -1332,50 +1345,31 @@ function setBudgetLine(el,limit,used){
   el.innerHTML=`<span class="remaining ${cls}">${txt}</span> <span class="limit-info">（上限 ¥${fmtMoney(limit)}）</span>`;
 }
 
-// ===== 欠款列表弹窗 =====
+// ===== 欠款列表 =====
 function openDebtList(direction){
-  // direction: 'lent' | 'borrowed'
   const isLent=direction==='lent';
   const list=entries.filter(e=>e.type==='debt'&&e.debtType===direction&&Math.max(0,Number(e.amount)-(Number(e.repaid)||0))>0.001);
-  // 按日期降序
   list.sort((a,b)=>b.date.localeCompare(a.date));
-
   debtListTitle.textContent=isLent?'💰 应收款项（点击收款）':'💸 应付款项（点击还款）';
   debtListSummary.className='debt-summary'+(isLent?'':' purple');
   const total=list.reduce((s,e)=>s+Math.max(0,Number(e.amount)-(Number(e.repaid)||0)),0);
   debtListTotal.textContent=`¥${fmtMoney(total)}`;
-
   if(list.length===0){
     debtListBody.innerHTML=`<div class="debt-empty"><div class="icon">${isLent?'🎉':'✅'}</div><div>${isLent?'暂无待收款项':'暂无待还欠款'}</div></div>`;
-    debtListModal.classList.add('active');
-    return;
+    debtListModal.classList.add('active');return;
   }
-
   let html='';
   list.forEach(e=>{
-    const amt=Number(e.amount)||0;
-    const repaid=Number(e.repaid)||0;
-    const remaining=Math.max(0,amt-repaid);
+    const amt=Number(e.amount)||0;const repaid=Number(e.repaid)||0;const remaining=Math.max(0,amt-repaid);
     const pct=amt>0?Math.min(100,(repaid/amt)*100):0;
     html+=`<div class="debt-item">
-      <div class="debt-item-header">
-        <div class="debt-item-desc">
-          ${esc(e.description||'无描述')}
-          <span class="debt-item-date">${fmtDate(e.date)}</span>
-        </div>
-      </div>
-      <div class="debt-item-info">
-        <span>原始 ¥${fmtMoney(amt)} · 已${isLent?'收':'还'} ¥${fmtMoney(repaid)}</span>
-        <span class="remaining">未${isLent?'收':'还'} ¥${fmtMoney(remaining)}</span>
-      </div>
+      <div class="debt-item-header"><div class="debt-item-desc">${esc(e.description||'无描述')}<span class="debt-item-date">${fmtDate(e.date)}</span></div></div>
+      <div class="debt-item-info"><span>原始 ¥${fmtMoney(amt)} · 已${isLent?'收':'还'} ¥${fmtMoney(repaid)}</span><span class="remaining">未${isLent?'收':'还'} ¥${fmtMoney(remaining)}</span></div>
       <div class="debt-item-progress"><div class="fill" style="width:${pct}%"></div></div>
-      <div class="debt-item-actions">
-        <button class="btn btn-success btn-sm debt-repay-btn" data-id="${e.id}">${isLent?'💰 收款':'💸 还款'}</button>
-      </div>
+      <div class="debt-item-actions"><button class="btn btn-success btn-sm debt-repay-btn" data-id="${e.id}">${isLent?'💰 收款':'💸 还款'}</button></div>
     </div>`;
   });
   debtListBody.innerHTML=html;
-
   debtListBody.querySelectorAll('.debt-repay-btn').forEach(b=>{
     b.addEventListener('click',function(){
       const id=Number(this.dataset.id);
@@ -1383,40 +1377,26 @@ function openDebtList(direction){
       setTimeout(()=>openRepayModal(id),100);
     });
   });
-
   debtListModal.classList.add('active');
 }
 
-// ===== 还款金额弹窗 =====
 function openRepayModal(id){
   const e=entries.find(x=>x.id===id);
   if(!e||e.type!=='debt')return;
-  const amt=Number(e.amount)||0;
-  const repaid=Number(e.repaid)||0;
-  const remaining=Math.max(0,amt-repaid);
+  const amt=Number(e.amount)||0;const repaid=Number(e.repaid)||0;const remaining=Math.max(0,amt-repaid);
   if(remaining<=0.001){toast('✅ 该欠款已还清');return}
   activeRepayId=id;
   const dirLabel=e.debtType==='lent'?'借出（别人欠我）':'借入（我欠别人）';
   repayTitle.textContent=e.debtType==='lent'?'💰 收回款项':'💸 归还欠款';
-  repayInfo.innerHTML=`
-    <strong>${esc(e.description||'无描述')}</strong><br/>
-    方向：${dirLabel}<br/>
-    原始金额：¥${fmtMoney(amt)}<br/>
-    已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/>
-    <span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span>
-  `;
-  repayInput.value='';
-  repayInput.placeholder=`最多 ${fmtMoney(remaining)}`;
+  repayInfo.innerHTML=`<strong>${esc(e.description||'无描述')}</strong><br/>方向：${dirLabel}<br/>原始金额：¥${fmtMoney(amt)}<br/>已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/><span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span>`;
+  repayInput.value='';repayInput.placeholder=`最多 ${fmtMoney(remaining)}`;
   repayModal.classList.add('active');
   setTimeout(()=>repayInput.focus(),100);
 }
 function confirmRepay(){
   if(!activeRepayId)return;
-  const e=entries.find(x=>x.id===activeRepayId);
-  if(!e)return;
-  const amt=Number(e.amount)||0;
-  const repaid=Number(e.repaid)||0;
-  const remaining=Math.max(0,amt-repaid);
+  const e=entries.find(x=>x.id===activeRepayId);if(!e)return;
+  const amt=Number(e.amount)||0;const repaid=Number(e.repaid)||0;const remaining=Math.max(0,amt-repaid);
   const input=parseFloat(repayInput.value);
   if(isNaN(input)||input<=0){toast('⚠️ 请输入有效还款金额');return}
   if(input>remaining+0.001){toast(`⚠️ 还款金额不能超过剩余 ¥${fmtMoney(remaining)}`);return}
@@ -1425,11 +1405,8 @@ function confirmRepay(){
   saveLocal();renderAll();pushCloud();
   repayModal.classList.remove('active');activeRepayId=null;
   const newRemaining=Math.max(0,amt-e.repaid);
-  if(newRemaining<=0.001){
-    toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
-  }else{
-    toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}，还剩 ¥${fmtMoney(newRemaining)}`);
-  }
+  if(newRemaining<=0.001)toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
+  else toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}，还剩 ¥${fmtMoney(newRemaining)}`);
 }
 
 // ===== 攒钱目标 =====
@@ -1438,8 +1415,7 @@ function renderGoals(){
   const totalSaved=savingsGoals.reduce((s,g)=>s+(g.saved||0),0);
   savingsTotalEl.textContent=`总储蓄：¥${fmtMoney(totalSaved)}`;
   if(savingsGoals.length===0){
-    goalsListEl.innerHTML=`<div class="empty-state" style="padding:1.5rem;"><div class="icon">🎯</div><div>还没有攒钱目标，添加一个吧！</div></div>`;
-    return;
+    goalsListEl.innerHTML=`<div class="empty-state" style="padding:1.5rem;"><div class="icon">🎯</div><div>还没有攒钱目标，添加一个吧！</div></div>`;return;
   }
   let html='';
   savingsGoals.forEach(g=>{
@@ -1451,10 +1427,7 @@ function renderGoals(){
         <div class="goal-actions"><button class="btn btn-success btn-sm goal-save-btn" data-id="${g.id}">💰 存钱</button><button class="goal-del" data-id="${g.id}" title="删除">✕</button></div>
       </div>
       <div class="progress-bar"><div class="progress-fill ${done?'done':''}" style="width:${pct}%"></div></div>
-      <div class="goal-info">
-        <span>已存 <strong>¥${fmtMoney(saved)}</strong> / 目标 ¥${fmtMoney(target)}</span>
-        ${done?`<span class="goal-gap done">✅ 已达成！</span>`:`<span class="goal-gap">还差 ¥${fmtMoney(gap)}</span>`}
-      </div>
+      <div class="goal-info"><span>已存 <strong>¥${fmtMoney(saved)}</strong> / 目标 ¥${fmtMoney(target)}</span>${done?`<span class="goal-gap done">✅ 已达成！</span>`:`<span class="goal-gap">还差 ¥${fmtMoney(gap)}</span>`}</div>
     </div>`;
   });
   goalsListEl.innerHTML=html;
@@ -1465,7 +1438,7 @@ function addGoal(){
   const name=goalNameInput.value.trim();const target=parseFloat(goalTargetInput.value);
   if(!name){toast('⚠️ 请输入目标名称');return}
   if(!target||isNaN(target)||target<=0){toast('⚠️ 请输入有效目标金额');return}
-  savingsGoals.push({id:'g_'+uid(),name:name,target:Math.round(target*100)/100,saved:0});
+  savingsGoals.push({id:'g_'+uid(),name,target:Math.round(target*100)/100,saved:0});
   saveLocal();renderGoals();pushCloud();
   goalNameInput.value='';goalTargetInput.value='';goalNameInput.focus();toast('✅ 目标已添加');
 }
@@ -1496,9 +1469,7 @@ function confirmSaveAmount(){
 function renderTemplates(){
   if(templates.length===0){templateListEl.innerHTML='<span style="color:#94a3b8;font-size:.9rem;">暂无固定模板，请添加</span>';return}
   let html='';
-  templates.forEach((t,i)=>{
-    html+=`<span class="template-tag"><span class="tpl-name">${esc(t.name)}</span><span class="tpl-amount">¥${fmtMoney(t.amount)}</span><span class="category-badge ${catClass(t.category)}">${t.category}</span><button class="tpl-del" data-index="${i}">✕</button></span>`;
-  });
+  templates.forEach((t,i)=>{html+=`<span class="template-tag"><span class="tpl-name">${esc(t.name)}</span><span class="tpl-amount">¥${fmtMoney(t.amount)}</span><span class="category-badge ${catClass(t.category)}">${t.category}</span><button class="tpl-del" data-index="${i}">✕</button></span>`});
   templateListEl.innerHTML=html;
   templateListEl.querySelectorAll('.tpl-del').forEach(b=>b.addEventListener('click',function(){delTemplate(+this.dataset.index)}));
 }
@@ -1514,10 +1485,7 @@ function delTemplate(i){if(!confirm('删除该模板？'))return;templates.splic
 function applyTemplates(){
   if(templates.length===0){toast('📭 暂无模板');return}
   const t=today();let n=0;
-  templates.forEach((tpl,i)=>{
-    entries.push({id:uid()+i,date:t,type:'expense',category:tpl.category,description:tpl.name+'（固定）',amount:tpl.amount});
-    n++;
-  });
+  templates.forEach((tpl,i)=>{entries.push({id:uid()+i,date:t,type:'expense',category:tpl.category,description:tpl.name+'（固定）',amount:tpl.amount});n++});
   saveLocal();renderAll();pushCloud();toast(`✅ 已添加今日 ${n} 笔固定消费`);
 }
 
@@ -1544,7 +1512,6 @@ function clearAll(){
   if(!confirm('确定清空全部记录？此操作不可撤销！'))return;
   entries=[];saveLocal();renderAll();pushCloud();toast('🗑 已清空');
 }
-
 function setBudget(period){
   const map={daily:budgetDailyInput,weekly:budgetWeeklyInput,monthly:budgetMonthlyInput};
   const input=map[period];if(!input)return;
@@ -1555,17 +1522,12 @@ function setBudget(period){
   const lbl={daily:'每日',weekly:'每周',monthly:'每月'}[period];
   toast(budget[period]===null?`✅ 已取消${lbl}预算`:`✅ ${lbl}预算设为 ¥${fmtMoney(budget[period])}`);
 }
-
 function exportCSV(){
   if(entries.length===0){toast('📭 没有记录');return}
   const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
   const typeLabel=e=>{if(e.type==='income')return'收入';if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';return'支出'};
   const rows=[['日期','类型','类别','描述','金额','已还金额','剩余未还']];
-  sorted.forEach(e=>{
-    const repaid=Number(e.repaid)||0;
-    const remaining=e.type==='debt'?Math.max(0,Number(e.amount)-repaid):'';
-    rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2),repaid?repaid.toFixed(2):'',remaining!==''?remaining.toFixed(2):'']);
-  });
+  sorted.forEach(e=>{const repaid=Number(e.repaid)||0;const remaining=e.type==='debt'?Math.max(0,Number(e.amount)-repaid):'';rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2),repaid?repaid.toFixed(2):'',remaining!==''?remaining.toFixed(2):''])});
   const csv=rows.map(r=>r.join(',')).join('\n');
   try{
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1574,30 +1536,20 @@ function exportCSV(){
     toast('📥 导出成功');
   }catch(e){toast('⚠️ 导出失败')}
 }
-
 function updateCategoryOptions(){
   const t=entryType.value;
   let opts='';
-  if(t==='expense'){
-    opts=`<option value="餐饮">🍜 餐饮</option><option value="交通">🚌 交通</option><option value="购物">🛍 购物</option><option value="娱乐">🎬 娱乐</option><option value="居住">🏠 居住</option><option value="健康">💊 健康</option><option value="教育">📚 教育</option><option value="其他">📌 其他</option>`;
-  }else if(t==='income'){
-    opts=`<option value="工资">💼 工资</option><option value="奖金">🏆 奖金</option><option value="兼职">💪 兼职</option><option value="理财">📈 理财</option><option value="红包">🧧 红包</option><option value="其他">📌 其他</option>`;
-  }else{
-    opts=`<option value="借款">💵 借款</option><option value="代付">💳 代付</option><option value="其他">📌 其他</option>`;
-  }
+  if(t==='expense')opts=`<option value="餐饮">🍜 餐饮</option><option value="交通">🚌 交通</option><option value="购物">🛍 购物</option><option value="娱乐">🎬 娱乐</option><option value="居住">🏠 居住</option><option value="健康">💊 健康</option><option value="教育">📚 教育</option><option value="其他">📌 其他</option>`;
+  else if(t==='income')opts=`<option value="工资">💼 工资</option><option value="奖金">🏆 奖金</option><option value="兼职">💪 兼职</option><option value="理财">📈 理财</option><option value="红包">🧧 红包</option><option value="其他">📌 其他</option>`;
+  else opts=`<option value="借款">💵 借款</option><option value="代付">💳 代付</option><option value="其他">📌 其他</option>`;
   entryCategory.innerHTML=opts;
   debtTypeGroup.style.display=t==='debt'?'block':'none';
 }
-
 function applyModules(){
   for(const k in moduleMap){moduleMap[k].el.classList.remove('module-hidden');moduleMap[k].toggle.checked=true}
   hiddenModules.forEach(id=>{if(moduleMap[id]){moduleMap[id].el.classList.add('module-hidden');moduleMap[id].toggle.checked=false}});
 }
-function applyViewTabs(){
-  document.querySelectorAll('.view-tab').forEach(t=>{
-    t.classList.toggle('active',t.dataset.view===viewMode);
-  });
-}
+function applyViewTabs(){document.querySelectorAll('.view-tab').forEach(t=>{t.classList.toggle('active',t.dataset.view===viewMode)})}
 function renderAll(){
   applyModules();
   applyViewTabs();
@@ -1645,9 +1597,7 @@ async function checkSession(){
 }
 
 function init(){
-  entryDate.value=today();
-  statsDate=today();
-  chartDate=today();
+  entryDate.value=today();statsDate=today();chartDate=today();
   updateCategoryOptions();
 
   authForm.addEventListener('submit',handleAuth);
@@ -1659,14 +1609,18 @@ function init(){
   $('clearAllBtn').addEventListener('click',clearAll);
   $('exportBtn').addEventListener('click',exportCSV);
 
-  // 应收/应付卡片点击
+  // 类目预算设置
+  editCatBudgetBtn.addEventListener('click',openCatBudgetModal);
+  catBudgetClose.addEventListener('click',()=>catBudgetModal.classList.remove('active'));
+  catBudgetCancel.addEventListener('click',()=>catBudgetModal.classList.remove('active'));
+  catBudgetModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
+  catBudgetSave.addEventListener('click',saveCatBudgetModal);
+
   statCardLent.addEventListener('click',()=>openDebtList('lent'));
   statCardBorrowed.addEventListener('click',()=>openDebtList('borrowed'));
-  // 欠款列表弹窗关闭
   debtListClose.addEventListener('click',()=>debtListModal.classList.remove('active'));
   debtListModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
 
-  // 导入
   $('importBtn').addEventListener('click',()=>{resetImportUI();importHelpModal.classList.add('active')});
   importHelpClose.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
   importCancelBtn.addEventListener('click',()=>{importHelpModal.classList.remove('active');resetImportUI()});
@@ -1675,33 +1629,19 @@ function init(){
   fileInput.addEventListener('change',function(){if(this.files&&this.files[0])handleFileSelected(this.files[0])});
   fileDrop.addEventListener('dragover',e=>{e.preventDefault();fileDrop.style.borderColor='#2563eb';fileDrop.style.background='#eff6ff'});
   fileDrop.addEventListener('dragleave',e=>{e.preventDefault();fileDrop.style.borderColor='';fileDrop.style.background=''});
-  fileDrop.addEventListener('drop',e=>{
-    e.preventDefault();fileDrop.style.borderColor='';fileDrop.style.background='';
-    if(e.dataTransfer.files&&e.dataTransfer.files[0])handleFileSelected(e.dataTransfer.files[0]);
-  });
+  fileDrop.addEventListener('drop',e=>{e.preventDefault();fileDrop.style.borderColor='';fileDrop.style.background='';if(e.dataTransfer.files&&e.dataTransfer.files[0])handleFileSelected(e.dataTransfer.files[0])});
   importConfirmBtn.addEventListener('click',()=>{
     if(!pendingFile){toast('⚠️ 请先选择文件');return}
     importConfirmBtn.disabled=true;importConfirmBtn.textContent='导入中...';
-    parseFile(pendingFile).then(result=>{
-      performImport(result.records,result.errors);
-      importHelpModal.classList.remove('active');resetImportUI();
-      importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入';
-    }).catch(err=>{
-      toast('⚠️ 导入失败：'+err.message);
-      importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入';
-    });
+    parseFile(pendingFile).then(result=>{performImport(result.records,result.errors);importHelpModal.classList.remove('active');resetImportUI();importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入'}).catch(err=>{toast('⚠️ 导入失败：'+err.message);importConfirmBtn.disabled=false;importConfirmBtn.textContent='开始导入'});
   });
 
   document.querySelectorAll('.budget-set-btn').forEach(b=>b.addEventListener('click',function(){setBudget(this.dataset.period)}));
-  [budgetDailyInput,budgetWeeklyInput,budgetMonthlyInput].forEach((inp,i)=>{
-    const p=['daily','weekly','monthly'][i];
-    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();setBudget(p)}});
-  });
+  [budgetDailyInput,budgetWeeklyInput,budgetMonthlyInput].forEach((inp,i)=>{const p=['daily','weekly','monthly'][i];inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();setBudget(p)}})});
 
   addTemplateBtn.addEventListener('click',addTemplate);
   tplAmountInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTemplate()}});
   applyTemplatesBtn.addEventListener('click',applyTemplates);
-
   addGoalBtn.addEventListener('click',addGoal);
   goalTargetInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addGoal()}});
 
@@ -1721,63 +1661,23 @@ function init(){
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
   settingsModal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active')});
 
-  document.querySelectorAll('.chart-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
-      this.classList.add('active');
-      chartType=this.dataset.type;
-      renderChart();
-    });
-  });
-
-  document.querySelectorAll('.filter-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
-      this.classList.add('active');
-      chartPeriod=this.dataset.period;
-      updateChartFilterUI();
-      renderChart();
-    });
-  });
+  document.querySelectorAll('.chart-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');chartType=this.dataset.type;renderChart()})});
+  document.querySelectorAll('.filter-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');chartPeriod=this.dataset.period;updateChartFilterUI();renderChart()})});
   const cyi=$('chartYearInput'),cmi=$('chartMonthInput'),cdi=$('chartDateInput');
   if(cyi)cyi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){chartYear=v;renderChart()}});
   if(cmi)cmi.addEventListener('change',function(){if(this.value){chartMonth=this.value;renderChart()}});
   if(cdi)cdi.addEventListener('change',function(){if(this.value){chartDate=this.value;renderChart()}});
 
-  document.querySelectorAll('.stats-filter-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.stats-filter-tab').forEach(t=>t.classList.remove('active'));
-      this.classList.add('active');
-      statsPeriod=this.dataset.statsPeriod;
-      updateStatsFilterUI();
-      renderEntries();
-    });
-  });
+  document.querySelectorAll('.stats-filter-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.stats-filter-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');statsPeriod=this.dataset.statsPeriod;updateStatsFilterUI();renderEntries()})});
   const syi=$('statsYearInput'),smi=$('statsMonthInput'),sdi=$('statsDateInput');
   if(syi)syi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){statsYear=v;renderEntries()}});
   if(smi)smi.addEventListener('change',function(){if(this.value){statsMonth=this.value;renderEntries()}});
   if(sdi)sdi.addEventListener('change',function(){if(this.value){statsDate=this.value;renderEntries()}});
 
-  document.querySelectorAll('.view-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      viewMode=this.dataset.view;
-      saveLocal();
-      applyViewTabs();
-      renderEntries();
-      pushCloud();
-    });
-  });
+  document.querySelectorAll('.view-tab').forEach(tab=>{tab.addEventListener('click',function(){viewMode=this.dataset.view;saveLocal();applyViewTabs();renderEntries();pushCloud()})});
 
-  $('expandAllBtn').addEventListener('click',()=>{
-    tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=true});
-    saveLocal();renderEntries();pushCloud();
-    toast('⬇️ 已展开全部');
-  });
-  $('collapseAllBtn').addEventListener('click',()=>{
-    tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=false});
-    saveLocal();renderEntries();pushCloud();
-    toast('⬆️ 已收起全部');
-  });
+  $('expandAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=true});saveLocal();renderEntries();pushCloud();toast('⬇️ 已展开全部')});
+  $('collapseAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=false});saveLocal();renderEntries();pushCloud();toast('⬆️ 已收起全部')});
 
   for(const k in moduleMap){
     moduleMap[k].toggle.addEventListener('change',function(){
@@ -1792,13 +1692,8 @@ function init(){
   checkSession();
 
   supabase.auth.onAuthStateChange((ev,sess)=>{
-    if(ev==='SIGNED_IN'&&sess){
-      const u=sess.user;currentUser={id:u.id,email:u.email};userEmailDisplay.textContent=u.email;
-      authArea.style.display='none';mainApp.style.display='block';
-      loadLocal();renderAll();pullCloud();
-    }else if(ev==='SIGNED_OUT'){
-      currentUser=null;authArea.style.display='block';mainApp.style.display='none';
-    }
+    if(ev==='SIGNED_IN'&&sess){const u=sess.user;currentUser={id:u.id,email:u.email};userEmailDisplay.textContent=u.email;authArea.style.display='none';mainApp.style.display='block';loadLocal();renderAll();pullCloud()}
+    else if(ev==='SIGNED_OUT'){currentUser=null;authArea.style.display='block';mainApp.style.display='none'}
   });
 }
 
