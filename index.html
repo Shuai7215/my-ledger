@@ -114,6 +114,10 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-del:hover{color:#ef4444}
 .cat-budget-filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid #f1f4f8}
 .cat-budget-period-info{font-size:.8rem;color:#64748b;padding:.2rem .7rem;background:#f1f5f9;border-radius:20px}
+/* 类目可支配金额的时间切换按钮样式（与 .filter-tab 一致） */
+.cat-budget-tab{padding:.3rem .9rem;border:none;background:transparent;border-radius:40px;font-size:.8rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+.cat-budget-tab:hover{color:#334155}
+.cat-budget-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .cat-budget-summary{padding:1rem 1.2rem;background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-radius:14px;margin-bottom:.8rem;border:1px solid #c7d2fe}
 .cat-budget-summary.over{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fecaca}
 .cat-budget-summary .row{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:.35rem;flex-wrap:wrap;gap:.3rem}
@@ -198,6 +202,13 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .search-filters{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .search-filters select,.search-filters input[type="date"]{padding:.4rem .65rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;background:#f8fafc;font-family:inherit;color:#0f172a;transition:all .2s}
 .search-filters select:focus,.search-filters input[type="date"]:focus{outline:none;border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+/* 日期范围组：起止标签 + 输入框 */
+.date-range{display:flex;align-items:center;gap:.3rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:.15rem .5rem .15rem .5rem;transition:all .2s}
+.date-range:focus-within{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.date-range input[type="date"]{border:none;background:transparent;padding:.25rem .3rem;font-size:.83rem;font-family:inherit;color:#0f172a;outline:none}
+.date-range input[type="date"]:focus{box-shadow:none;border:none;background:transparent}
+.date-tag{font-size:.72rem;color:#94a3b8;font-weight:600;padding:0 .15rem;user-select:none}
+.date-sep{font-size:.8rem;color:#cbd5e1;font-weight:600}
 .search-info{font-size:.78rem;color:#64748b;padding:.25rem .7rem;background:#f1f5f9;border-radius:20px;white-space:nowrap}
 .search-info strong{color:#2563eb;font-weight:700}
 .search-info .clear-link{color:#ef4444;cursor:pointer;margin-left:.4rem;font-weight:500}
@@ -282,7 +293,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .debt-summary .label{font-size:.8rem;font-weight:600;color:#78350f}
 .debt-summary.purple .label{color:#5b21b6}
 .debt-summary .amount{font-size:1.1rem;font-weight:700;color:#dc2626}
-@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section,.category-budget-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}.search-bar{padding:.6rem .7rem}.search-filters{width:100%}.search-filters select,.search-filters input[type="date"]{flex:1;min-width:0}}
+@media(max-width:700px){body{padding:1rem .8rem}.header h1{font-size:1.5rem}.budget-section,.template-section,.form-section,.savings-section,.chart-section,.category-budget-section{padding:1rem}.form-row{flex-direction:column;align-items:stretch;gap:.7rem}.form-actions{justify-content:flex-end}.stats{grid-template-columns:repeat(2,1fr);gap:.7rem}.stat-value{font-size:1.3rem}.form-group{min-width:unset}table{font-size:.82rem;min-width:500px}th,td{padding:.6rem .7rem}.btn{font-size:.8rem;padding:.4rem 1rem}.chart-canvas-wrap{width:180px;height:180px}.table-header-bar{padding:.6rem}.view-tab{padding:.3rem .8rem;font-size:.8rem}.search-bar{padding:.6rem .7rem}.search-filters{width:100%}.search-filters select,.search-filters input[type="date"]{flex:1;min-width:0}.date-range{flex:1}}
 </style>
 </head>
 <body>
@@ -612,8 +623,13 @@ tr.detail-row.over-budget{background-color:#fef2f2}
           <option value="debt-lent">借出</option>
           <option value="debt-borrowed">借入</option>
         </select>
-        <input type="date" id="searchDateFrom" title="起始日期" />
-        <input type="date" id="searchDateTo" title="结束日期" />
+        <div class="date-range">
+          <span class="date-tag">起</span>
+          <input type="date" id="searchDateFrom" title="起始日期" />
+          <span class="date-sep">~</span>
+          <span class="date-tag">止</span>
+          <input type="date" id="searchDateTo" title="结束日期" />
+        </div>
         <button class="btn btn-outline btn-sm" id="searchResetBtn" title="重置所有筛选">重置</button>
       </div>
       <span class="search-info" id="searchInfo" style="display:none;"></span>
@@ -684,7 +700,7 @@ const catBudgetModal=$('catBudgetModal'),catBudgetClose=$('catBudgetClose'),catB
 const catBudgetPeriodLabel=$('catBudgetPeriodLabel'),catBudgetPeriodInfo=$('catBudgetPeriodInfo');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
-// 搜索 DOM 元素（注意：变量名带 El 后缀风格在这里已经与原状态变量区分开）
+// 搜索 DOM 元素（状态变量使用 searchDateStart / searchDateEnd 与之区分）
 const searchInput=$('searchInput'),searchClearBtn=$('searchClearBtn'),searchType=$('searchType'),searchDateFrom=$('searchDateFrom'),searchDateTo=$('searchDateTo'),searchResetBtn=$('searchResetBtn'),searchInfo=$('searchInfo');
 const toastEl=$('toast');
 
