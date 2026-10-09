@@ -114,7 +114,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .tpl-del:hover{color:#ef4444}
 .cat-budget-filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid #f1f4f8}
 .cat-budget-period-info{font-size:.8rem;color:#64748b;padding:.2rem .7rem;background:#f1f5f9;border-radius:20px}
-/* 类目可支配金额的时间切换按钮样式（与 .filter-tab 一致） */
 .cat-budget-tab{padding:.3rem .9rem;border:none;background:transparent;border-radius:40px;font-size:.8rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
 .cat-budget-tab:hover{color:#334155}
 .cat-budget-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -202,7 +201,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .search-filters{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .search-filters select,.search-filters input[type="date"]{padding:.4rem .65rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.83rem;background:#f8fafc;font-family:inherit;color:#0f172a;transition:all .2s}
 .search-filters select:focus,.search-filters input[type="date"]:focus{outline:none;border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-/* 日期范围组：起止标签 + 输入框 */
 .date-range{display:flex;align-items:center;gap:.3rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:.15rem .5rem .15rem .5rem;transition:all .2s}
 .date-range:focus-within{border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .date-range input[type="date"]{border:none;background:transparent;padding:.25rem .3rem;font-size:.83rem;font-family:inherit;color:#0f172a;outline:none}
@@ -437,11 +435,19 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <button class="stats-filter-tab" data-stats-period="year">年</button>
         <button class="stats-filter-tab" data-stats-period="month">月</button>
         <button class="stats-filter-tab" data-stats-period="day">日</button>
+        <button class="stats-filter-tab" data-stats-period="range">区间</button>
       </div>
       <div class="filter-inputs">
         <input type="number" id="statsYearInput" min="2000" max="2100" placeholder="年份" style="display:none" />
         <input type="month" id="statsMonthInput" style="display:none" />
         <input type="date" id="statsDateInput" style="display:none" />
+        <div class="date-range" id="statsRangeWrap" style="display:none;">
+          <span class="date-tag">起</span>
+          <input type="date" id="statsRangeFrom" />
+          <span class="date-sep">~</span>
+          <span class="date-tag">止</span>
+          <input type="date" id="statsRangeTo" />
+        </div>
         <span id="statsFilterHint" style="font-size:.8rem;color:#94a3b8;"></span>
       </div>
     </div>
@@ -474,10 +480,18 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <button class="cat-budget-tab active" data-cat-period="all">全部</button>
         <button class="cat-budget-tab" data-cat-period="year">年</button>
         <button class="cat-budget-tab" data-cat-period="month">月</button>
+        <button class="cat-budget-tab" data-cat-period="range">区间</button>
       </div>
       <div class="filter-inputs">
         <input type="number" id="catBudgetYearInput" min="2000" max="2100" placeholder="年份" style="display:none" />
         <input type="month" id="catBudgetMonthInput" style="display:none" />
+        <div class="date-range" id="catBudgetRangeWrap" style="display:none;">
+          <span class="date-tag">起</span>
+          <input type="date" id="catBudgetRangeFrom" />
+          <span class="date-sep">~</span>
+          <span class="date-tag">止</span>
+          <input type="date" id="catBudgetRangeTo" />
+        </div>
         <span class="cat-budget-period-info" id="catBudgetPeriodInfo">正在查看：全部</span>
       </div>
     </div>
@@ -498,11 +512,19 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <button class="filter-tab" data-period="year">年</button>
         <button class="filter-tab" data-period="month">月</button>
         <button class="filter-tab" data-period="day">日</button>
+        <button class="filter-tab" data-period="range">区间</button>
       </div>
       <div class="filter-inputs">
         <input type="number" id="chartYearInput" min="2000" max="2100" placeholder="年份" style="display:none" />
         <input type="month" id="chartMonthInput" style="display:none" />
         <input type="date" id="chartDateInput" style="display:none" />
+        <div class="date-range" id="chartRangeWrap" style="display:none;">
+          <span class="date-tag">起</span>
+          <input type="date" id="chartRangeFrom" />
+          <span class="date-sep">~</span>
+          <span class="date-tag">止</span>
+          <input type="date" id="chartRangeTo" />
+        </div>
         <span id="chartFilterHint" style="font-size:.8rem;color:#94a3b8;"></span>
       </div>
     </div>
@@ -662,9 +684,10 @@ let freeBudgets={all:null};
 let catBudgetPeriod='all';
 let catBudgetYear=new Date().getFullYear();
 let catBudgetMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+let catBudgetRangeFrom='';
+let catBudgetRangeTo='';
 let editingCatBudgetPeriodKey='all';
 
-// 搜索状态（注意：状态变量名与 DOM 元素变量名不能重复）
 let searchKeyword='';
 let searchTypeFilter='';
 let searchDateStart='';
@@ -672,7 +695,9 @@ let searchDateEnd='';
 
 let viewMode='month';
 let statsPeriod='all', statsYear=new Date().getFullYear(), statsMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, statsDate='';
+let statsRangeFrom='', statsRangeTo='';
 let chartPeriod='all', chartYear=new Date().getFullYear(), chartMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, chartDate='';
+let chartRangeFrom='', chartRangeTo='';
 let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
@@ -700,7 +725,6 @@ const catBudgetModal=$('catBudgetModal'),catBudgetClose=$('catBudgetClose'),catB
 const catBudgetPeriodLabel=$('catBudgetPeriodLabel'),catBudgetPeriodInfo=$('catBudgetPeriodInfo');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
-// 搜索 DOM 元素（状态变量使用 searchDateStart / searchDateEnd 与之区分）
 const searchInput=$('searchInput'),searchClearBtn=$('searchClearBtn'),searchType=$('searchType'),searchDateFrom=$('searchDateFrom'),searchDateTo=$('searchDateTo'),searchResetBtn=$('searchResetBtn'),searchInfo=$('searchInfo');
 const toastEl=$('toast');
 
@@ -725,6 +749,13 @@ function yearKey(s){return s.substring(0,4)}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function catClass(c){const m={'餐饮':'food','交通':'transport','购物':'shopping','娱乐':'entertainment','居住':'housing','健康':'health','教育':'education','其他':'other'};return m[c]||'other'}
 function uid(){return Date.now()+Math.random()*1000}
+// 判断日期是否在区间内
+function inRange(date,from,to){
+  if(!from&&!to)return true;
+  if(from&&date<from)return false;
+  if(to&&date>to)return false;
+  return true;
+}
 
 let toastTimer=null;
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),3500)}
@@ -959,6 +990,7 @@ function getStatsFiltered(){
   if(statsPeriod==='year'&&statsYear)list=list.filter(e=>e.date.startsWith(String(statsYear)));
   else if(statsPeriod==='month'&&statsMonth)list=list.filter(e=>e.date.startsWith(statsMonth));
   else if(statsPeriod==='day'&&statsDate)list=list.filter(e=>e.date===statsDate);
+  else if(statsPeriod==='range')list=list.filter(e=>inRange(e.date,statsRangeFrom,statsRangeTo));
   return list;
 }
 function calcStats(list){
@@ -980,15 +1012,23 @@ function calcStats(list){
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
 }
 function updateStatsFilterUI(){
-  const yi=$('statsYearInput'),mi=$('statsMonthInput'),di=$('statsDateInput'),hint=$('statsFilterHint');
+  const yi=$('statsYearInput'),mi=$('statsMonthInput'),di=$('statsDateInput'),rw=$('statsRangeWrap'),hint=$('statsFilterHint');
   if(!yi||!mi||!di)return;
   yi.style.display=statsPeriod==='year'?'':'none';
   mi.style.display=statsPeriod==='month'?'':'none';
   di.style.display=statsPeriod==='day'?'':'none';
+  if(rw)rw.style.display=statsPeriod==='range'?'':'none';
   yi.value=statsYear;mi.value=statsMonth;
   if(!statsDate)statsDate=today();
   di.value=statsDate;
-  if(hint)hint.textContent=statsPeriod==='all'?'（统计全部记录）':'';
+  const rfi=$('statsRangeFrom'),rto=$('statsRangeTo');
+  if(rfi)rfi.value=statsRangeFrom;
+  if(rto)rto.value=statsRangeTo;
+  if(hint){
+    if(statsPeriod==='all')hint.textContent='（统计全部记录）';
+    else if(statsPeriod==='range')hint.textContent=(statsRangeFrom||statsRangeTo)?'':'（请选择起止日期）';
+    else hint.textContent='';
+  }
 }
 
 function getChartFilteredEntries(){
@@ -996,38 +1036,58 @@ function getChartFilteredEntries(){
   if(chartPeriod==='year'&&chartYear)list=list.filter(e=>e.date.startsWith(String(chartYear)));
   else if(chartPeriod==='month'&&chartMonth)list=list.filter(e=>e.date.startsWith(chartMonth));
   else if(chartPeriod==='day'&&chartDate)list=list.filter(e=>e.date===chartDate);
+  else if(chartPeriod==='range')list=list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
   return list;
 }
 function updateChartFilterUI(){
-  const yi=$('chartYearInput'),mi=$('chartMonthInput'),di=$('chartDateInput'),hint=$('chartFilterHint');
+  const yi=$('chartYearInput'),mi=$('chartMonthInput'),di=$('chartDateInput'),rw=$('chartRangeWrap'),hint=$('chartFilterHint');
   if(!yi||!mi||!di)return;
   yi.style.display=chartPeriod==='year'?'':'none';
   mi.style.display=chartPeriod==='month'?'':'none';
   di.style.display=chartPeriod==='day'?'':'none';
+  if(rw)rw.style.display=chartPeriod==='range'?'':'none';
   yi.value=chartYear;mi.value=chartMonth;
   if(!chartDate)chartDate=today();
   di.value=chartDate;
-  if(hint)hint.textContent=chartPeriod==='all'?'（统计全部记录）':'';
+  const rfi=$('chartRangeFrom'),rto=$('chartRangeTo');
+  if(rfi)rfi.value=chartRangeFrom;
+  if(rto)rto.value=chartRangeTo;
+  if(hint){
+    if(chartPeriod==='all')hint.textContent='（统计全部记录）';
+    else if(chartPeriod==='range')hint.textContent=(chartRangeFrom||chartRangeTo)?'':'（请选择起止日期）';
+    else hint.textContent='';
+  }
 }
 
 // ===== 类目预算 =====
 function getCatBudgetPeriodKey(){
   if(catBudgetPeriod==='year')return String(catBudgetYear);
   if(catBudgetPeriod==='month')return catBudgetMonth;
+  // range 模式使用"全部"作为预算基准
   return 'all';
 }
 function getCatBudgetPeriodLabelText(){
   if(catBudgetPeriod==='year')return `${catBudgetYear}年`;
   if(catBudgetPeriod==='month'){const [y,m]=catBudgetMonth.split('-');return `${y}年${parseInt(m)}月`}
+  if(catBudgetPeriod==='range'){
+    if(catBudgetRangeFrom&&catBudgetRangeTo)return `${catBudgetRangeFrom} ~ ${catBudgetRangeTo}`;
+    if(catBudgetRangeFrom)return `${catBudgetRangeFrom} 起`;
+    if(catBudgetRangeTo)return `截至 ${catBudgetRangeTo}`;
+    return '自定义区间（未设置）';
+  }
   return '全部';
 }
 function updateCatBudgetFilterUI(){
-  const yi=$('catBudgetYearInput'),mi=$('catBudgetMonthInput');
+  const yi=$('catBudgetYearInput'),mi=$('catBudgetMonthInput'),rw=$('catBudgetRangeWrap');
   const info=$('catBudgetPeriodInfo');
   if(!yi||!mi)return;
   yi.style.display=catBudgetPeriod==='year'?'':'none';
   mi.style.display=catBudgetPeriod==='month'?'':'none';
+  if(rw)rw.style.display=catBudgetPeriod==='range'?'':'none';
   yi.value=catBudgetYear;mi.value=catBudgetMonth;
+  const rfi=$('catBudgetRangeFrom'),rto=$('catBudgetRangeTo');
+  if(rfi)rfi.value=catBudgetRangeFrom;
+  if(rto)rto.value=catBudgetRangeTo;
   document.querySelectorAll('.cat-budget-tab').forEach(t=>t.classList.toggle('active',t.dataset.catPeriod===catBudgetPeriod));
   if(info)info.textContent=`正在查看：${getCatBudgetPeriodLabelText()}`;
 }
@@ -1037,7 +1097,9 @@ function getUsageForPeriod(){
   for(const e of entries){
     if((e.type||'expense')!=='expense')continue;
     let match=false;
-    if(periodKey==='all')match=true;
+    if(catBudgetPeriod==='range'){
+      match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
+    }else if(periodKey==='all')match=true;
     else if(/^\d{4}$/.test(periodKey))match=e.date.startsWith(periodKey);
     else if(/^\d{4}-\d{2}$/.test(periodKey))match=e.date.startsWith(periodKey);
     if(match){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+(Number(e.amount)||0)}
@@ -1111,6 +1173,7 @@ function renderCatBudgetInputs(){
   catBudgetInputs.innerHTML=html;
 }
 function openCatBudgetModal(){
+  // range 模式下设置的是"全部"预算
   editingCatBudgetPeriodKey=getCatBudgetPeriodKey();
   const labelText=(()=>{
     if(editingCatBudgetPeriodKey==='all')return '全部';
@@ -1118,7 +1181,7 @@ function openCatBudgetModal(){
     const [y,m]=editingCatBudgetPeriodKey.split('-');
     return `${y}年${parseInt(m)}月`;
   })();
-  catBudgetPeriodLabel.textContent=`正在设置：${labelText}`;
+  catBudgetPeriodLabel.textContent=`正在设置：${labelText}${catBudgetPeriod==='range'?'（区间模式使用「全部」预算）':''}`;
   renderCatBudgetInputs();
   const fb=freeBudgets[editingCatBudgetPeriodKey];
   freeBudgetInput.value=(fb!==null&&fb!==undefined)?fb:'';
@@ -1872,6 +1935,9 @@ function init(){
   const cbyi=$('catBudgetYearInput'),cbmi=$('catBudgetMonthInput');
   if(cbyi)cbyi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){catBudgetYear=v;updateCatBudgetFilterUI();renderCategoryBudgets()}});
   if(cbmi)cbmi.addEventListener('change',function(){if(this.value){catBudgetMonth=this.value;updateCatBudgetFilterUI();renderCategoryBudgets()}});
+  const cbrfi=$('catBudgetRangeFrom'),cbrto=$('catBudgetRangeTo');
+  if(cbrfi)cbrfi.addEventListener('change',function(){catBudgetRangeFrom=this.value;updateCatBudgetFilterUI();renderCategoryBudgets()});
+  if(cbrto)cbrto.addEventListener('change',function(){catBudgetRangeTo=this.value;updateCatBudgetFilterUI();renderCategoryBudgets()});
 
   editCatBudgetBtn.addEventListener('click',openCatBudgetModal);
   catBudgetClose.addEventListener('click',()=>catBudgetModal.classList.remove('active'));
@@ -1930,12 +1996,18 @@ function init(){
   if(cyi)cyi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){chartYear=v;renderChart()}});
   if(cmi)cmi.addEventListener('change',function(){if(this.value){chartMonth=this.value;renderChart()}});
   if(cdi)cdi.addEventListener('change',function(){if(this.value){chartDate=this.value;renderChart()}});
+  const crfi=$('chartRangeFrom'),crto=$('chartRangeTo');
+  if(crfi)crfi.addEventListener('change',function(){chartRangeFrom=this.value;updateChartFilterUI();renderChart()});
+  if(crto)crto.addEventListener('change',function(){chartRangeTo=this.value;updateChartFilterUI();renderChart()});
 
   document.querySelectorAll('.stats-filter-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.stats-filter-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');statsPeriod=this.dataset.statsPeriod;updateStatsFilterUI();renderEntries()})});
   const syi=$('statsYearInput'),smi=$('statsMonthInput'),sdi=$('statsDateInput');
   if(syi)syi.addEventListener('change',function(){const v=parseInt(this.value);if(!isNaN(v)&&v>=2000&&v<=2100){statsYear=v;renderEntries()}});
   if(smi)smi.addEventListener('change',function(){if(this.value){statsMonth=this.value;renderEntries()}});
   if(sdi)sdi.addEventListener('change',function(){if(this.value){statsDate=this.value;renderEntries()}});
+  const srfi=$('statsRangeFrom'),srto=$('statsRangeTo');
+  if(srfi)srfi.addEventListener('change',function(){statsRangeFrom=this.value;updateStatsFilterUI();renderEntries()});
+  if(srto)srto.addEventListener('change',function(){statsRangeTo=this.value;updateStatsFilterUI();renderEntries()});
 
   document.querySelectorAll('.view-tab').forEach(tab=>{tab.addEventListener('click',function(){viewMode=this.dataset.view;saveLocal();applyViewTabs();renderEntries();pushCloud()})});
 
