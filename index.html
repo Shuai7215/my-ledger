@@ -62,17 +62,12 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .switch input:checked+.slider:before{transform:translateX(20px)}
 .module-hidden{display:none!important}
 
-/* ===== 统一时间选择器 ===== */
-.time-picker{position:relative;display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.tp-presets{display:flex;gap:.25rem;background:#f1f5f9;padding:.25rem;border-radius:40px;flex-wrap:wrap}
-.tp-preset{padding:.3rem .8rem;border:none;background:transparent;border-radius:40px;font-size:.78rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .15s;font-family:inherit;white-space:nowrap}
-.tp-preset:hover{color:#334155}
-.tp-preset.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08);font-weight:600}
-.tp-range-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .9rem;border:1.5px solid #e2e8f0;background:#fff;border-radius:40px;font-size:.82rem;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+/* ===== 统一日期范围选择按钮 ===== */
+.tp-range-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border:1.5px solid #e2e8f0;background:#fff;border-radius:40px;font-size:.83rem;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .tp-range-btn:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff}
-.tp-range-btn.has-value{border-color:#2563eb;background:#eff6ff;color:#2563eb}
-.tp-range-btn .tp-icon{font-size:.85rem}
-.tp-range-btn .tp-text{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-range-btn.has-value{border-color:#2563eb;background:#eff6ff;color:#2563eb;font-weight:600}
+.tp-range-btn .tp-icon{font-size:.9rem}
+.tp-range-btn .tp-text{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* 日期选择面板 */
 .dp-modal{max-width:700px;width:95%;padding:1.2rem 1.4rem}
@@ -224,7 +219,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .view-tab{padding:.35rem 1.1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s;font-family:inherit}
 .view-tab:hover{color:#334155}
 .view-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.view-tab.range-has-value{color:#2563eb;font-weight:600}
 .table-actions{display:flex;gap:.4rem}
 .search-bar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.8rem 1.2rem;border-bottom:1px solid #f1f4f8;background:#fff}
 .search-input-wrap{position:relative;flex:1 1 200px;min-width:160px}
@@ -393,7 +387,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     <div class="modal-box" style="max-width:480px;">
       <button class="close-btn" id="catBudgetClose">✕</button>
       <h2>🎨 类目可支配金额</h2>
-      <div id="catBudgetPeriodLabel" style="font-size:.85rem;color:#7c3aed;font-weight:600;background:#f3e8ff;padding:.4rem .8rem;border-radius:8px;margin-bottom:1rem;display:inline-block;"></div>
+      <div id="catBudgetPeriodLabel" style="font-size:.85rem;color:#7c3aed;font-weight:600;background:#f3e8ff;padding:.4rem .8rem;border-radius:8px;margin-bottom:1rem;display:inline-block;">正在设置各类别的可支配金额</div>
       <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">为每个支出类别设置可支配上限，留空表示不限。</p>
       <div class="form-group" style="margin-bottom:.4rem;">
         <label style="font-weight:600;color:#7c3aed;text-transform:none;font-size:.85rem;">💰 自由支配费用（全部支出总额上限）</label>
@@ -484,6 +478,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <h2 style="margin-bottom:1rem;" id="datePickerTitle">📅 选择日期范围</h2>
       <div class="dp-layout">
         <div class="dp-presets-col" id="dpPresets">
+          <button class="dp-preset-btn" data-dp-preset="all">全部（不限）</button>
           <button class="dp-preset-btn" data-dp-preset="today">今天</button>
           <button class="dp-preset-btn" data-dp-preset="yesterday">昨天</button>
           <button class="dp-preset-btn" data-dp-preset="last7">过去7天</button>
@@ -497,7 +492,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <div class="dp-calendar-col" id="dpCalendars"></div>
       </div>
       <div class="dp-footer">
-        <div class="dp-range-display empty" id="dpRangeDisplay">请选择日期</div>
+        <div class="dp-range-display empty" id="dpRangeDisplay">请选择日期（或点“全部”查看所有）</div>
         <div class="dp-actions">
           <button class="btn btn-outline btn-sm" id="dpClearBtn">清除</button>
           <button class="btn btn-primary btn-sm" id="dpConfirmBtn">确定</button>
@@ -508,19 +503,11 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 
   <section class="stats-wrapper" id="statsContainer">
     <div class="stats-filters">
-      <div class="time-picker">
-        <div class="tp-presets" id="statsPresets">
-          <button class="tp-preset active" data-stats-period="all">全部</button>
-          <button class="tp-preset" data-stats-period="year">今年</button>
-          <button class="tp-preset" data-stats-period="month">本月</button>
-          <button class="tp-preset" data-stats-period="day">今天</button>
-        </div>
-        <button class="tp-range-btn" id="statsRangeBtn" style="display:none;">
-          <span class="tp-icon">📅</span>
-          <span class="tp-text" id="statsRangeText">选择日期范围</span>
-        </button>
-      </div>
-      <span id="statsFilterHint" style="font-size:.78rem;color:#94a3b8;"></span>
+      <button class="tp-range-btn" id="statsRangeBtn">
+        <span class="tp-icon">📅</span>
+        <span class="tp-text" id="statsRangeText">选择日期范围</span>
+      </button>
+      <span id="statsFilterHint" style="font-size:.78rem;color:#94a3b8;">（全部记录）</span>
     </div>
     <div class="stats">
       <div class="stat-card accent-green"><div class="stat-label">总收入</div><div class="stat-value"><span class="currency">¥</span><span id="totalIncome">0.00</span></div></div>
@@ -547,17 +534,10 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <button class="btn btn-primary btn-sm" id="editCatBudgetBtn">⚙️ 设置</button>
     </div>
     <div class="cat-budget-filters">
-      <div class="time-picker">
-        <div class="tp-presets" id="catBudgetPresets">
-          <button class="tp-preset active" data-cat-period="all">全部</button>
-          <button class="tp-preset" data-cat-period="year">今年</button>
-          <button class="tp-preset" data-cat-period="month">本月</button>
-        </div>
-        <button class="tp-range-btn" id="catBudgetRangeBtn" style="display:none;">
-          <span class="tp-icon">📅</span>
-          <span class="tp-text" id="catBudgetRangeText">选择日期范围</span>
-        </button>
-      </div>
+      <button class="tp-range-btn" id="catBudgetRangeBtn">
+        <span class="tp-icon">📅</span>
+        <span class="tp-text" id="catBudgetRangeText">选择日期范围</span>
+      </button>
       <span class="cat-budget-period-info" id="catBudgetPeriodInfo">正在查看：全部</span>
     </div>
     <div id="catBudgetList"></div>
@@ -572,19 +552,11 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       </div>
     </div>
     <div class="chart-filters">
-      <div class="time-picker">
-        <div class="tp-presets" id="chartPresets">
-          <button class="tp-preset active" data-chart-period="all">全部</button>
-          <button class="tp-preset" data-chart-period="year">今年</button>
-          <button class="tp-preset" data-chart-period="month">本月</button>
-          <button class="tp-preset" data-chart-period="day">今天</button>
-        </div>
-        <button class="tp-range-btn" id="chartRangeBtn" style="display:none;">
-          <span class="tp-icon">📅</span>
-          <span class="tp-text" id="chartRangeText">选择日期范围</span>
-        </button>
-      </div>
-      <span id="chartFilterHint" style="font-size:.78rem;color:#94a3b8;"></span>
+      <button class="tp-range-btn" id="chartRangeBtn">
+        <span class="tp-icon">📅</span>
+        <span class="tp-text" id="chartRangeText">选择日期范围</span>
+      </button>
+      <span id="chartFilterHint" style="font-size:.78rem;color:#94a3b8;">（全部记录）</span>
     </div>
     <div class="chart-body" id="chartBody">
       <div class="chart-canvas-wrap"><canvas id="categoryChart"></canvas></div>
@@ -684,7 +656,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <button class="view-tab" data-view="year">📆 按年</button>
         <button class="view-tab active" data-view="month">📅 按月</button>
         <button class="view-tab" data-view="day">📋 按日</button>
-        <button class="view-tab" data-view="range" id="tableRangeTab">🗓️ 按区间</button>
       </div>
       <div class="table-actions">
         <button class="btn btn-outline btn-sm" id="expandAllBtn">⬇️ 展开全部</button>
@@ -737,12 +708,6 @@ const EXPENSE_CATEGORIES=['餐饮','交通','购物','娱乐','居住','健康',
 let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, templates=[], savingsGoals=[], hiddenModules=[], groupState={}, isSyncing=false;
 let categoryBudgets={all:{}};
 let freeBudgets={all:null};
-let catBudgetPeriod='all';
-let catBudgetYear=new Date().getFullYear();
-let catBudgetMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
-let catBudgetRangeFrom='';
-let catBudgetRangeTo='';
-let editingCatBudgetPeriodKey='all';
 
 let searchKeyword='';
 let searchTypeFilter='';
@@ -750,12 +715,12 @@ let searchDateStart='';
 let searchDateEnd='';
 
 let viewMode='month';
-let tableRangeFrom='';
-let tableRangeTo='';
-let statsPeriod='all', statsYear=new Date().getFullYear(), statsMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, statsDate='';
+
+// 各模块独立的日期范围
 let statsRangeFrom='', statsRangeTo='';
-let chartPeriod='all', chartYear=new Date().getFullYear(), chartMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, chartDate='';
 let chartRangeFrom='', chartRangeTo='';
+let catBudgetRangeFrom='', catBudgetRangeTo='';
+
 let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
@@ -791,11 +756,10 @@ const catBudgetPeriodLabel=$('catBudgetPeriodLabel'),catBudgetPeriodInfo=$('catB
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
 const searchInput=$('searchInput'),searchClearBtn=$('searchClearBtn'),searchType=$('searchType'),searchResetBtn=$('searchResetBtn'),searchInfo=$('searchInfo');
-const statsRangeBtn=$('statsRangeBtn'),statsRangeText=$('statsRangeText');
-const chartRangeBtn=$('chartRangeBtn'),chartRangeText=$('chartRangeText');
+const statsRangeBtn=$('statsRangeBtn'),statsRangeText=$('statsRangeText'),statsFilterHint=$('statsFilterHint');
+const chartRangeBtn=$('chartRangeBtn'),chartRangeText=$('chartRangeText'),chartFilterHint=$('chartFilterHint');
 const catBudgetRangeBtn=$('catBudgetRangeBtn'),catBudgetRangeText=$('catBudgetRangeText');
 const searchRangeBtn=$('searchRangeBtn'),searchRangeText=$('searchRangeText');
-const tableRangeTab=$('tableRangeTab');
 const datePickerModal=$('datePickerModal'),datePickerClose=$('datePickerClose'),datePickerTitle=$('datePickerTitle'),dpPresets=$('dpPresets'),dpCalendars=$('dpCalendars'),dpRangeDisplay=$('dpRangeDisplay'),dpClearBtn=$('dpClearBtn'),dpConfirmBtn=$('dpConfirmBtn');
 const toastEl=$('toast');
 
@@ -860,13 +824,11 @@ function openDatePicker(target,from,to){
   const ref=dpFrom||dpTo||today();
   const d=new Date(ref+'T00:00:00');
   dpBaseMonth=new Date(d.getFullYear(),d.getMonth(),1);
-  // 动态标题
   const titles={
     'stats':'📅 统计卡片 - 选择日期范围',
     'chart':'📅 分类占比 - 选择日期范围',
     'catBudget':'📅 类目可支配 - 选择日期范围',
-    'search':'📅 搜索筛选 - 选择日期范围',
-    'tableRange':'📅 记账表格 - 选择显示区间'
+    'search':'📅 搜索筛选 - 选择日期范围'
   };
   datePickerTitle.textContent=titles[target]||'📅 选择日期范围';
   renderDatePickerCalendars();
@@ -959,12 +921,16 @@ function updateDatePickerDisplay(){
     dpRangeDisplay.textContent=fmtRange(dpFrom,dpTo);
   }else{
     dpRangeDisplay.classList.add('empty');
-    dpRangeDisplay.textContent='请选择日期';
+    dpRangeDisplay.textContent='请选择日期（或点“全部”查看所有）';
   }
 }
 function updateDPPresetActive(){
   dpPresets.querySelectorAll('.dp-preset-btn').forEach(b=>b.classList.remove('active'));
-  if(!dpFrom&&!dpTo)return;
+  if(!dpFrom&&!dpTo){
+    const btn=dpPresets.querySelector('[data-dp-preset="all"]');
+    if(btn)btn.classList.add('active');
+    return;
+  }
   const todayStr=today();
   const y=parseDPDate(todayStr);y.setDate(y.getDate()-1);
   const yesterdayStr=fmtDateObj(y);
@@ -1000,6 +966,13 @@ function updateDPPresetActive(){
   }
 }
 function applyDPPreset(name){
+  if(name==='all'){
+    dpFrom='';dpTo='';dpPicking='from';dpHover='';
+    renderDatePickerCalendars();
+    updateDatePickerDisplay();
+    updateDPPresetActive();
+    return;
+  }
   const todayStr=today();
   let f='',t='';
   if(name==='today'){f=todayStr;t=todayStr}
@@ -1025,35 +998,21 @@ function applyDPPreset(name){
 function confirmDatePicker(){
   if(dpTarget==='stats'){
     statsRangeFrom=dpFrom;statsRangeTo=dpTo;
-    updateStatsRangeBtn();
+    updateStatsFilterUI();
     renderEntries();
   }else if(dpTarget==='chart'){
     chartRangeFrom=dpFrom;chartRangeTo=dpTo;
-    updateChartRangeBtn();
+    updateChartFilterUI();
     renderChart();
   }else if(dpTarget==='catBudget'){
     catBudgetRangeFrom=dpFrom;catBudgetRangeTo=dpTo;
-    updateCatBudgetRangeBtn();
+    updateCatBudgetFilterUI();
     renderCategoryBudgets();
   }else if(dpTarget==='search'){
     searchDateStart=dpFrom;searchDateEnd=dpTo;
     updateSearchRangeBtn();
     updateSearchUI();
     renderEntries();
-  }else if(dpTarget==='tableRange'){
-    if(!dpFrom&&!dpTo){
-      toast('⚠️ 请先选择日期范围');
-      return;
-    }
-    tableRangeFrom=dpFrom;
-    tableRangeTo=dpTo;
-    viewMode='range';
-    saveLocal();
-    applyViewTabs();
-    updateTableRangeTabStyle();
-    renderEntries();
-    pushCloud();
-    toast(`✅ 表格已筛选：${fmtRange(tableRangeFrom,tableRangeTo)}`);
   }
   closeDatePicker();
 }
@@ -1063,35 +1022,10 @@ function clearDatePicker(){
   updateDatePickerDisplay();
   updateDPPresetActive();
 }
-function updateStatsRangeBtn(){
-  const has=statsRangeFrom||statsRangeTo;
-  statsRangeBtn.classList.toggle('has-value',!!has);
-  statsRangeText.textContent=fmtRange(statsRangeFrom,statsRangeTo);
-}
-function updateChartRangeBtn(){
-  const has=chartRangeFrom||chartRangeTo;
-  chartRangeBtn.classList.toggle('has-value',!!has);
-  chartRangeText.textContent=fmtRange(chartRangeFrom,chartRangeTo);
-}
-function updateCatBudgetRangeBtn(){
-  const has=catBudgetRangeFrom||catBudgetRangeTo;
-  catBudgetRangeBtn.classList.toggle('has-value',!!has);
-  catBudgetRangeText.textContent=fmtRange(catBudgetRangeFrom,catBudgetRangeTo);
-}
 function updateSearchRangeBtn(){
   const has=searchDateStart||searchDateEnd;
   searchRangeBtn.classList.toggle('has-value',!!has);
-  searchRangeText.textContent=fmtRange(searchDateStart,searchDateEnd);
-}
-function updateTableRangeTabStyle(){
-  if(!tableRangeTab)return;
-  if(viewMode==='range'&&(tableRangeFrom||tableRangeTo)){
-    tableRangeTab.classList.add('range-has-value');
-    tableRangeTab.textContent=`🗓️ ${fmtRange(tableRangeFrom,tableRangeTo)}`;
-  }else{
-    tableRangeTab.classList.remove('range-has-value');
-    tableRangeTab.textContent='🗓️ 按区间';
-  }
+  searchRangeText.textContent=has?fmtRange(searchDateStart,searchDateEnd):'日期范围';
 }
 
 // ===== 搜索高亮 =====
@@ -1140,11 +1074,7 @@ function isSearchActive(){
   return !!(searchKeyword.trim()||searchTypeFilter||searchDateStart||searchDateEnd);
 }
 function updateSearchUI(){
-  if(searchInput.value){
-    searchClearBtn.style.display='block';
-  }else{
-    searchClearBtn.style.display='none';
-  }
+  if(searchInput.value){searchClearBtn.style.display='block'}else{searchClearBtn.style.display='none'}
   updateSearchRangeBtn();
   if(isSearchActive()){
     const filtered=filterEntriesBySearch(entries);
@@ -1232,9 +1162,7 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_savings'));if(r){const p=JSON.parse(r);if(Array.isArray(p))savingsGoals=p}}catch(_){savingsGoals=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_hiddenModules'));if(r){const p=JSON.parse(r);if(Array.isArray(p))hiddenModules=p}}catch(_){hiddenModules=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_groupState'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')groupState=p}}catch(_){groupState={}}
-  try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day','range'].includes(r))viewMode=r}catch(_){}
-  try{const r=localStorage.getItem(localKey('dailyLedger_tableRangeFrom'));if(r)tableRangeFrom=r}catch(_){}
-  try{const r=localStorage.getItem(localKey('dailyLedger_tableRangeTo'));if(r)tableRangeTo=r}catch(_){}
+  try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day'].includes(r))viewMode=r}catch(_){}
   try{const r=localStorage.getItem(localKey('dailyLedger_catBudgets'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')categoryBudgets=p}}catch(_){categoryBudgets={all:{}}}
   try{const r=localStorage.getItem(localKey('dailyLedger_freeBudgets'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')freeBudgets=p}}catch(_){freeBudgets={all:null}}
   try{const r=localStorage.getItem(localKey('dailyLedger_freeBudget'));if(r){const p=parseFloat(r);if(!isNaN(p)&&p>0){if(!freeBudgets||typeof freeBudgets!=='object')freeBudgets={all:null};if(freeBudgets.all===null||freeBudgets.all===undefined)freeBudgets.all=p}}}catch(_){}
@@ -1249,8 +1177,6 @@ function saveLocal(){
   try{localStorage.setItem(localKey('dailyLedger_hiddenModules'),JSON.stringify(hiddenModules))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_groupState'),JSON.stringify(groupState))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_viewMode'),viewMode)}catch(_){}
-  try{localStorage.setItem(localKey('dailyLedger_tableRangeFrom'),tableRangeFrom)}catch(_){}
-  try{localStorage.setItem(localKey('dailyLedger_tableRangeTo'),tableRangeTo)}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_catBudgets'),JSON.stringify(categoryBudgets))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_freeBudgets'),JSON.stringify(freeBudgets))}catch(_){}
   try{localStorage.removeItem(localKey('dailyLedger_freeBudget'))}catch(_){}
@@ -1258,7 +1184,7 @@ function saveLocal(){
 
 async function pushCloud(){
   if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,tableRangeFrom,tableRangeTo,categoryBudgets,freeBudgets};
+  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,categoryBudgets,freeBudgets};
   try{
     const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
     if(qe)throw qe;
@@ -1284,9 +1210,7 @@ async function pullCloud(){
       if(c.savingsGoals)savingsGoals=c.savingsGoals;
       if(c.hiddenModules)hiddenModules=c.hiddenModules;
       if(c.groupState)groupState=c.groupState;
-      if(c.viewMode&&['year','month','day','range'].includes(c.viewMode))viewMode=c.viewMode;
-      if(c.tableRangeFrom)tableRangeFrom=c.tableRangeFrom;
-      if(c.tableRangeTo)tableRangeTo=c.tableRangeTo;
+      if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
       if(c.categoryBudgets)categoryBudgets=c.categoryBudgets;
       if(c.freeBudgets)freeBudgets=c.freeBudgets;
       if(c.freeBudget!==undefined&&c.freeBudget!==null){
@@ -1324,12 +1248,8 @@ function calc(){
 }
 
 function getStatsFiltered(){
-  let list=entries;
-  if(statsPeriod==='year'&&statsYear)list=list.filter(e=>e.date.startsWith(String(statsYear)));
-  else if(statsPeriod==='month'&&statsMonth)list=list.filter(e=>e.date.startsWith(statsMonth));
-  else if(statsPeriod==='day'&&statsDate)list=list.filter(e=>e.date===statsDate);
-  else if(statsPeriod==='range')list=list.filter(e=>inRange(e.date,statsRangeFrom,statsRangeTo));
-  return list;
+  if(!statsRangeFrom && !statsRangeTo) return entries;
+  return entries.filter(e=>inRange(e.date,statsRangeFrom,statsRangeTo));
 }
 function calcStats(list){
   let totalIncome=0,totalExpense=0;
@@ -1350,97 +1270,55 @@ function calcStats(list){
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
 }
 function updateStatsFilterUI(){
-  const hint=$('statsFilterHint');
-  const isRange=statsPeriod==='range';
-  statsRangeBtn.style.display=isRange?'inline-flex':'none';
-  if(isRange){
-    statsRangeBtn.classList.toggle('has-value',!!(statsRangeFrom||statsRangeTo));
-    statsRangeText.textContent=fmtRange(statsRangeFrom,statsRangeTo);
-  }
-  if(hint){
-    if(statsPeriod==='all')hint.textContent='（统计全部记录）';
-    else if(statsPeriod==='year')hint.textContent=`（${statsYear}年）`;
-    else if(statsPeriod==='month')hint.textContent=`（${statsMonth}）`;
-    else if(statsPeriod==='day')hint.textContent=`（${statsDate||today()}）`;
-    else hint.textContent='';
-  }
+  const has=!!(statsRangeFrom||statsRangeTo);
+  statsRangeBtn.classList.toggle('has-value',has);
+  statsRangeText.textContent=has?fmtRange(statsRangeFrom,statsRangeTo):'选择日期范围';
+  statsFilterHint.textContent=has?'':"（全部记录）";
 }
 
 function getChartFilteredEntries(){
   let list=entries.filter(e=>(e.type||'expense')===chartType);
-  if(chartPeriod==='year'&&chartYear)list=list.filter(e=>e.date.startsWith(String(chartYear)));
-  else if(chartPeriod==='month'&&chartMonth)list=list.filter(e=>e.date.startsWith(chartMonth));
-  else if(chartPeriod==='day'&&chartDate)list=list.filter(e=>e.date===chartDate);
-  else if(chartPeriod==='range')list=list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
-  return list;
+  if(!chartRangeFrom && !chartRangeTo) return list;
+  return list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
 }
 function updateChartFilterUI(){
-  const hint=$('chartFilterHint');
-  const isRange=chartPeriod==='range';
-  chartRangeBtn.style.display=isRange?'inline-flex':'none';
-  if(isRange){
-    chartRangeBtn.classList.toggle('has-value',!!(chartRangeFrom||chartRangeTo));
-    chartRangeText.textContent=fmtRange(chartRangeFrom,chartRangeTo);
-  }
-  if(hint){
-    if(chartPeriod==='all')hint.textContent='（统计全部记录）';
-    else if(chartPeriod==='year')hint.textContent=`（${chartYear}年）`;
-    else if(chartPeriod==='month')hint.textContent=`（${chartMonth}）`;
-    else if(chartPeriod==='day')hint.textContent=`（${chartDate||today()}）`;
-    else hint.textContent='';
-  }
+  const has=!!(chartRangeFrom||chartRangeTo);
+  chartRangeBtn.classList.toggle('has-value',has);
+  chartRangeText.textContent=has?fmtRange(chartRangeFrom,chartRangeTo):'选择日期范围';
+  chartFilterHint.textContent=has?'':"（全部记录）";
 }
 
 // ===== 类目预算 =====
-function getCatBudgetPeriodKey(){
-  if(catBudgetPeriod==='year')return String(catBudgetYear);
-  if(catBudgetPeriod==='month')return catBudgetMonth;
-  return 'all';
-}
-function getCatBudgetPeriodLabelText(){
-  if(catBudgetPeriod==='year')return `${catBudgetYear}年`;
-  if(catBudgetPeriod==='month'){const [y,m]=catBudgetMonth.split('-');return `${y}年${parseInt(m)}月`}
-  if(catBudgetPeriod==='range')return fmtRange(catBudgetRangeFrom,catBudgetRangeTo);
-  return '全部';
-}
 function updateCatBudgetFilterUI(){
-  const info=$('catBudgetPeriodInfo');
-  const isRange=catBudgetPeriod==='range';
-  catBudgetRangeBtn.style.display=isRange?'inline-flex':'none';
-  if(isRange){
-    catBudgetRangeBtn.classList.toggle('has-value',!!(catBudgetRangeFrom||catBudgetRangeTo));
-    catBudgetRangeText.textContent=fmtRange(catBudgetRangeFrom,catBudgetRangeTo);
-  }
-  document.querySelectorAll('#catBudgetPresets .tp-preset').forEach(t=>t.classList.toggle('active',t.dataset.catPeriod===catBudgetPeriod));
-  if(info)info.textContent=`正在查看：${getCatBudgetPeriodLabelText()}`;
+  const has=!!(catBudgetRangeFrom||catBudgetRangeTo);
+  catBudgetRangeBtn.classList.toggle('has-value',has);
+  catBudgetRangeText.textContent=has?fmtRange(catBudgetRangeFrom,catBudgetRangeTo):'选择日期范围';
+  catBudgetPeriodInfo.textContent=`正在查看：${has?fmtRange(catBudgetRangeFrom,catBudgetRangeTo):'全部'}`;
 }
 function getUsageForPeriod(){
   const usage={};
-  const periodKey=getCatBudgetPeriodKey();
   for(const e of entries){
     if((e.type||'expense')!=='expense')continue;
-    let match=false;
-    if(catBudgetPeriod==='range'){
+    let match=true;
+    if(catBudgetRangeFrom || catBudgetRangeTo){
       match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
-    }else if(periodKey==='all')match=true;
-    else if(/^\d{4}$/.test(periodKey))match=e.date.startsWith(periodKey);
-    else if(/^\d{4}-\d{2}$/.test(periodKey))match=e.date.startsWith(periodKey);
+    }
     if(match){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+(Number(e.amount)||0)}
   }
   return usage;
 }
 function renderCategoryBudgets(){
   if(!catBudgetList)return;
-  const periodKey=getCatBudgetPeriodKey();
-  const periodCats=categoryBudgets[periodKey]||{};
-  const periodFree=freeBudgets[periodKey]!==undefined?freeBudgets[periodKey]:null;
+  const periodCats=categoryBudgets.all||{};
+  const periodFree=freeBudgets.all!==undefined?freeBudgets.all:null;
   const usage=getUsageForPeriod();
   const cats=new Set();
   Object.keys(periodCats).forEach(c=>cats.add(c));
   Object.keys(usage).forEach(c=>{if(EXPENSE_CATEGORIES.includes(c))cats.add(c)});
   const hasFreeBudget=periodFree!==null&&periodFree>0;
+  const labelText=(catBudgetRangeFrom||catBudgetRangeTo)?fmtRange(catBudgetRangeFrom,catBudgetRangeTo):'全部';
   if(cats.size===0&&!hasFreeBudget){
-    catBudgetList.innerHTML=`<div class="empty-state" style="padding:1.2rem;"><div class="icon">🎨</div><div style="font-size:.85rem;">点击右上角「设置」，为「${getCatBudgetPeriodLabelText()}」设置类目可支配金额</div></div>`;
+    catBudgetList.innerHTML=`<div class="empty-state" style="padding:1.2rem;"><div class="icon">🎨</div><div style="font-size:.85rem;">点击右上角「设置」为各类别设置可支配金额</div></div>`;
     return;
   }
   let html='';
@@ -1450,7 +1328,7 @@ function renderCategoryBudgets(){
     const isOver=remaining<0;
     const pct=periodFree>0?Math.min(100,(totalUsed/periodFree)*100):0;
     html+=`<div class="cat-budget-summary ${isOver?'over':''}">
-      <div class="title">💰 自由支配费用（${getCatBudgetPeriodLabelText()}总额度）</div>
+      <div class="title">💰 自由支配费用（${labelText}）</div>
       <div class="row"><span class="label">已用 ¥${fmtMoney(totalUsed)} / 上限 ¥${fmtMoney(periodFree)}</span>
       <span class="value">${isOver?'超支':'剩余'} ¥${fmtMoney(Math.abs(remaining))}</span></div>
       <div class="cat-budget-progress"><div class="fill ${isOver?'over':''}" style="width:${pct}%"></div></div>
@@ -1486,8 +1364,7 @@ function renderCategoryBudgets(){
 }
 function renderCatBudgetInputs(){
   if(!catBudgetInputs)return;
-  const periodKey=editingCatBudgetPeriodKey;
-  const periodCats=categoryBudgets[periodKey]||{};
+  const periodCats=categoryBudgets.all||{};
   let html='';
   EXPENSE_CATEGORIES.forEach(cat=>{
     const val=(periodCats[cat]!==undefined&&periodCats[cat]!==null)?periodCats[cat]:'';
@@ -1496,30 +1373,21 @@ function renderCatBudgetInputs(){
   catBudgetInputs.innerHTML=html;
 }
 function openCatBudgetModal(){
-  editingCatBudgetPeriodKey=getCatBudgetPeriodKey();
-  const labelText=(()=>{
-    if(editingCatBudgetPeriodKey==='all')return '全部';
-    if(/^\d{4}$/.test(editingCatBudgetPeriodKey))return `${editingCatBudgetPeriodKey}年`;
-    const [y,m]=editingCatBudgetPeriodKey.split('-');
-    return `${y}年${parseInt(m)}月`;
-  })();
-  catBudgetPeriodLabel.textContent=`正在设置：${labelText}${catBudgetPeriod==='range'?'（区间模式使用「全部」预算）':''}`;
   renderCatBudgetInputs();
-  const fb=freeBudgets[editingCatBudgetPeriodKey];
+  const fb=freeBudgets.all;
   freeBudgetInput.value=(fb!==null&&fb!==undefined)?fb:'';
   catBudgetModal.classList.add('active');
 }
 function saveCatBudgetModal(){
-  const periodKey=editingCatBudgetPeriodKey;
   const fbVal=parseFloat(freeBudgetInput.value);
-  freeBudgets[periodKey]=(!isNaN(fbVal)&&fbVal>0)?Math.round(fbVal*100)/100:null;
+  freeBudgets.all=(!isNaN(fbVal)&&fbVal>0)?Math.round(fbVal*100)/100:null;
   const newBudgets={};
   catBudgetInputs.querySelectorAll('input').forEach(inp=>{
     const cat=inp.dataset.cat;
     const val=parseFloat(inp.value);
     if(!isNaN(val)&&val>0)newBudgets[cat]=Math.round(val*100)/100;
   });
-  categoryBudgets[periodKey]=newBudgets;
+  categoryBudgets.all=newBudgets;
   saveLocal();renderAll();pushCloud();
   catBudgetModal.classList.remove('active');
   toast('✅ 类目可支配金额已更新');
@@ -1893,21 +1761,12 @@ function renderEntries(){
   updateBudgetStatus(c);
   renderCategoryBudgets();
   updateSearchUI();
-  updateTableRangeTabStyle();
 
-  // 搜索过滤
-  let visibleEntries=filterEntriesBySearch(entries);
-  // 表格区间过滤（仅当 viewMode === 'range' 时）
-  if(viewMode==='range'&&(tableRangeFrom||tableRangeTo)){
-    visibleEntries=visibleEntries.filter(e=>inRange(e.date,tableRangeFrom,tableRangeTo));
-  }
+  const visibleEntries=filterEntriesBySearch(entries);
 
   if(visibleEntries.length===0){
-    if((isSearchActive()||viewMode==='range')&&entries.length>0){
-      let msg='';
-      if(viewMode==='range'&&(tableRangeFrom||tableRangeTo))msg=`没有 ${fmtRange(tableRangeFrom,tableRangeTo)} 区间的记录`;
-      else msg=`没有找到匹配「${esc(searchKeyword||'筛选条件')}」的记录`;
-      tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><div>${msg}</div><div style="font-size:.8rem;margin-top:.5rem;color:#cbd5e1;">试试其他条件或点击"重置"</div></div></td></tr>`;
+    if(isSearchActive()&&entries.length>0){
+      tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配「${esc(searchKeyword||'筛选条件')}」的记录</div><div style="font-size:.8rem;margin-top:.5rem;color:#cbd5e1;">试试其他关键词，或点击上方"清空搜索"</div></div></td></tr>`;
     }else{
       tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
     }
@@ -2171,7 +2030,6 @@ function renderAll(){
   updateStatsFilterUI();
   updateChartFilterUI();
   updateCatBudgetFilterUI();
-  updateTableRangeTabStyle();
   renderEntries();
   renderChart();
   renderGoals();
@@ -2214,7 +2072,7 @@ async function checkSession(){
 }
 
 function init(){
-  entryDate.value=today();statsDate=today();chartDate=today();
+  entryDate.value=today();
   updateCategoryOptions();
 
   authForm.addEventListener('submit',handleAuth);
@@ -2247,60 +2105,16 @@ function init(){
   searchRangeBtn.addEventListener('click',()=>openDatePicker('search',searchDateStart,searchDateEnd));
   searchResetBtn.addEventListener('click',clearSearch);
 
-  // ===== 统计卡片时间选择 =====
-  document.querySelectorAll('#statsPresets .tp-preset').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const p=this.dataset.statsPeriod;
-      statsPeriod=p;
-      if(p==='year')statsYear=new Date().getFullYear();
-      else if(p==='month')statsMonth=`${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
-      else if(p==='day')statsDate=today();
-      document.querySelectorAll('#statsPresets .tp-preset').forEach(b=>b.classList.remove('active'));
-      this.classList.add('active');
-      updateStatsFilterUI();
-      renderEntries();
-    });
-  });
+  // ===== 各模块日期范围按钮 =====
   statsRangeBtn.addEventListener('click',()=>openDatePicker('stats',statsRangeFrom,statsRangeTo));
-
-  // ===== 图表时间选择 =====
-  document.querySelectorAll('#chartPresets .tp-preset').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const p=this.dataset.chartPeriod;
-      chartPeriod=p;
-      if(p==='year')chartYear=new Date().getFullYear();
-      else if(p==='month')chartMonth=`${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
-      else if(p==='day')chartDate=today();
-      document.querySelectorAll('#chartPresets .tp-preset').forEach(b=>b.classList.remove('active'));
-      this.classList.add('active');
-      updateChartFilterUI();
-      renderChart();
-    });
-  });
   chartRangeBtn.addEventListener('click',()=>openDatePicker('chart',chartRangeFrom,chartRangeTo));
-
-  // ===== 类目预算时间选择 =====
-  document.querySelectorAll('#catBudgetPresets .tp-preset').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const p=this.dataset.catPeriod;
-      catBudgetPeriod=p;
-      if(p==='year')catBudgetYear=new Date().getFullYear();
-      else if(p==='month')catBudgetMonth=`${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
-      document.querySelectorAll('#catBudgetPresets .tp-preset').forEach(b=>b.classList.remove('active'));
-      this.classList.add('active');
-      updateCatBudgetFilterUI();
-      renderCategoryBudgets();
-    });
-  });
   catBudgetRangeBtn.addEventListener('click',()=>openDatePicker('catBudget',catBudgetRangeFrom,catBudgetRangeTo));
 
   // ===== 日期选择器弹窗 =====
   datePickerClose.addEventListener('click',closeDatePicker);
   datePickerModal.addEventListener('click',function(e){if(e.target===this)closeDatePicker()});
   dpPresets.querySelectorAll('.dp-preset-btn').forEach(b=>{
-    b.addEventListener('click',function(){
-      applyDPPreset(this.dataset.dpPreset);
-    });
+    b.addEventListener('click',function(){applyDPPreset(this.dataset.dpPreset)});
   });
   dpClearBtn.addEventListener('click',clearDatePicker);
   dpConfirmBtn.addEventListener('click',confirmDatePicker);
@@ -2374,23 +2188,7 @@ function init(){
 
   document.querySelectorAll('.chart-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');chartType=this.dataset.type;renderChart()})});
 
-  // ===== 表格视图切换（含"按区间"） =====
-  document.querySelectorAll('.view-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      const v=this.dataset.view;
-      if(v==='range'){
-        // 点击"按区间"→ 弹出日期选择器
-        openDatePicker('tableRange',tableRangeFrom,tableRangeTo);
-      }else{
-        viewMode=v;
-        saveLocal();
-        applyViewTabs();
-        updateTableRangeTabStyle();
-        renderEntries();
-        pushCloud();
-      }
-    });
-  });
+  document.querySelectorAll('.view-tab').forEach(tab=>{tab.addEventListener('click',function(){viewMode=this.dataset.view;saveLocal();applyViewTabs();renderEntries();pushCloud()})});
 
   $('expandAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=true});saveLocal();renderEntries();pushCloud();toast('⬇️ 已展开全部')});
   $('collapseAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=false});saveLocal();renderEntries();pushCloud();toast('⬆️ 已收起全部')});
