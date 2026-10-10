@@ -62,14 +62,12 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .switch input:checked+.slider:before{transform:translateX(20px)}
 .module-hidden{display:none!important}
 
-/* ===== 统一日期范围选择按钮 ===== */
 .tp-range-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border:1.5px solid #e2e8f0;background:#fff;border-radius:40px;font-size:.83rem;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .tp-range-btn:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff}
 .tp-range-btn.has-value{border-color:#2563eb;background:#eff6ff;color:#2563eb;font-weight:600}
 .tp-range-btn .tp-icon{font-size:.9rem}
 .tp-range-btn .tp-text{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* 日期选择面板 */
 .dp-modal{max-width:700px;width:95%;padding:1.2rem 1.4rem}
 .dp-layout{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
 .dp-presets-col{display:flex;flex-direction:column;gap:.2rem;min-width:110px;flex-shrink:0;padding-right:1rem;border-right:1px solid #f1f4f8}
@@ -187,8 +185,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .chart-body{display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center;justify-content:center}
 .chart-canvas-wrap{position:relative;width:220px;height:220px;flex-shrink:0}
 .chart-legend{flex:1;min-width:200px;display:flex;flex-direction:column;gap:.5rem;max-height:240px;overflow-y:auto}
-.legend-item{display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;border-radius:10px;background:#f8fafc;font-size:.9rem;border:1px solid #f1f4f8}
-.legend-item:hover{background:#f1f5f9}
+.legend-item{display:flex;align-items:center;justify-content:space-between;padding:.45rem .7rem;border-radius:10px;background:#f8fafc;font-size:.9rem;border:1px solid #f1f4f8;cursor:pointer;transition:all .15s}
+.legend-item:hover{background:#eff6ff;border-color:#bfdbfe;transform:translateX(2px)}
 .legend-left{display:flex;align-items:center;gap:.5rem}
 .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .legend-name{font-weight:500;color:#334155}
@@ -196,6 +194,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .legend-amount{font-weight:600;color:#0f172a;font-variant-numeric:tabular-nums}
 .chart-empty{text-align:center;padding:2rem 1rem;color:#94a3b8;width:100%}
 .chart-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
+.chart-hint{font-size:.75rem;color:#94a3b8;text-align:center;margin-top:.5rem;}
 .goal-item{background:#f8fafc;border-radius:14px;padding:1rem 1.2rem;margin-bottom:.8rem;border:1px solid #f1f4f8;transition:transform .15s}
 .goal-item:hover{transform:translateY(-1px)}
 .goal-item:last-child{margin-bottom:0}
@@ -313,6 +312,30 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .debt-summary .label{font-size:.8rem;font-weight:600;color:#78350f}
 .debt-summary.purple .label{color:#5b21b6}
 .debt-summary .amount{font-size:1.1rem;font-weight:700;color:#dc2626}
+
+/* 分类详情弹窗 */
+.cat-detail-modal{max-width:520px;width:95%;padding:1.6rem 1.8rem}
+.cat-detail-summary{background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1rem;border:1px solid #c7d2fe;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.cat-detail-summary.income{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-color:#86efac}
+.cat-detail-summary.expense{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fecaca}
+.cat-detail-summary .label{font-size:.82rem;font-weight:600;color:#475569}
+.cat-detail-summary .amount{font-size:1.15rem;font-weight:700;color:#0f172a}
+.cat-detail-summary.income .amount{color:#16a34a}
+.cat-detail-summary.expense .amount{color:#dc2626}
+.cat-detail-list{display:flex;flex-direction:column;gap:.5rem;max-height:55vh;overflow-y:auto;padding-right:.3rem}
+.cat-detail-item{background:#f8fafc;border-radius:12px;padding:.75rem .95rem;border:1px solid #f1f4f8;display:flex;justify-content:space-between;align-items:center;gap:.6rem;transition:all .15s}
+.cat-detail-item:hover{background:#f1f5f9;border-color:#e2e8f0}
+.cat-detail-item .ci-left{flex:1;min-width:0}
+.cat-detail-item .ci-desc{font-weight:500;font-size:.9rem;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-detail-item .ci-date{font-size:.72rem;color:#94a3b8;margin-top:.15rem}
+.cat-detail-item .ci-right{text-align:right;flex-shrink:0}
+.cat-detail-item .ci-amount{font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
+.cat-detail-item .ci-amount.income{color:#16a34a}
+.cat-detail-item .ci-amount.expense{color:#dc2626}
+.cat-detail-item .ci-amount.debt{color:#d97706}
+.cat-detail-empty{text-align:center;padding:2.5rem 1rem;color:#94a3b8}
+.cat-detail-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
+
 @media(max-width:700px){
   body{padding:1rem .8rem}
   .header h1{font-size:1.5rem}
@@ -335,6 +358,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
   .dp-presets-col{flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid #f1f4f8;padding-right:0;padding-bottom:.7rem;min-width:0}
   .dp-month{min-width:0}
   .tp-range-btn .tp-text{max-width:130px}
+  .cat-detail-modal{padding:1.2rem 1rem}
 }
 </style>
 </head>
@@ -387,7 +411,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     <div class="modal-box" style="max-width:480px;">
       <button class="close-btn" id="catBudgetClose">✕</button>
       <h2>🎨 类目可支配金额</h2>
-      <div id="catBudgetPeriodLabel" style="font-size:.85rem;color:#7c3aed;font-weight:600;background:#f3e8ff;padding:.4rem .8rem;border-radius:8px;margin-bottom:1rem;display:inline-block;">正在设置各类别的可支配金额</div>
       <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">为每个支出类别设置可支配上限，留空表示不限。</p>
       <div class="form-group" style="margin-bottom:.4rem;">
         <label style="font-weight:600;color:#7c3aed;text-transform:none;font-size:.85rem;">💰 自由支配费用（全部支出总额上限）</label>
@@ -441,6 +464,19 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <span class="amount" id="debtListTotal">¥0.00</span>
       </div>
       <div class="debt-list" id="debtListBody"></div>
+    </div>
+  </div>
+
+  <!-- 分类详情弹窗（新） -->
+  <div class="modal-overlay" id="categoryDetailModal">
+    <div class="modal-box cat-detail-modal">
+      <button class="close-btn" id="categoryDetailClose">✕</button>
+      <h2 id="categoryDetailTitle">📂 分类详情</h2>
+      <div class="cat-detail-summary" id="categoryDetailSummary">
+        <span class="label" id="categoryDetailCount">0 笔</span>
+        <span class="amount" id="categoryDetailTotal">¥0.00</span>
+      </div>
+      <div class="cat-detail-list" id="categoryDetailBody"></div>
     </div>
   </div>
 
@@ -566,6 +602,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <div class="icon">📊</div>
       <div>暂无数据，快去记账吧！</div>
     </div>
+    <div class="chart-hint" id="chartHint" style="display:none;">💡 点击扇区或图例，可查看该分类的详细记录</div>
   </section>
 
   <section class="budget-section" id="budgetSection">
@@ -716,7 +753,6 @@ let searchDateEnd='';
 
 let viewMode='month';
 
-// 各模块独立的日期范围
 let statsRangeFrom='', statsRangeTo='';
 let chartRangeFrom='', chartRangeTo='';
 let catBudgetRangeFrom='', catBudgetRangeTo='';
@@ -725,7 +761,6 @@ let activeGoalId=null, activeRepayId=null;
 let categoryChart=null;
 let chartType='expense';
 
-// ===== 日期选择器状态 =====
 let dpTarget=null;
 let dpFrom='', dpTo='';
 let dpBaseMonth=null;
@@ -752,15 +787,16 @@ const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),
 const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
 const debtListModal=$('debtListModal'),debtListTitle=$('debtListTitle'),debtListSummary=$('debtListSummary'),debtListTotal=$('debtListTotal'),debtListBody=$('debtListBody'),debtListClose=$('debtListClose');
 const catBudgetModal=$('catBudgetModal'),catBudgetClose=$('catBudgetClose'),catBudgetInputs=$('catBudgetInputs'),catBudgetSave=$('catBudgetSave'),catBudgetCancel=$('catBudgetCancel'),freeBudgetInput=$('freeBudgetInput'),editCatBudgetBtn=$('editCatBudgetBtn'),catBudgetList=$('catBudgetList');
-const catBudgetPeriodLabel=$('catBudgetPeriodLabel'),catBudgetPeriodInfo=$('catBudgetPeriodInfo');
+const catBudgetPeriodInfo=$('catBudgetPeriodInfo');
 const importHelpModal=$('importHelpModal'),importHelpClose=$('importHelpClose'),importConfirmBtn=$('importConfirmBtn'),importCancelBtn=$('importCancelBtn');
 const fileDrop=$('fileDrop'),fileInput=$('fileInput'),fileName=$('fileName'),importPreview=$('importPreview');
 const searchInput=$('searchInput'),searchClearBtn=$('searchClearBtn'),searchType=$('searchType'),searchResetBtn=$('searchResetBtn'),searchInfo=$('searchInfo');
 const statsRangeBtn=$('statsRangeBtn'),statsRangeText=$('statsRangeText'),statsFilterHint=$('statsFilterHint');
-const chartRangeBtn=$('chartRangeBtn'),chartRangeText=$('chartRangeText'),chartFilterHint=$('chartFilterHint');
+const chartRangeBtn=$('chartRangeBtn'),chartRangeText=$('chartRangeText'),chartFilterHint=$('chartFilterHint'),chartHint=$('chartHint');
 const catBudgetRangeBtn=$('catBudgetRangeBtn'),catBudgetRangeText=$('catBudgetRangeText');
 const searchRangeBtn=$('searchRangeBtn'),searchRangeText=$('searchRangeText');
 const datePickerModal=$('datePickerModal'),datePickerClose=$('datePickerClose'),datePickerTitle=$('datePickerTitle'),dpPresets=$('dpPresets'),dpCalendars=$('dpCalendars'),dpRangeDisplay=$('dpRangeDisplay'),dpClearBtn=$('dpClearBtn'),dpConfirmBtn=$('dpConfirmBtn');
+const categoryDetailModal=$('categoryDetailModal'),categoryDetailClose=$('categoryDetailClose'),categoryDetailTitle=$('categoryDetailTitle'),categoryDetailSummary=$('categoryDetailSummary'),categoryDetailCount=$('categoryDetailCount'),categoryDetailTotal=$('categoryDetailTotal'),categoryDetailBody=$('categoryDetailBody');
 const toastEl=$('toast');
 
 const moduleMap={
@@ -836,10 +872,7 @@ function openDatePicker(target,from,to){
   updateDPPresetActive();
   datePickerModal.classList.add('active');
 }
-function closeDatePicker(){
-  datePickerModal.classList.remove('active');
-  dpTarget=null;
-}
+function closeDatePicker(){datePickerModal.classList.remove('active');dpTarget=null}
 function renderDatePickerCalendars(){
   if(!dpBaseMonth)dpBaseMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
   const m1=new Date(dpBaseMonth);
@@ -854,9 +887,7 @@ function renderDatePickerCalendars(){
   });
   dpCalendars.querySelectorAll('.dp-day').forEach(el=>{
     if(el.classList.contains('dp-empty'))return;
-    el.addEventListener('click',function(){
-      handleDPDayClick(this.dataset.date);
-    });
+    el.addEventListener('click',function(){handleDPDayClick(this.dataset.date)});
   });
 }
 function renderDPMonth(base){
@@ -880,9 +911,7 @@ function renderDPMonth(base){
     const dateStr=`${year}-${pad(month+1)}-${pad(d)}`;
     let cls='dp-day';
     if(dateStr===tdy)cls+=' dp-today';
-    if(dpFrom&&dpTo){
-      if(dateStr>=dpFrom&&dateStr<=dpTo)cls+=' dp-in-range';
-    }
+    if(dpFrom&&dpTo){if(dateStr>=dpFrom&&dateStr<=dpTo)cls+=' dp-in-range'}
     if(dpPicking==='to'&&dpFrom&&dpHover){
       const s=dpFrom<=dpHover?dpFrom:dpHover;
       const en=dpFrom<=dpHover?dpHover:dpFrom;
@@ -896,41 +925,22 @@ function renderDPMonth(base){
   return html;
 }
 function handleDPDayClick(date){
-  if(dpPicking==='from'||!dpFrom){
-    dpFrom=date;
-    dpTo='';
-    dpPicking='to';
-    dpHover='';
-  }else if(dpPicking==='to'){
-    if(date<dpFrom){
-      dpTo=dpFrom;
-      dpFrom=date;
-    }else{
-      dpTo=date;
-    }
-    dpPicking='from';
-    dpHover='';
+  if(dpPicking==='from'||!dpFrom){dpFrom=date;dpTo='';dpPicking='to';dpHover=''}
+  else if(dpPicking==='to'){
+    if(date<dpFrom){dpTo=dpFrom;dpFrom=date}else{dpTo=date}
+    dpPicking='from';dpHover='';
   }
   renderDatePickerCalendars();
   updateDatePickerDisplay();
   updateDPPresetActive();
 }
 function updateDatePickerDisplay(){
-  if(dpFrom||dpTo){
-    dpRangeDisplay.classList.remove('empty');
-    dpRangeDisplay.textContent=fmtRange(dpFrom,dpTo);
-  }else{
-    dpRangeDisplay.classList.add('empty');
-    dpRangeDisplay.textContent='请选择日期（或点“全部”查看所有）';
-  }
+  if(dpFrom||dpTo){dpRangeDisplay.classList.remove('empty');dpRangeDisplay.textContent=fmtRange(dpFrom,dpTo)}
+  else{dpRangeDisplay.classList.add('empty');dpRangeDisplay.textContent='请选择日期（或点“全部”查看所有）'}
 }
 function updateDPPresetActive(){
   dpPresets.querySelectorAll('.dp-preset-btn').forEach(b=>b.classList.remove('active'));
-  if(!dpFrom&&!dpTo){
-    const btn=dpPresets.querySelector('[data-dp-preset="all"]');
-    if(btn)btn.classList.add('active');
-    return;
-  }
+  if(!dpFrom&&!dpTo){const btn=dpPresets.querySelector('[data-dp-preset="all"]');if(btn)btn.classList.add('active');return}
   const todayStr=today();
   const y=parseDPDate(todayStr);y.setDate(y.getDate()-1);
   const yesterdayStr=fmtDateObj(y);
@@ -946,33 +956,19 @@ function updateDPPresetActive(){
   const lmEnd=`${lmStartD.getFullYear()}-${pad(lmStartD.getMonth()+1)}-${pad(lmLastDay)}`;
   const lastYearStr=String(now.getFullYear()-1);
   const presets={
-    'today':[todayStr,todayStr],
-    'yesterday':[yesterdayStr,yesterdayStr],
-    'last7':[fmtDateObj(d7),todayStr],
-    'last30':[fmtDateObj(d30),todayStr],
-    'last3m':[d3mStr,todayStr],
-    'lastMonth':[lmStart,lmEnd],
-    'thisMonth':[monthStart,todayStr],
-    'lastYear':[`${lastYearStr}-01-01`,`${lastYearStr}-12-31`],
+    'today':[todayStr,todayStr],'yesterday':[yesterdayStr,yesterdayStr],
+    'last7':[fmtDateObj(d7),todayStr],'last30':[fmtDateObj(d30),todayStr],
+    'last3m':[d3mStr,todayStr],'lastMonth':[lmStart,lmEnd],
+    'thisMonth':[monthStart,todayStr],'lastYear':[`${lastYearStr}-01-01`,`${lastYearStr}-12-31`],
     'thisYear':[yearStart,todayStr]
   };
   for(const k in presets){
     const [f,t]=presets[k];
-    if(f===dpFrom&&t===dpTo){
-      const btn=dpPresets.querySelector(`[data-dp-preset="${k}"]`);
-      if(btn)btn.classList.add('active');
-      break;
-    }
+    if(f===dpFrom&&t===dpTo){const btn=dpPresets.querySelector(`[data-dp-preset="${k}"]`);if(btn)btn.classList.add('active');break}
   }
 }
 function applyDPPreset(name){
-  if(name==='all'){
-    dpFrom='';dpTo='';dpPicking='from';dpHover='';
-    renderDatePickerCalendars();
-    updateDatePickerDisplay();
-    updateDPPresetActive();
-    return;
-  }
+  if(name==='all'){dpFrom='';dpTo='';dpPicking='from';dpHover='';renderDatePickerCalendars();updateDatePickerDisplay();updateDPPresetActive();return}
   const todayStr=today();
   let f='',t='';
   if(name==='today'){f=todayStr;t=todayStr}
@@ -996,37 +992,62 @@ function applyDPPreset(name){
   updateDPPresetActive();
 }
 function confirmDatePicker(){
-  if(dpTarget==='stats'){
-    statsRangeFrom=dpFrom;statsRangeTo=dpTo;
-    updateStatsFilterUI();
-    renderEntries();
-  }else if(dpTarget==='chart'){
-    chartRangeFrom=dpFrom;chartRangeTo=dpTo;
-    updateChartFilterUI();
-    renderChart();
-  }else if(dpTarget==='catBudget'){
-    catBudgetRangeFrom=dpFrom;catBudgetRangeTo=dpTo;
-    updateCatBudgetFilterUI();
-    renderCategoryBudgets();
-  }else if(dpTarget==='search'){
-    searchDateStart=dpFrom;searchDateEnd=dpTo;
-    updateSearchRangeBtn();
-    updateSearchUI();
-    renderEntries();
-  }
+  if(dpTarget==='stats'){statsRangeFrom=dpFrom;statsRangeTo=dpTo;updateStatsFilterUI();renderEntries()}
+  else if(dpTarget==='chart'){chartRangeFrom=dpFrom;chartRangeTo=dpTo;updateChartFilterUI();renderChart()}
+  else if(dpTarget==='catBudget'){catBudgetRangeFrom=dpFrom;catBudgetRangeTo=dpTo;updateCatBudgetFilterUI();renderCategoryBudgets()}
+  else if(dpTarget==='search'){searchDateStart=dpFrom;searchDateEnd=dpTo;updateSearchRangeBtn();updateSearchUI();renderEntries()}
   closeDatePicker();
 }
-function clearDatePicker(){
-  dpFrom='';dpTo='';dpPicking='from';dpHover='';
-  renderDatePickerCalendars();
-  updateDatePickerDisplay();
-  updateDPPresetActive();
-}
+function clearDatePicker(){dpFrom='';dpTo='';dpPicking='from';dpHover='';renderDatePickerCalendars();updateDatePickerDisplay();updateDPPresetActive()}
 function updateSearchRangeBtn(){
   const has=searchDateStart||searchDateEnd;
   searchRangeBtn.classList.toggle('has-value',!!has);
   searchRangeText.textContent=has?fmtRange(searchDateStart,searchDateEnd):'日期范围';
 }
+
+// ===== 分类详情弹窗 =====
+function openCategoryDetail(category){
+  // 复用图表的筛选：当前图表类型 + 当前日期范围
+  const filtered=getChartFilteredEntries().filter(e=>(e.category||'其他')===category);
+  const total=filtered.reduce((s,e)=>s+Number(e.amount),0);
+  const typeLabel=chartType==='income'?'收入':'支出';
+  const typeIcon=chartType==='income'?'💰':'💸';
+  categoryDetailTitle.textContent=`📂 ${typeIcon} ${category}`;
+  categoryDetailSummary.className='cat-detail-summary '+(chartType==='income'?'income':'expense');
+  categoryDetailCount.textContent=`${filtered.length} 笔 · ${typeLabel}`;
+  categoryDetailTotal.textContent=`¥${fmtMoney(total)}`;
+
+  if(filtered.length===0){
+    categoryDetailBody.innerHTML=`<div class="cat-detail-empty"><div class="icon">📭</div><div>该分类暂无记录</div></div>`;
+    categoryDetailModal.classList.add('active');
+    return;
+  }
+
+  // 按日期降序排列
+  const sorted=[...filtered].sort((a,b)=>{
+    if(a.date!==b.date)return b.date.localeCompare(a.date);
+    return (b.id||0)-(a.id||0);
+  });
+
+  let html='';
+  sorted.forEach(e=>{
+    const amt=Number(e.amount)||0;
+    const amtCls=chartType==='income'?'income':'expense';
+    const sign=chartType==='income'?'+':'-';
+    html+=`<div class="cat-detail-item">
+      <div class="ci-left">
+        <div class="ci-desc">${esc(e.description||'无描述')}</div>
+        <div class="ci-date">📅 ${fmtDate(e.date)}</div>
+      </div>
+      <div class="ci-right">
+        <div class="ci-amount ${amtCls}">${sign}¥${fmtMoney(amt)}</div>
+      </div>
+    </div>`;
+  });
+  categoryDetailBody.innerHTML=html;
+  categoryDetailModal.classList.add('active');
+}
+function closeCategoryDetail(){categoryDetailModal.classList.remove('active')}
 
 // ===== 搜索高亮 =====
 function highlight(text,kw){
@@ -1038,10 +1059,7 @@ function highlight(text,kw){
     return safe.replace(re,'<mark class="hl">$1</mark>');
   }catch(_){return safe}
 }
-function matchKeyword(str,kw){
-  if(!kw)return true;
-  return String(str||'').toLowerCase().includes(kw.toLowerCase());
-}
+function matchKeyword(str,kw){if(!kw)return true;return String(str||'').toLowerCase().includes(kw.toLowerCase())}
 function filterEntriesBySearch(list){
   const kw=searchKeyword.trim();
   return list.filter(e=>{
@@ -1070,9 +1088,7 @@ function filterEntriesBySearch(list){
     return true;
   });
 }
-function isSearchActive(){
-  return !!(searchKeyword.trim()||searchTypeFilter||searchDateStart||searchDateEnd);
-}
+function isSearchActive(){return !!(searchKeyword.trim()||searchTypeFilter||searchDateStart||searchDateEnd)}
 function updateSearchUI(){
   if(searchInput.value){searchClearBtn.style.display='block'}else{searchClearBtn.style.display='none'}
   updateSearchRangeBtn();
@@ -1082,20 +1098,12 @@ function updateSearchUI(){
     searchInfo.innerHTML=`找到 <strong>${filtered.length}</strong> 条 <span class="clear-link" id="searchClearLink">清空搜索</span>`;
     const link=$('searchClearLink');
     if(link)link.addEventListener('click',clearSearch);
-  }else{
-    searchInfo.style.display='none';
-  }
+  }else{searchInfo.style.display='none'}
 }
 function clearSearch(){
-  searchKeyword='';
-  searchTypeFilter='';
-  searchDateStart='';
-  searchDateEnd='';
-  searchInput.value='';
-  searchType.value='';
-  searchClearBtn.style.display='none';
-  updateSearchUI();
-  renderEntries();
+  searchKeyword='';searchTypeFilter='';searchDateStart='';searchDateEnd='';
+  searchInput.value='';searchType.value='';searchClearBtn.style.display='none';
+  updateSearchUI();renderEntries();
 }
 
 function getDefaultExpanded(key){
@@ -1125,7 +1133,6 @@ function isOldFreeBudgetFormat(obj){
   if(keys.length===0)return true;
   return keys.some(k=>typeof obj[k]==='number');
 }
-
 function migrate(){
   entries.forEach(e=>{
     if(!e.type)e.type='expense';
@@ -1133,16 +1140,10 @@ function migrate(){
   });
   if(!Array.isArray(savingsGoals))savingsGoals=[];
   if(!categoryBudgets||typeof categoryBudgets!=='object'||Array.isArray(categoryBudgets))categoryBudgets={all:{}};
-  if(isOldCatBudgetFormat(categoryBudgets)){
-    const old={...categoryBudgets};
-    categoryBudgets={all:old};
-  }
+  if(isOldCatBudgetFormat(categoryBudgets)){const old={...categoryBudgets};categoryBudgets={all:old}}
   if(!categoryBudgets.all)categoryBudgets.all={};
   if(!freeBudgets||typeof freeBudgets!=='object'||Array.isArray(freeBudgets))freeBudgets={all:null};
-  if(isOldFreeBudgetFormat(freeBudgets)){
-    if('all' in freeBudgets){}
-    else{const v=freeBudgets['all']||null;freeBudgets={all:v}}
-  }
+  if(isOldFreeBudgetFormat(freeBudgets)){if('all' in freeBudgets){}else{const v=freeBudgets['all']||null;freeBudgets={all:v}}}
   if(!('all' in freeBudgets))freeBudgets.all=null;
   const newGS={};
   for(const k in groupState){
@@ -1288,7 +1289,6 @@ function updateChartFilterUI(){
   chartFilterHint.textContent=has?'':"（全部记录）";
 }
 
-// ===== 类目预算 =====
 function updateCatBudgetFilterUI(){
   const has=!!(catBudgetRangeFrom||catBudgetRangeTo);
   catBudgetRangeBtn.classList.toggle('has-value',has);
@@ -1300,9 +1300,7 @@ function getUsageForPeriod(){
   for(const e of entries){
     if((e.type||'expense')!=='expense')continue;
     let match=true;
-    if(catBudgetRangeFrom || catBudgetRangeTo){
-      match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
-    }
+    if(catBudgetRangeFrom || catBudgetRangeTo){match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo)}
     if(match){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+(Number(e.amount)||0)}
   }
   return usage;
@@ -1551,7 +1549,7 @@ function resetImportUI(){
   importPreview.style.display='none';importPreview.innerHTML='';
 }
 
-// ===== 图表 =====
+// ===== 图表（支持点击分类查看详情） =====
 function renderChart(){
   const canvas=document.getElementById('categoryChart');
   const legendEl=document.getElementById('chartLegend');
@@ -1565,23 +1563,60 @@ function renderChart(){
   const values=labels.map(l=>map[l]);
   const total=values.reduce((s,v)=>s+v,0);
   if(categoryChart){categoryChart.destroy();categoryChart=null}
-  if(labels.length===0){chartBody.style.display='none';emptyEl.style.display='block';legendEl.innerHTML='';return}
-  chartBody.style.display='flex';emptyEl.style.display='none';
+  if(labels.length===0){
+    chartBody.style.display='none';
+    emptyEl.style.display='block';
+    legendEl.innerHTML='';
+    chartHint.style.display='none';
+    return;
+  }
+  chartBody.style.display='flex';
+  emptyEl.style.display='none';
+  chartHint.style.display='block';
   const colors=labels.map((l,i)=>getColor(l,i));
   categoryChart=new Chart(canvas.getContext('2d'),{
     type:'doughnut',
     data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:8}]},
-    options:{responsive:true,maintainAspectRatio:true,cutout:'62%',
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,23,42,.9)',padding:10,
-        callbacks:{label:ctx=>{const v=ctx.parsed;const pct=total>0?((v/total)*100).toFixed(1):'0';return ` ¥${fmtMoney(v)} (${pct}%)`}}}},
-      animation:{duration:400}}
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      cutout:'62%',
+      onClick:(event,elements)=>{
+        if(elements && elements.length>0){
+          const idx=elements[0].index;
+          openCategoryDetail(labels[idx]);
+        }
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(15,23,42,.9)',padding:10,
+          callbacks:{
+            label:ctx=>{const v=ctx.parsed;const pct=total>0?((v/total)*100).toFixed(1):'0';return ` ¥${fmtMoney(v)} (${pct}%)  · 点击查看`}
+          }
+        }
+      },
+      animation:{duration:400}
+    }
   });
   let legendHtml='';
   labels.forEach((l,i)=>{
     const v=values[i];const pct=total>0?((v/total)*100).toFixed(1):'0';
-    legendHtml+=`<div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:${colors[i]}"></span><span class="legend-name">${esc(l)}</span><span class="legend-pct">${pct}%</span></div><span class="legend-amount">¥${fmtMoney(v)}</span></div>`;
+    legendHtml+=`<div class="legend-item" data-cat="${esc(l)}" title="点击查看「${esc(l)}」的详细记录">
+      <div class="legend-left">
+        <span class="legend-dot" style="background:${colors[i]}"></span>
+        <span class="legend-name">${esc(l)}</span>
+        <span class="legend-pct">${pct}%</span>
+      </div>
+      <span class="legend-amount">¥${fmtMoney(v)}</span>
+    </div>`;
   });
   legendEl.innerHTML=legendHtml;
+  // 绑定图例点击
+  legendEl.querySelectorAll('.legend-item').forEach(el=>{
+    el.addEventListener('click',function(){
+      openCategoryDetail(this.dataset.cat);
+    });
+  });
 }
 
 // ===== 表格 =====
@@ -2084,38 +2119,19 @@ function init(){
   $('clearAllBtn').addEventListener('click',clearAll);
   $('exportBtn').addEventListener('click',exportCSV);
 
-  // ===== 搜索事件 =====
-  searchInput.addEventListener('input',function(){
-    searchKeyword=this.value;
-    updateSearchUI();
-    renderEntries();
-  });
-  searchClearBtn.addEventListener('click',function(){
-    searchInput.value='';
-    searchKeyword='';
-    updateSearchUI();
-    renderEntries();
-    searchInput.focus();
-  });
-  searchType.addEventListener('change',function(){
-    searchTypeFilter=this.value;
-    updateSearchUI();
-    renderEntries();
-  });
+  searchInput.addEventListener('input',function(){searchKeyword=this.value;updateSearchUI();renderEntries()});
+  searchClearBtn.addEventListener('click',function(){searchInput.value='';searchKeyword='';updateSearchUI();renderEntries();searchInput.focus()});
+  searchType.addEventListener('change',function(){searchTypeFilter=this.value;updateSearchUI();renderEntries()});
   searchRangeBtn.addEventListener('click',()=>openDatePicker('search',searchDateStart,searchDateEnd));
   searchResetBtn.addEventListener('click',clearSearch);
 
-  // ===== 各模块日期范围按钮 =====
   statsRangeBtn.addEventListener('click',()=>openDatePicker('stats',statsRangeFrom,statsRangeTo));
   chartRangeBtn.addEventListener('click',()=>openDatePicker('chart',chartRangeFrom,chartRangeTo));
   catBudgetRangeBtn.addEventListener('click',()=>openDatePicker('catBudget',catBudgetRangeFrom,catBudgetRangeTo));
 
-  // ===== 日期选择器弹窗 =====
   datePickerClose.addEventListener('click',closeDatePicker);
   datePickerModal.addEventListener('click',function(e){if(e.target===this)closeDatePicker()});
-  dpPresets.querySelectorAll('.dp-preset-btn').forEach(b=>{
-    b.addEventListener('click',function(){applyDPPreset(this.dataset.dpPreset)});
-  });
+  dpPresets.querySelectorAll('.dp-preset-btn').forEach(b=>{b.addEventListener('click',function(){applyDPPreset(this.dataset.dpPreset)})});
   dpClearBtn.addEventListener('click',clearDatePicker);
   dpConfirmBtn.addEventListener('click',confirmDatePicker);
   dpCalendars.addEventListener('mouseover',function(e){
@@ -2134,6 +2150,10 @@ function init(){
       });
     }
   });
+
+  // 分类详情弹窗关闭
+  categoryDetailClose.addEventListener('click',closeCategoryDetail);
+  categoryDetailModal.addEventListener('click',function(e){if(e.target===this)closeCategoryDetail()});
 
   editCatBudgetBtn.addEventListener('click',openCatBudgetModal);
   catBudgetClose.addEventListener('click',()=>catBudgetModal.classList.remove('active'));
