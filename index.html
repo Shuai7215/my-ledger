@@ -100,7 +100,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .dp-day.dp-range-start{background:#2563eb!important;color:#fff!important;font-weight:700;border-radius:6px 0 0 6px}
 .dp-day.dp-range-end{background:#2563eb!important;color:#fff!important;font-weight:700;border-radius:0 6px 6px 0}
 .dp-day.dp-range-start.dp-range-end{border-radius:6px}
-/* 修复 Bug 2：今天被选为起点/终点时，圆点变白 */
 .dp-day.dp-range-start.dp-today::after,
 .dp-day.dp-range-end.dp-today::after{background:#fff}
 .dp-footer{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid #f1f4f8;margin-top:.5rem}
@@ -221,10 +220,11 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .form-actions{display:flex;gap:.6rem;flex:0 0 auto;align-items:center;padding-bottom:2px}
 .table-wrapper{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid #f0f2f5}
 .table-header-bar{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;border-bottom:1px solid #f1f4f8;flex-wrap:wrap;gap:.6rem;background:#fbfcfe}
-.view-tabs{display:flex;gap:.3rem;background:#f1f5f9;padding:.25rem;border-radius:40px}
-.view-tab{padding:.35rem 1.1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+.view-tabs{display:flex;gap:.3rem;background:#f1f5f9;padding:.25rem;border-radius:40px;flex-wrap:wrap}
+.view-tab{padding:.35rem 1.1rem;border:none;background:transparent;border-radius:40px;font-size:.85rem;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s;font-family:inherit}
 .view-tab:hover{color:#334155}
 .view-tab.active{background:#fff;color:#2563eb;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.view-tab.range-has-value{color:#2563eb;font-weight:600}
 .table-actions{display:flex;gap:.4rem}
 .search-bar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.8rem 1.2rem;border-bottom:1px solid #f1f4f8;background:#fff}
 .search-input-wrap{position:relative;flex:1 1 200px;min-width:160px}
@@ -478,11 +478,10 @@ tr.detail-row.over-budget{background-color:#fef2f2}
     </div>
   </div>
 
-  <!-- 统一日期选择器弹窗（方案4：新增 上个月/去年） -->
   <div class="modal-overlay" id="datePickerModal">
     <div class="modal-box dp-modal">
       <button class="close-btn" id="datePickerClose">✕</button>
-      <h2 style="margin-bottom:1rem;">📅 选择日期范围</h2>
+      <h2 style="margin-bottom:1rem;" id="datePickerTitle">📅 选择日期范围</h2>
       <div class="dp-layout">
         <div class="dp-presets-col" id="dpPresets">
           <button class="dp-preset-btn" data-dp-preset="today">今天</button>
@@ -685,6 +684,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
         <button class="view-tab" data-view="year">📆 按年</button>
         <button class="view-tab active" data-view="month">📅 按月</button>
         <button class="view-tab" data-view="day">📋 按日</button>
+        <button class="view-tab" data-view="range" id="tableRangeTab">🗓️ 按区间</button>
       </div>
       <div class="table-actions">
         <button class="btn btn-outline btn-sm" id="expandAllBtn">⬇️ 展开全部</button>
@@ -750,6 +750,8 @@ let searchDateStart='';
 let searchDateEnd='';
 
 let viewMode='month';
+let tableRangeFrom='';
+let tableRangeTo='';
 let statsPeriod='all', statsYear=new Date().getFullYear(), statsMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, statsDate='';
 let statsRangeFrom='', statsRangeTo='';
 let chartPeriod='all', chartYear=new Date().getFullYear(), chartMonth=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, chartDate='';
@@ -793,7 +795,8 @@ const statsRangeBtn=$('statsRangeBtn'),statsRangeText=$('statsRangeText');
 const chartRangeBtn=$('chartRangeBtn'),chartRangeText=$('chartRangeText');
 const catBudgetRangeBtn=$('catBudgetRangeBtn'),catBudgetRangeText=$('catBudgetRangeText');
 const searchRangeBtn=$('searchRangeBtn'),searchRangeText=$('searchRangeText');
-const datePickerModal=$('datePickerModal'),datePickerClose=$('datePickerClose'),dpPresets=$('dpPresets'),dpCalendars=$('dpCalendars'),dpRangeDisplay=$('dpRangeDisplay'),dpClearBtn=$('dpClearBtn'),dpConfirmBtn=$('dpConfirmBtn');
+const tableRangeTab=$('tableRangeTab');
+const datePickerModal=$('datePickerModal'),datePickerClose=$('datePickerClose'),datePickerTitle=$('datePickerTitle'),dpPresets=$('dpPresets'),dpCalendars=$('dpCalendars'),dpRangeDisplay=$('dpRangeDisplay'),dpClearBtn=$('dpClearBtn'),dpConfirmBtn=$('dpConfirmBtn');
 const toastEl=$('toast');
 
 const moduleMap={
@@ -831,7 +834,6 @@ function fmtRange(from,to){
 }
 function parseDPDate(s){return new Date(s+'T00:00:00')}
 function fmtDateObj(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
-// 方案1：安全地往前推 N 个月（避免月份天数溢出），再 +1 天
 function minusMonthsPlus1(dateStr,months){
   const [y,m,d]=dateStr.split('-').map(Number);
   let newY=y,newM=m-months;
@@ -858,6 +860,15 @@ function openDatePicker(target,from,to){
   const ref=dpFrom||dpTo||today();
   const d=new Date(ref+'T00:00:00');
   dpBaseMonth=new Date(d.getFullYear(),d.getMonth(),1);
+  // 动态标题
+  const titles={
+    'stats':'📅 统计卡片 - 选择日期范围',
+    'chart':'📅 分类占比 - 选择日期范围',
+    'catBudget':'📅 类目可支配 - 选择日期范围',
+    'search':'📅 搜索筛选 - 选择日期范围',
+    'tableRange':'📅 记账表格 - 选择显示区间'
+  };
+  datePickerTitle.textContent=titles[target]||'📅 选择日期范围';
   renderDatePickerCalendars();
   updateDatePickerDisplay();
   updateDPPresetActive();
@@ -872,7 +883,6 @@ function renderDatePickerCalendars(){
   const m1=new Date(dpBaseMonth);
   const m2=new Date(dpBaseMonth.getFullYear(),dpBaseMonth.getMonth()+1,1);
   dpCalendars.innerHTML=renderDPMonth(m1)+renderDPMonth(m2);
-  // 导航（每次重建需重新绑定）
   dpCalendars.querySelectorAll('.dp-nav').forEach(b=>{
     b.addEventListener('click',function(){
       const dir=parseInt(this.dataset.nav);
@@ -880,14 +890,12 @@ function renderDatePickerCalendars(){
       renderDatePickerCalendars();
     });
   });
-  // 日期点击（每次重建需重新绑定）
   dpCalendars.querySelectorAll('.dp-day').forEach(el=>{
     if(el.classList.contains('dp-empty'))return;
     el.addEventListener('click',function(){
       handleDPDayClick(this.dataset.date);
     });
   });
-  // 方案3：不再绑定 mouseenter，改用事件委托（在 init 中一次性绑定）
 }
 function renderDPMonth(base){
   const year=base.getFullYear();
@@ -962,12 +970,10 @@ function updateDPPresetActive(){
   const yesterdayStr=fmtDateObj(y);
   const d7=parseDPDate(todayStr);d7.setDate(d7.getDate()-6);
   const d30=parseDPDate(todayStr);d30.setDate(d30.getDate()-29);
-  // 方案1：用安全函数计算 3 个月前
   const d3mStr=minusMonthsPlus1(todayStr,3);
   const now=new Date();
   const monthStart=`${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
   const yearStart=`${now.getFullYear()}-01-01`;
-  // 方案4：上个月/去年
   const lmStartD=new Date(now.getFullYear(),now.getMonth()-1,1);
   const lmStart=`${lmStartD.getFullYear()}-${pad(lmStartD.getMonth()+1)}-01`;
   const lmLastDay=new Date(now.getFullYear(),now.getMonth(),0).getDate();
@@ -1000,9 +1006,7 @@ function applyDPPreset(name){
   else if(name==='yesterday'){const d=parseDPDate(todayStr);d.setDate(d.getDate()-1);f=t=fmtDateObj(d)}
   else if(name==='last7'){const d=parseDPDate(todayStr);d.setDate(d.getDate()-6);f=fmtDateObj(d);t=todayStr}
   else if(name==='last30'){const d=parseDPDate(todayStr);d.setDate(d.getDate()-29);f=fmtDateObj(d);t=todayStr}
-  // 方案1：用安全函数计算 3 个月前
   else if(name==='last3m'){f=minusMonthsPlus1(todayStr,3);t=todayStr}
-  // 方案4：上个月/去年
   else if(name==='lastMonth'){
     const now=new Date();
     const lm=new Date(now.getFullYear(),now.getMonth()-1,1);
@@ -1036,6 +1040,20 @@ function confirmDatePicker(){
     updateSearchRangeBtn();
     updateSearchUI();
     renderEntries();
+  }else if(dpTarget==='tableRange'){
+    if(!dpFrom&&!dpTo){
+      toast('⚠️ 请先选择日期范围');
+      return;
+    }
+    tableRangeFrom=dpFrom;
+    tableRangeTo=dpTo;
+    viewMode='range';
+    saveLocal();
+    applyViewTabs();
+    updateTableRangeTabStyle();
+    renderEntries();
+    pushCloud();
+    toast(`✅ 表格已筛选：${fmtRange(tableRangeFrom,tableRangeTo)}`);
   }
   closeDatePicker();
 }
@@ -1064,6 +1082,16 @@ function updateSearchRangeBtn(){
   const has=searchDateStart||searchDateEnd;
   searchRangeBtn.classList.toggle('has-value',!!has);
   searchRangeText.textContent=fmtRange(searchDateStart,searchDateEnd);
+}
+function updateTableRangeTabStyle(){
+  if(!tableRangeTab)return;
+  if(viewMode==='range'&&(tableRangeFrom||tableRangeTo)){
+    tableRangeTab.classList.add('range-has-value');
+    tableRangeTab.textContent=`🗓️ ${fmtRange(tableRangeFrom,tableRangeTo)}`;
+  }else{
+    tableRangeTab.classList.remove('range-has-value');
+    tableRangeTab.textContent='🗓️ 按区间';
+  }
 }
 
 // ===== 搜索高亮 =====
@@ -1204,7 +1232,9 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_savings'));if(r){const p=JSON.parse(r);if(Array.isArray(p))savingsGoals=p}}catch(_){savingsGoals=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_hiddenModules'));if(r){const p=JSON.parse(r);if(Array.isArray(p))hiddenModules=p}}catch(_){hiddenModules=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_groupState'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')groupState=p}}catch(_){groupState={}}
-  try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day'].includes(r))viewMode=r}catch(_){}
+  try{const r=localStorage.getItem(localKey('dailyLedger_viewMode'));if(r&&['year','month','day','range'].includes(r))viewMode=r}catch(_){}
+  try{const r=localStorage.getItem(localKey('dailyLedger_tableRangeFrom'));if(r)tableRangeFrom=r}catch(_){}
+  try{const r=localStorage.getItem(localKey('dailyLedger_tableRangeTo'));if(r)tableRangeTo=r}catch(_){}
   try{const r=localStorage.getItem(localKey('dailyLedger_catBudgets'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')categoryBudgets=p}}catch(_){categoryBudgets={all:{}}}
   try{const r=localStorage.getItem(localKey('dailyLedger_freeBudgets'));if(r){const p=JSON.parse(r);if(p&&typeof p==='object')freeBudgets=p}}catch(_){freeBudgets={all:null}}
   try{const r=localStorage.getItem(localKey('dailyLedger_freeBudget'));if(r){const p=parseFloat(r);if(!isNaN(p)&&p>0){if(!freeBudgets||typeof freeBudgets!=='object')freeBudgets={all:null};if(freeBudgets.all===null||freeBudgets.all===undefined)freeBudgets.all=p}}}catch(_){}
@@ -1219,6 +1249,8 @@ function saveLocal(){
   try{localStorage.setItem(localKey('dailyLedger_hiddenModules'),JSON.stringify(hiddenModules))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_groupState'),JSON.stringify(groupState))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_viewMode'),viewMode)}catch(_){}
+  try{localStorage.setItem(localKey('dailyLedger_tableRangeFrom'),tableRangeFrom)}catch(_){}
+  try{localStorage.setItem(localKey('dailyLedger_tableRangeTo'),tableRangeTo)}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_catBudgets'),JSON.stringify(categoryBudgets))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_freeBudgets'),JSON.stringify(freeBudgets))}catch(_){}
   try{localStorage.removeItem(localKey('dailyLedger_freeBudget'))}catch(_){}
@@ -1226,7 +1258,7 @@ function saveLocal(){
 
 async function pushCloud(){
   if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,categoryBudgets,freeBudgets};
+  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,tableRangeFrom,tableRangeTo,categoryBudgets,freeBudgets};
   try{
     const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
     if(qe)throw qe;
@@ -1252,7 +1284,9 @@ async function pullCloud(){
       if(c.savingsGoals)savingsGoals=c.savingsGoals;
       if(c.hiddenModules)hiddenModules=c.hiddenModules;
       if(c.groupState)groupState=c.groupState;
-      if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
+      if(c.viewMode&&['year','month','day','range'].includes(c.viewMode))viewMode=c.viewMode;
+      if(c.tableRangeFrom)tableRangeFrom=c.tableRangeFrom;
+      if(c.tableRangeTo)tableRangeTo=c.tableRangeTo;
       if(c.categoryBudgets)categoryBudgets=c.categoryBudgets;
       if(c.freeBudgets)freeBudgets=c.freeBudgets;
       if(c.freeBudget!==undefined&&c.freeBudget!==null){
@@ -1859,12 +1893,21 @@ function renderEntries(){
   updateBudgetStatus(c);
   renderCategoryBudgets();
   updateSearchUI();
+  updateTableRangeTabStyle();
 
-  const visibleEntries=filterEntriesBySearch(entries);
+  // 搜索过滤
+  let visibleEntries=filterEntriesBySearch(entries);
+  // 表格区间过滤（仅当 viewMode === 'range' 时）
+  if(viewMode==='range'&&(tableRangeFrom||tableRangeTo)){
+    visibleEntries=visibleEntries.filter(e=>inRange(e.date,tableRangeFrom,tableRangeTo));
+  }
 
   if(visibleEntries.length===0){
-    if(isSearchActive()&&entries.length>0){
-      tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配「${esc(searchKeyword||'筛选条件')}」的记录</div><div style="font-size:.8rem;margin-top:.5rem;color:#cbd5e1;">试试其他关键词，或点击上方"清空搜索"</div></div></td></tr>`;
+    if((isSearchActive()||viewMode==='range')&&entries.length>0){
+      let msg='';
+      if(viewMode==='range'&&(tableRangeFrom||tableRangeTo))msg=`没有 ${fmtRange(tableRangeFrom,tableRangeTo)} 区间的记录`;
+      else msg=`没有找到匹配「${esc(searchKeyword||'筛选条件')}」的记录`;
+      tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><div>${msg}</div><div style="font-size:.8rem;margin-top:.5rem;color:#cbd5e1;">试试其他条件或点击"重置"</div></div></td></tr>`;
     }else{
       tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
     }
@@ -2128,6 +2171,7 @@ function renderAll(){
   updateStatsFilterUI();
   updateChartFilterUI();
   updateCatBudgetFilterUI();
+  updateTableRangeTabStyle();
   renderEntries();
   renderChart();
   renderGoals();
@@ -2260,7 +2304,6 @@ function init(){
   });
   dpClearBtn.addEventListener('click',clearDatePicker);
   dpConfirmBtn.addEventListener('click',confirmDatePicker);
-  // 方案3：使用事件委托处理悬停预览，避免频繁重建 DOM
   dpCalendars.addEventListener('mouseover',function(e){
     const el=e.target.closest('.dp-day');
     if(!el||el.classList.contains('dp-empty'))return;
@@ -2331,7 +2374,23 @@ function init(){
 
   document.querySelectorAll('.chart-tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');chartType=this.dataset.type;renderChart()})});
 
-  document.querySelectorAll('.view-tab').forEach(tab=>{tab.addEventListener('click',function(){viewMode=this.dataset.view;saveLocal();applyViewTabs();renderEntries();pushCloud()})});
+  // ===== 表格视图切换（含"按区间"） =====
+  document.querySelectorAll('.view-tab').forEach(tab=>{
+    tab.addEventListener('click',function(){
+      const v=this.dataset.view;
+      if(v==='range'){
+        // 点击"按区间"→ 弹出日期选择器
+        openDatePicker('tableRange',tableRangeFrom,tableRangeTo);
+      }else{
+        viewMode=v;
+        saveLocal();
+        applyViewTabs();
+        updateTableRangeTabStyle();
+        renderEntries();
+        pushCloud();
+      }
+    });
+  });
 
   $('expandAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=true});saveLocal();renderEntries();pushCloud();toast('⬇️ 已展开全部')});
   $('collapseAllBtn').addEventListener('click',()=>{tbody.querySelectorAll('.group-header').forEach(h=>{groupState[h.dataset.key]=false});saveLocal();renderEntries();pushCloud();toast('⬆️ 已收起全部')});
