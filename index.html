@@ -258,6 +258,10 @@ tr.group-header.over-budget:hover{background:#fde2e2!important}
 tr.group-header.over-budget .group-total{color:#dc2626}
 tr.detail-row td{padding:.7rem 1rem;border-bottom:1px solid #f1f4f8;vertical-align:middle}
 tr.detail-row.over-budget{background-color:#fef2f2}
+/* 新增：还款虚拟行样式 */
+tr.detail-row.repay-row{background:linear-gradient(90deg,#fafbff,#f5f3ff)}
+tr.detail-row.repay-row:hover{background:linear-gradient(90deg,#f5f3ff,#ede9fe)}
+tr.detail-row.repay-row td{border-bottom:1px dashed #e9e5ff}
 .amount{font-weight:600;font-variant-numeric:tabular-nums}
 .amount.income{color:#16a34a}
 .amount.expense{color:#dc2626}
@@ -751,6 +755,9 @@ let currentUser=null, entries=[], budget={daily:null,weekly:null,monthly:null}, 
 let categoryBudgets={all:{}};
 let freeBudgets={all:null};
 
+// 本地最后一次用户修改的时间戳，用于同步时判断"本地更新"或"云端更新"
+let localUpdatedAt=0;
+
 let searchKeyword='';
 let searchTypeFilter='';
 let searchDateStart='';
@@ -857,6 +864,38 @@ function getRepayments(e){
   const repaid=Number(e.repaid)||0;
   if(repaid>0) return [{date:e.date, amount:repaid}];
   return [];
+}
+
+// ===== 新增：把 entries 展开为"表格展示列表"（原记录 + 虚拟还款记录） =====
+// 说明：虚拟还款记录仅用于表格展示，不影响 calc() / calcStats() / 图表 / 类目预算等
+function getDisplayEntries(){
+  const list=[];
+  entries.forEach(e=>{
+    list.push(e);
+    if((e.type||'expense')!=='debt')return;
+    const reps=getRepayments(e);
+    reps.forEach((r,idx)=>{
+      const amt=Number(r.amount)||0;
+      if(amt<=0)return;
+      const rd=r.date||e.date;
+      const isLent=e.debtType==='lent';
+      list.push({
+        id:`repay_${e.id}_${idx}`,
+        _origId: typeof e.id==='number'?e.id:0,
+        _repayIdx: idx,
+        date: rd,
+        // 借出还款 → 收入；借入还款 → 支出（与 calc 的口径保持一致）
+        type: isLent?'income':'expense',
+        category: e.category||'其他',
+        description: e.description||'',
+        amount: amt,
+        isRepay: true,
+        repayDirection: e.debtType,
+        parentId: e.id
+      });
+    });
+  });
+  return list;
 }
 
 let toastTimer=null;
@@ -1202,7 +1241,8 @@ function updateSearchUI(){
   if(searchInput.value){searchClearBtn.style.display='block'}else{searchClearBtn.style.display='none'}
   updateSearchRangeBtn();
   if(isSearchActive()){
-    const filtered=filterEntriesBySearch(entries);
+    // 用展示列表（含虚拟还款记录）参与计数
+    const filtered=filterEntriesBySearch(getDisplayEntries());
     searchInfo.style.display='inline-block';
     searchInfo.innerHTML=`找到 <strong>${filtered.length}</strong> 条 <span class="clear-link" id="searchClearLink">清空搜索</span>`;
     const link=$('searchClearLink');
@@ -1274,8 +1314,54 @@ function migrate(){
   groupState=newGS;
 }
 
+// ===== 登出 / 切换账号时彻底重置内存状态 =====
+function resetState(){
+  entries=[];
+  budget={daily:null,weekly:null,monthly:null};
+  templates=[];
+  savingsGoals=[];
+  hiddenModules=[];
+  groupState={};
+  viewMode='month';
+  categoryBudgets={all:{}};
+  freeBudgets={all:null};
+  searchKeyword='';
+  searchTypeFilter='';
+  searchDateStart='';
+  searchDateEnd='';
+  statsRangeFrom='';statsRangeTo='';
+  chartRangeFrom='';chartRangeTo='';
+  catBudgetRangeFrom='';catBudgetRangeTo='';
+  activeGoalId=null;activeRepayId=null;
+  chartType='expense';
+  dpTarget=null;dpFrom='';dpTo='';dpBaseMonth=null;dpPicking='from';dpHover='';
+  localUpdatedAt=0;
+  isSyncing=false;
+  if(categoryChart){try{categoryChart.destroy()}catch(_){}categoryChart=null}
+}
+
 function localKey(k){return currentUser?`${k}_${currentUser.id}`:k}
+function loadLocalUpdatedAt(){
+  try{
+    const r=localStorage.getItem(localKey('dailyLedger_updatedAt'));
+    if(r){const n=parseInt(r,10);if(!isNaN(n)){localUpdatedAt=n;return}}
+  }catch(_){}
+  localUpdatedAt=0;
+}
+function getLocalUpdatedAt(){return localUpdatedAt||0}
+
+function hasLocalContent(){
+  return entries.length>0
+    || (budget&&(budget.daily||budget.weekly||budget.monthly))
+    || templates.length>0
+    || savingsGoals.length>0
+    || (categoryBudgets&&categoryBudgets.all&&Object.keys(categoryBudgets.all).length>0);
+}
+
 function loadLocal(){
+  resetState();
+  if(!currentUser)return;
+  loadLocalUpdatedAt();
   try{const r=localStorage.getItem(localKey('dailyLedger_entries'));if(r){const p=JSON.parse(r);if(Array.isArray(p))entries=p}}catch(_){entries=[]}
   try{const r=localStorage.getItem(localKey('dailyLedger_budget'));if(r){const p=JSON.parse(r);if(typeof p==='number')budget={daily:p,weekly:null,monthly:null};else if(p&&typeof p==='object')budget=p}}catch(_){budget={daily:null,weekly:null,monthly:null}}
   try{const r=localStorage.getItem(localKey('dailyLedger_templates'));if(r){const p=JSON.parse(r);if(Array.isArray(p))templates=p}}catch(_){templates=[]}
@@ -1289,8 +1375,12 @@ function loadLocal(){
   try{const r=localStorage.getItem(localKey('dailyLedger_dateRanges'));if(r){const p=JSON.parse(r);unpackDateRanges(p)}}catch(_){}
   migrate();
 }
-function saveLocal(){
+
+// saveLocal(updateTime) —— updateTime!==false 时刷新本地时间戳（表示用户主动修改）
+function saveLocal(updateTime){
   if(!currentUser)return;
+  if(updateTime!==false)localUpdatedAt=Date.now();
+  try{localStorage.setItem(localKey('dailyLedger_updatedAt'),String(localUpdatedAt))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_entries'),JSON.stringify(entries))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_budget'),JSON.stringify(budget))}catch(_){}
   try{localStorage.setItem(localKey('dailyLedger_templates'),JSON.stringify(templates))}catch(_){}
@@ -1304,47 +1394,156 @@ function saveLocal(){
   try{localStorage.removeItem(localKey('dailyLedger_freeBudget'))}catch(_){}
 }
 
+// ===== 无守卫的底层推送；pushCloud 做并发守卫；pullCloud 内部直接 await doPush =====
+async function doPush(){
+  if(!currentUser)return;
+  const data={
+    entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,
+    categoryBudgets,freeBudgets,dateRanges:packDateRanges(),
+    localUpdatedAt
+  };
+  const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
+  if(qe)throw qe;
+  const nowISO=new Date().toISOString();
+  let r;
+  if(ex)r=await supabase.from('ledger_data').update({data,updated_at:nowISO}).eq('user_id',currentUser.id);
+  else r=await supabase.from('ledger_data').insert({user_id:currentUser.id,data,updated_at:nowISO});
+  if(r.error)throw r.error;
+}
+
 async function pushCloud(){
-  if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 上传中...');
-  const data={entries,budget,templates,savingsGoals,hiddenModules,groupState,viewMode,categoryBudgets,freeBudgets,dateRanges:packDateRanges()};
+  if(!currentUser||isSyncing)return;
+  isSyncing=true;setSync('syncing','☁️ 上传中...');
   try{
-    const {data:ex,error:qe}=await supabase.from('ledger_data').select('id').eq('user_id',currentUser.id).maybeSingle();
-    if(qe)throw qe;
-    let r;
-    if(ex)r=await supabase.from('ledger_data').update({data,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
-    else r=await supabase.from('ledger_data').insert({user_id:currentUser.id,data,updated_at:new Date().toISOString()});
-    if(r.error)throw r.error;
-    setSync('synced','✅ 已同步');isSyncing=false;
+    await doPush();
+    setSync('synced','✅ 已同步');
   }catch(e){
-    console.error('同步失败:',e);setSync('error','⚠️ 同步失败');isSyncing=false;toast('⚠️ 云端同步失败，数据已保存在本地');
+    console.error('同步失败:',e);setSync('error','⚠️ 同步失败');toast('⚠️ 云端同步失败，数据已保存在本地');
+  }finally{
+    isSyncing=false;
   }
 }
+
+// 云端数据应用到本地（云端更新时的分支）
+function applyCloudData(c){
+  if(!c)return;
+  if(Array.isArray(c.entries))entries=c.entries;
+  if(c.budget)budget=c.budget;
+  if(Array.isArray(c.templates))templates=c.templates;
+  if(Array.isArray(c.savingsGoals))savingsGoals=c.savingsGoals;
+  if(Array.isArray(c.hiddenModules))hiddenModules=c.hiddenModules;
+  if(c.groupState&&typeof c.groupState==='object')groupState=c.groupState;
+  if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
+  if(c.categoryBudgets)categoryBudgets=c.categoryBudgets;
+  if(c.freeBudgets)freeBudgets=c.freeBudgets;
+  if(c.freeBudget!==undefined&&c.freeBudget!==null){
+    if(!freeBudgets||typeof freeBudgets!=='object')freeBudgets={all:null};
+    if(freeBudgets.all===null||freeBudgets.all===undefined)freeBudgets.all=c.freeBudget;
+  }
+  if(c.dateRanges)unpackDateRanges(c.dateRanges);
+  const t=Number(c.localUpdatedAt);
+  if(!isNaN(t)&&t>0)localUpdatedAt=t;
+}
+
+// 本地更新时，把云端数据合并进本地（避免覆盖丢数据）
+function mergeFromCloud(c){
+  if(!c)return;
+  // entries：按 id 合并，本地覆盖云端（本地是新改动的一方）
+  if(Array.isArray(c.entries)&&c.entries.length){
+    const map=new Map();
+    c.entries.forEach(e=>{if(e&&e.id!==undefined)map.set(String(e.id),e)});
+    entries.forEach(e=>{if(e&&e.id!==undefined)map.set(String(e.id),e)});
+    entries=[...map.values()];
+  }
+  // savingsGoals：按 id 合并
+  if(Array.isArray(c.savingsGoals)&&c.savingsGoals.length){
+    const map=new Map();
+    c.savingsGoals.forEach(g=>{if(g&&g.id!==undefined)map.set(String(g.id),g)});
+    savingsGoals.forEach(g=>{if(g&&g.id!==undefined)map.set(String(g.id),g)});
+    savingsGoals=[...map.values()];
+  }
+  // templates：按 name|category|amount 去重合并
+  if(Array.isArray(c.templates)&&c.templates.length){
+    const seen=new Set(templates.map(t=>`${t.name}|${t.category}|${t.amount}`));
+    c.templates.forEach(t=>{
+      if(!t)return;
+      const k=`${t.name}|${t.category}|${t.amount}`;
+      if(!seen.has(k)){templates.push(t);seen.add(k)}
+    });
+  }
+  // hiddenModules：并集（保守合并）
+  if(Array.isArray(c.hiddenModules)&&c.hiddenModules.length){
+    const s=new Set([...hiddenModules,...c.hiddenModules]);
+    hiddenModules=[...s];
+  }
+  // groupState：合并，本地优先
+  if(c.groupState&&typeof c.groupState==='object'){
+    const merged=Object.assign({},c.groupState);
+    for(const k in groupState)merged[k]=groupState[k];
+    groupState=merged;
+  }
+  // budget：本地缺省时用云端兜底
+  const budgetEmpty=!budget||(budget.daily===null&&budget.weekly===null&&budget.monthly===null);
+  if(budgetEmpty&&c.budget)budget=c.budget;
+  // categoryBudgets：本地为空时用云端
+  const cbEmpty=!categoryBudgets||!categoryBudgets.all||Object.keys(categoryBudgets.all).length===0;
+  if(cbEmpty&&c.categoryBudgets)categoryBudgets=c.categoryBudgets;
+  // freeBudgets：本地为 null 时用云端
+  if((freeBudgets.all===null||freeBudgets.all===undefined)){
+    if(c.freeBudgets&&c.freeBudgets.all!==undefined&&c.freeBudgets.all!==null)freeBudgets.all=c.freeBudgets.all;
+    else if(c.freeBudget!==undefined&&c.freeBudget!==null)freeBudgets.all=c.freeBudget;
+  }
+  // dateRanges：本地全空时用云端
+  const drEmpty=!statsRangeFrom&&!statsRangeTo&&!chartRangeFrom&&!chartRangeTo&&!catBudgetRangeFrom&&!catBudgetRangeTo&&!searchDateStart&&!searchDateEnd;
+  if(drEmpty&&c.dateRanges)unpackDateRanges(c.dateRanges);
+}
+
 async function pullCloud(){
-  if(!currentUser||isSyncing)return;isSyncing=true;setSync('syncing','☁️ 拉取中...');
+  if(!currentUser||isSyncing)return;
+  isSyncing=true;setSync('syncing','☁️ 拉取中...');
   try{
-    const {data,error}=await supabase.from('ledger_data').select('data').eq('user_id',currentUser.id).maybeSingle();
+    const {data,error}=await supabase.from('ledger_data').select('data,updated_at').eq('user_id',currentUser.id).maybeSingle();
     if(error)throw error;
-    if(data){
-      const c=data.data;
-      if(c.entries)entries=c.entries;
-      if(c.budget)budget=c.budget;
-      if(c.templates)templates=c.templates;
-      if(c.savingsGoals)savingsGoals=c.savingsGoals;
-      if(c.hiddenModules)hiddenModules=c.hiddenModules;
-      if(c.groupState)groupState=c.groupState;
-      if(c.viewMode&&['year','month','day'].includes(c.viewMode))viewMode=c.viewMode;
-      if(c.categoryBudgets)categoryBudgets=c.categoryBudgets;
-      if(c.freeBudgets)freeBudgets=c.freeBudgets;
-      if(c.freeBudget!==undefined&&c.freeBudget!==null){
-        if(!freeBudgets||typeof freeBudgets!=='object')freeBudgets={all:null};
-        if(freeBudgets.all===null||freeBudgets.all===undefined)freeBudgets.all=c.freeBudget;
-      }
-      if(c.dateRanges)unpackDateRanges(c.dateRanges);
-      migrate();saveLocal();renderAll();setSync('synced','✅ 已同步');toast('✅ 已从云端加载数据');
-    }else{await pushCloud()}
+
+    if(!data){
+      // 云端无记录：把当前本地数据推上去
+      await doPush();
+      setSync('synced','✅ 已同步');
+      isSyncing=false;
+      return;
+    }
+
+    const c=data.data||{};
+    const cloudTime=Number(c.localUpdatedAt)||0;
+    const myTime=getLocalUpdatedAt();
+
+    if(myTime>cloudTime && hasLocalContent()){
+      // 本地有未推送的更新：合并云端内容，保留本地改动，再回推
+      mergeFromCloud(c);
+      migrate();
+      saveLocal(false);       // 保持 localUpdatedAt 不变
+      renderAll();
+      setSync('syncing','☁️ 合并上传中...');
+      await doPush();
+      setSync('synced','✅ 已同步');
+      toast('✅ 已合并本地与云端数据');
+    }else{
+      // 云端为准，覆盖本地
+      applyCloudData(c);
+      migrate();
+      saveLocal(false);       // 保留云端时间戳
+      renderAll();
+      setSync('synced','✅ 已同步');
+      toast('✅ 已从云端加载数据');
+    }
     isSyncing=false;
   }catch(e){
-    console.error('拉取失败:',e);setSync('error','⚠️ 离线模式');isSyncing=false;loadLocal();renderAll();toast('⚠️ 无法连接云端，使用本地数据');
+    console.error('拉取失败:',e);
+    setSync('error','⚠️ 离线模式');
+    isSyncing=false;
+    loadLocal();
+    renderAll();
+    toast('⚠️ 无法连接云端，使用本地数据');
   }
 }
 
@@ -1404,7 +1603,6 @@ function debtTouchesRange(e,from,to){
 
 function getStatsFiltered(){
   if(!statsRangeFrom && !statsRangeTo) return entries;
-  // 注意：债务记录只要其本金或任一次还款在范围内，就算命中（详见 calcStats 按日期精确计算）
   return entries.filter(e=>{
     if((e.type||'expense')!=='debt') return inRange(e.date,statsRangeFrom,statsRangeTo);
     return debtTouchesRange(e,statsRangeFrom,statsRangeTo);
@@ -1425,12 +1623,9 @@ function calcStats(list){
     } else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
-      // 累计未还部分只统计一次（不与日期挂钩）
       if(e.debtType==='lent'){
         totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;
-        // 本金：按原日期
         if(inRange(e.date,from,to)) totalExpense+=amt;
-        // 还款：按还款日期
         const reps=getRepayments(e);
         reps.forEach(r=>{
           const rd=r.date||e.date;
@@ -1473,10 +1668,8 @@ function aggregateChartData(){
         if(inRange(e.date,from,to)){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
       } else if(t==='debt'){
         if(e.debtType==='lent'){
-          // 借出本金→支出（按原日期）
           if(inRange(e.date,from,to) && amt>0){map['其他']=(map['其他']||0)+amt;}
         } else {
-          // 借入还款→支出（按还款日期）
           getRepayments(e).forEach(r=>{
             const rd=r.date||e.date;
             const ra=Number(r.amount)||0;
@@ -1489,10 +1682,8 @@ function aggregateChartData(){
         if(inRange(e.date,from,to)){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
       } else if(t==='debt'){
         if(e.debtType==='borrowed'){
-          // 借入本金→收入（按原日期）
           if(inRange(e.date,from,to) && amt>0){map['其他']=(map['其他']||0)+amt;}
         } else {
-          // 借出还款→收入（按还款日期）
           getRepayments(e).forEach(r=>{
             const rd=r.date||e.date;
             const ra=Number(r.amount)||0;
@@ -1583,10 +1774,8 @@ function getUsageForPeriod(){
       if(inRange(e.date,from,to)){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+amt;}
     } else if(t==='debt'){
       if(e.debtType==='lent'){
-        // 借出本金→支出（归"其他"，按原日期）
         if(inRange(e.date,from,to) && amt>0){usage['其他']=(usage['其他']||0)+amt;}
       } else {
-        // 借入还款→支出（归"其他"，按还款日期）
         getRepayments(e).forEach(r=>{
           const rd=r.date||e.date;
           const ra=Number(r.amount)||0;
@@ -1848,6 +2037,26 @@ function resetImportUI(){
 function getDetailRowHtml(e,ancestors){
   const type=e.type||'expense';
   const kw=searchKeyword.trim();
+  const ancAttr=ancestors.join(',');
+
+  // 虚拟还款记录的特殊渲染
+  if(e.isRepay){
+    const isLent=e.repayDirection==='lent';
+    const amtCls=isLent?'income':'expense';
+    const sign=isLent?'+':'-';
+    const badge=isLent
+      ?`<span class="type-badge repay">💰 收回</span>`
+      :`<span class="type-badge repay">💸 还款</span>`;
+    const subLabel=isLent?'借出款项已收回':'借入款项已归还';
+    return `<tr class="detail-row repay-row" data-ancestors="${ancAttr}">
+      <td>${highlight(e.description||'-',kw)||'-'}<div class="desc-sub" style="color:#a78bfa;">${subLabel}</div></td>
+      <td>${badge}</td>
+      <td><span class="category-badge ${catClass(e.category)}">${highlight(e.category||'其他',kw)}</span></td>
+      <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${highlight(fmtMoney(e.amount),kw)}</span></td>
+      <td style="text-align:center;"><span style="color:#cbd5e1;font-size:.85rem;">—</span></td>
+    </tr>`;
+  }
+
   let typeBadge='';
   if(type==='income')typeBadge='<span class="type-badge income">收入</span>';
   else if(type==='expense')typeBadge='<span class="type-badge expense">支出</span>';
@@ -1868,7 +2077,6 @@ function getDetailRowHtml(e,ancestors){
     }
     if(!isPaidOff)actionHtml=`<button class="repay-btn" data-id="${e.id}" title="${e.debtType==='lent'?'收回款项':'归还欠款'}">💰</button>`;
   }
-  const ancAttr=ancestors.join(',');
   return `<tr class="detail-row" data-ancestors="${ancAttr}">
     <td>${highlight(e.description||'-',kw)}${descSubHtml}</td>
     <td>${typeBadge}</td>
@@ -1921,7 +2129,13 @@ function renderMonthView(sorted,c){
     const days=months[mo];
     const mKey=`month:${mo}`;
     let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,totalCount=0;
-    Object.values(days).forEach(items=>{items.forEach(e=>{totalCount++;const amt=Number(e.amount)||0;if(e.type==='income')mIncome+=amt;else if(e.type==='expense')mExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}})});
+    Object.values(days).forEach(items=>{items.forEach(e=>{
+      totalCount++;
+      const amt=Number(e.amount)||0;
+      if(e.type==='income')mIncome+=amt;
+      else if(e.type==='expense')mExpense+=amt;
+      else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
+    })});
     const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
     let sum=[];
     if(mIncome>0)sum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
@@ -1957,7 +2171,13 @@ function renderYearView(sorted,c){
     const yKey=`year:${y}`;
     const months=years[y];
     let yIncome=0,yExpense=0,yLent=0,yBorrowed=0,yCount=0;
-    Object.values(months).forEach(days=>{Object.values(days).forEach(items=>{items.forEach(e=>{yCount++;const amt=Number(e.amount)||0;if(e.type==='income')yIncome+=amt;else if(e.type==='expense')yExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')yLent+=amt;else yBorrowed+=amt}})})});
+    Object.values(months).forEach(days=>{Object.values(days).forEach(items=>{items.forEach(e=>{
+      yCount++;
+      const amt=Number(e.amount)||0;
+      if(e.type==='income')yIncome+=amt;
+      else if(e.type==='expense')yExpense+=amt;
+      else if(e.type==='debt'){if(e.debtType==='lent')yLent+=amt;else yBorrowed+=amt}
+    })})});
     let ySum=[];
     if(yIncome>0)ySum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(yIncome)}</span>`);
     if(yExpense>0)ySum.push(`<span style="color:#dc2626">支 ¥${fmtMoney(yExpense)}</span>`);
@@ -1969,7 +2189,13 @@ function renderYearView(sorted,c){
       const days=months[mo];
       const mKey=`month:${mo}`;
       let mIncome=0,mExpense=0,mLent=0,mBorrowed=0,mCount=0;
-      Object.values(days).forEach(items=>{items.forEach(e=>{mCount++;const amt=Number(e.amount)||0;if(e.type==='income')mIncome+=amt;else if(e.type==='expense')mExpense+=amt;else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}})});
+      Object.values(days).forEach(items=>{items.forEach(e=>{
+        mCount++;
+        const amt=Number(e.amount)||0;
+        if(e.type==='income')mIncome+=amt;
+        else if(e.type==='expense')mExpense+=amt;
+        else if(e.type==='debt'){if(e.debtType==='lent')mLent+=amt;else mBorrowed+=amt}
+      })});
       const monthOver=(budget.monthly!==null&&budget.monthly>0&&mExpense>budget.monthly);
       let mSum=[];
       if(mIncome>0)mSum.push(`<span style="color:#16a34a">收 ¥${fmtMoney(mIncome)}</span>`);
@@ -2022,10 +2248,12 @@ function renderEntries(){
   renderCategoryBudgets();
   updateSearchUI();
 
-  const visibleEntries=filterEntriesBySearch(entries);
+  // 关键升级：使用展示列表（原 entries + 虚拟还款记录）
+  const displayList=getDisplayEntries();
+  const visibleEntries=filterEntriesBySearch(displayList);
 
   if(visibleEntries.length===0){
-    if(isSearchActive()&&entries.length>0){
+    if(isSearchActive()&&displayList.length>0){
       tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><div>没有找到匹配「${esc(searchKeyword||'筛选条件')}」的记录</div><div style="font-size:.8rem;margin-top:.5rem;color:#cbd5e1;">试试其他关键词，或点击上方"清空搜索"</div></div></td></tr>`;
     }else{
       tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><div>还没有记账记录</div></div></td></tr>`;
@@ -2033,7 +2261,14 @@ function renderEntries(){
     return;
   }
 
-  const sorted=[...visibleEntries].sort((a,b)=>{if(a.date!==b.date)return b.date.localeCompare(a.date);return (b.id||0)-(a.id||0)});
+  // 排序：同一天内，原始记录在前，虚拟还款记录紧随其后；同一父记录的多笔还款按 idx 顺序
+  const sorted=[...visibleEntries].sort((a,b)=>{
+    if(a.date!==b.date)return b.date.localeCompare(a.date);
+    const aid=a._origId!=null?a._origId:(typeof a.id==='number'?a.id:0);
+    const bid=b._origId!=null?b._origId:(typeof b.id==='number'?b.id:0);
+    if(aid!==bid)return bid-aid;
+    return (a._repayIdx||0)-(b._repayIdx||0);
+  });
   let html='';
   if(viewMode==='year')html=renderYearView(sorted,c);
   else if(viewMode==='month')html=renderMonthView(sorted,c);
@@ -2329,6 +2564,16 @@ function toggleAuth(){
   authToggleLink.textContent=isLogin?'注册':'登录';
   authMessage.textContent='';
 }
+function enterMainApp(email){
+  userEmailDisplay.textContent=email||'';
+  authArea.style.display='none';
+  mainApp.style.display='block';
+  loadLocal();
+  renderAll();
+  pullCloud();
+}
+
+// 注册需判断 session；未确认邮箱时提示用户去邮箱确认
 async function handleAuth(e){
   e.preventDefault();
   const email=authEmail.value.trim(),pwd=authPassword.value;
@@ -2336,21 +2581,49 @@ async function handleAuth(e){
   if(!email||!pwd){authMessage.textContent='请填写邮箱和密码';authMessage.className='auth-msg error';return}
   if(pwd.length<6){authMessage.textContent='密码至少6位';authMessage.className='auth-msg error';return}
   try{
-    const r=isLogin?await supabase.auth.signInWithPassword({email,password:pwd}):await supabase.auth.signUp({email,password:pwd});
+    const r=isLogin
+      ?await supabase.auth.signInWithPassword({email,password:pwd})
+      :await supabase.auth.signUp({email,password:pwd});
     if(r.error)throw r.error;
-    const u=r.data.user;
-    if(u){currentUser={id:u.id,email:u.email};userEmailDisplay.textContent=u.email;authArea.style.display='none';mainApp.style.display='block';loadLocal();renderAll();pullCloud();toast(isLogin?'✅ 登录成功':'✅ 注册并登录成功')}
-    else{toggleAuth();authMessage.textContent='请登录您的账号';authMessage.className='auth-msg success'}
+    const session=r.data?r.data.session:null;
+    const u=r.data?r.data.user:null;
+    if(session&&u){
+      currentUser={id:u.id,email:u.email};
+      enterMainApp(u.email);
+      toast(isLogin?'✅ 登录成功':'✅ 注册并登录成功');
+    }else if(u&&!session){
+      authMessage.textContent='📧 注册成功！请到邮箱点击确认链接后再登录';
+      authMessage.className='auth-msg success';
+      if(!isLogin){
+        isLogin=true;
+        authSubmitBtn.textContent='登录';
+        authToggleText.textContent='还没有账号？';
+        authToggleLink.textContent='注册';
+      }
+    }else{
+      authMessage.textContent='登录状态异常，请重试';
+      authMessage.className='auth-msg error';
+    }
   }catch(err){console.error(err);authMessage.textContent=err.message||'认证失败';authMessage.className='auth-msg error'}
 }
-function logout(){if(!confirm('确定退出？'))return;supabase.auth.signOut();currentUser=null;authArea.style.display='block';mainApp.style.display='none';toast('已退出')}
+
+// 退出时彻底重置内存状态
+function logout(){
+  if(!confirm('确定退出？'))return;
+  supabase.auth.signOut();
+  currentUser=null;
+  resetState();
+  userEmailDisplay.textContent='';
+  authArea.style.display='block';
+  mainApp.style.display='none';
+  toast('已退出');
+}
 async function checkSession(){
   const {data,error}=await supabase.auth.getSession();
   if(error||!data.session)return;
   const u=data.session.user;
-  currentUser={id:u.id,email:u.email};userEmailDisplay.textContent=u.email;
-  authArea.style.display='none';mainApp.style.display='block';
-  loadLocal();renderAll();pullCloud();
+  currentUser={id:u.id,email:u.email};
+  enterMainApp(u.email);
 }
 
 function init(){
@@ -2473,8 +2746,18 @@ function init(){
   checkSession();
 
   supabase.auth.onAuthStateChange((ev,sess)=>{
-    if(ev==='SIGNED_IN'&&sess){const u=sess.user;currentUser={id:u.id,email:u.email};userEmailDisplay.textContent=u.email;authArea.style.display='none';mainApp.style.display='block';loadLocal();renderAll();pullCloud()}
-    else if(ev==='SIGNED_OUT'){currentUser=null;authArea.style.display='block';mainApp.style.display='none'}
+    if(ev==='SIGNED_IN'&&sess){
+      const u=sess.user;
+      currentUser={id:u.id,email:u.email};
+      enterMainApp(u.email);
+    }
+    else if(ev==='SIGNED_OUT'){
+      currentUser=null;
+      resetState();
+      userEmailDisplay.textContent='';
+      authArea.style.display='block';
+      mainApp.style.display='none';
+    }
   });
 }
 
