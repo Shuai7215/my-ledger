@@ -676,8 +676,8 @@ tr.detail-row.over-budget{background-color:#fef2f2}
       <div class="form-group" id="debtTypeGroup" style="display:none;">
         <label for="entryDebtType">方向</label>
         <select id="entryDebtType">
-          <option value="lent">📤 借出（别人欠我）</option>
-          <option value="borrowed">📥 借入（我欠别人）</option>
+          <option value="lent">📤 借出（算支出）</option>
+          <option value="borrowed">📥 借入（算收入）</option>
         </select>
       </div>
       <div class="form-group"><label for="entryDate">📅 日期</label><input type="date" id="entryDate" required /></div>
@@ -851,7 +851,6 @@ let toastTimer=null;
 function toast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),3500)}
 function setSync(st,msg){syncStatusEl.className='sync-status '+st;syncStatusEl.textContent=msg}
 
-// ===== 日期范围的打包/解包（持久化） =====
 function packDateRanges(){
   return {
     stats:{from:statsRangeFrom, to:statsRangeTo},
@@ -868,7 +867,6 @@ function unpackDateRanges(dr){
   if(dr.search){searchDateStart=dr.search.from||'';searchDateEnd=dr.search.to||''}
 }
 
-// ===== 统一日期选择器 =====
 function openDatePicker(target,from,to){
   dpTarget=target;
   dpFrom=from||'';
@@ -1014,9 +1012,7 @@ function confirmDatePicker(){
   else if(dpTarget==='chart'){chartRangeFrom=dpFrom;chartRangeTo=dpTo;updateChartFilterUI();renderChart()}
   else if(dpTarget==='catBudget'){catBudgetRangeFrom=dpFrom;catBudgetRangeTo=dpTo;updateCatBudgetFilterUI();renderCategoryBudgets()}
   else if(dpTarget==='search'){searchDateStart=dpFrom;searchDateEnd=dpTo;updateSearchRangeBtn();updateSearchUI();renderEntries()}
-  saveLocal();
-  pushCloud();
-  closeDatePicker();
+  saveLocal();pushCloud();closeDatePicker();
 }
 function clearDatePicker(){dpFrom='';dpTo='';dpPicking='from';dpHover='';renderDatePickerCalendars();updateDatePickerDisplay();updateDPPresetActive()}
 function updateSearchRangeBtn(){
@@ -1025,11 +1021,13 @@ function updateSearchRangeBtn(){
   searchRangeText.textContent=has?fmtRange(searchDateStart,searchDateEnd):'日期范围';
 }
 
-// ===== 分类详情弹窗 =====
-function renderCategoryDetailModal(category, filtered, typeLabel, typeIcon){
-  const total=filtered.reduce((s,e)=>s+Number(e.amount),0);
+// ===== 分类详情弹窗（支持债务记录归入"其他"） =====
+function renderCategoryDetailModal(category, filtered, viewType){
+  const total=filtered.reduce((s,item)=>s+Number(item.displayAmount),0);
+  const typeLabel=viewType==='income'?'收入':'支出';
+  const typeIcon=viewType==='income'?'💰':'💸';
   categoryDetailTitle.textContent=`📂 ${typeIcon} ${category}`;
-  categoryDetailSummary.className='cat-detail-summary '+(typeLabel==='收入'?'income':'expense');
+  categoryDetailSummary.className='cat-detail-summary '+(viewType==='income'?'income':'expense');
   categoryDetailCount.textContent=`${filtered.length} 笔 · ${typeLabel}`;
   categoryDetailTotal.textContent=`¥${fmtMoney(total)}`;
 
@@ -1040,18 +1038,26 @@ function renderCategoryDetailModal(category, filtered, typeLabel, typeIcon){
   }
 
   const sorted=[...filtered].sort((a,b)=>{
-    if(a.date!==b.date)return b.date.localeCompare(a.date);
-    return (b.id||0)-(a.id||0);
+    if(a.entry.date!==b.entry.date)return b.entry.date.localeCompare(a.entry.date);
+    return (b.entry.id||0)-(a.entry.id||0);
   });
 
   let html='';
-  sorted.forEach(e=>{
-    const amt=Number(e.amount)||0;
-    const amtCls=typeLabel==='收入'?'income':'expense';
-    const sign=typeLabel==='收入'?'+':'-';
+  sorted.forEach(item=>{
+    const e=item.entry;
+    const amt=Number(item.displayAmount)||0;
+    const amtCls=viewType==='income'?'income':'expense';
+    const sign=viewType==='income'?'+':'-';
+    // 债务记录显示特殊标记
+    const isDebt=(e.type||'expense')==='debt';
+    let badge='';
+    if(isDebt){
+      if(e.debtType==='lent')badge=`<span class="type-badge debt-lent" style="margin-left:.4rem;">借出${viewType==='expense'?'（本金）':'（还款）'}</span>`;
+      else badge=`<span class="type-badge debt-borrowed" style="margin-left:.4rem;">借入${viewType==='income'?'（本金）':'（还款）'}</span>`;
+    }
     html+=`<div class="cat-detail-item">
       <div class="ci-left">
-        <div class="ci-desc">${esc(e.description||'无描述')}</div>
+        <div class="ci-desc">${esc(e.description||'无描述')}${badge}</div>
         <div class="ci-date">📅 ${fmtDate(e.date)}</div>
       </div>
       <div class="ci-right">
@@ -1062,21 +1068,49 @@ function renderCategoryDetailModal(category, filtered, typeLabel, typeIcon){
   categoryDetailBody.innerHTML=html;
   categoryDetailModal.classList.add('active');
 }
-// 图表点击分类
+
+// 从图表打开分类详情
 function openCategoryDetail(category){
-  const filtered=getChartFilteredEntries().filter(e=>(e.category||'其他')===category);
-  const typeLabel=chartType==='income'?'收入':'支出';
-  const typeIcon=chartType==='income'?'💰':'💸';
-  renderCategoryDetailModal(category, filtered, typeLabel, typeIcon);
+  const list=getChartFilteredEntries(); // 只按日期过滤
+  const filtered=[];
+  list.forEach(e=>{
+    const t=e.type||'expense';
+    const amt=Number(e.amount)||0;
+    const repaid=Number(e.repaid)||0;
+    if(chartType==='expense'){
+      if(t==='expense' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
+      else if(category==='其他' && t==='debt'){
+        if(e.debtType==='lent' && amt>0){filtered.push({entry:e,displayAmount:amt});}
+        else if(e.debtType==='borrowed' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+      }
+    } else {
+      if(t==='income' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
+      else if(category==='其他' && t==='debt'){
+        if(e.debtType==='borrowed' && amt>0){filtered.push({entry:e,displayAmount:amt});}
+        else if(e.debtType==='lent' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+      }
+    }
+  });
+  renderCategoryDetailModal(category, filtered, chartType);
 }
-// 类目可支配点击分类（只看支出，使用类目预算的日期范围）
+
+// 从类目可支配金额打开分类详情（只看支出）
 function openCategoryDetailFromCatBudget(category){
-  let filtered=entries.filter(e=>(e.type||'expense')==='expense');
-  if(catBudgetRangeFrom || catBudgetRangeTo){
-    filtered=filtered.filter(e=>inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo));
-  }
-  filtered=filtered.filter(e=>(e.category||'其他')===category);
-  renderCategoryDetailModal(category, filtered, '支出', '🎨');
+  const filtered=[];
+  entries.forEach(e=>{
+    const t=e.type||'expense';
+    const amt=Number(e.amount)||0;
+    const repaid=Number(e.repaid)||0;
+    if(catBudgetRangeFrom || catBudgetRangeTo){
+      if(!inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo))return;
+    }
+    if(t==='expense' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
+    else if(category==='其他' && t==='debt'){
+      if(e.debtType==='lent' && amt>0){filtered.push({entry:e,displayAmount:amt});}
+      else if(e.debtType==='borrowed' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+    }
+  });
+  renderCategoryDetailModal(category, filtered, 'expense');
 }
 function closeCategoryDetail(){categoryDetailModal.classList.remove('active')}
 
@@ -1260,6 +1294,7 @@ async function pullCloud(){
   }
 }
 
+// ===== 核心计算（含债务对收支的影响） =====
 function calc(){
   let totalIncome=0,totalExpense=0;
   let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
@@ -1275,8 +1310,25 @@ function calc(){
     else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
-      if(e.debtType==='lent'){totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt}
-      else{totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt}
+      if(e.debtType==='lent'){
+        // 借出算支出（本金）
+        totalExpense+=amt;
+        daily[d].expense+=amt;
+        dailyExpense[d]=(dailyExpense[d]||0)+amt;
+        // 借出还款算收入
+        totalIncome+=repaid;
+        daily[d].income+=repaid;
+        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt;
+      } else {
+        // 借入算收入（本金）
+        totalIncome+=amt;
+        daily[d].income+=amt;
+        // 借入还款算支出
+        totalExpense+=repaid;
+        daily[d].expense+=repaid;
+        dailyExpense[d]=(dailyExpense[d]||0)+repaid;
+        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt;
+      }
     }
   }
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,daily,dailyExpense};
@@ -1298,8 +1350,15 @@ function calcStats(list){
     else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
-      if(e.debtType==='lent'){totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining}
-      else{totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining}
+      if(e.debtType==='lent'){
+        totalExpense+=amt;      // 借出算支出
+        totalIncome+=repaid;    // 借出还款算收入
+        totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;
+      } else {
+        totalIncome+=amt;       // 借入算收入
+        totalExpense+=repaid;   // 借入还款算支出
+        totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;
+      }
     }
   }
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid};
@@ -1311,10 +1370,36 @@ function updateStatsFilterUI(){
   statsFilterHint.textContent=has?'':"（全部记录）";
 }
 
+// ===== 图表（债务归入"其他"） =====
 function getChartFilteredEntries(){
-  let list=entries.filter(e=>(e.type||'expense')===chartType);
-  if(!chartRangeFrom && !chartRangeTo) return list;
-  return list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
+  let list=entries;
+  if(chartRangeFrom || chartRangeTo){
+    list=list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
+  }
+  return list;
+}
+function aggregateChartData(){
+  const list=getChartFilteredEntries();
+  const map={};
+  list.forEach(e=>{
+    const t=e.type||'expense';
+    const amt=Number(e.amount)||0;
+    const repaid=Number(e.repaid)||0;
+    if(chartType==='expense'){
+      if(t==='expense'){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
+      else if(t==='debt'){
+        if(e.debtType==='lent' && amt>0){map['其他']=(map['其他']||0)+amt;}
+        else if(e.debtType==='borrowed' && repaid>0){map['其他']=(map['其他']||0)+repaid;}
+      }
+    } else {
+      if(t==='income'){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
+      else if(t==='debt'){
+        if(e.debtType==='borrowed' && amt>0){map['其他']=(map['其他']||0)+amt;}
+        else if(e.debtType==='lent' && repaid>0){map['其他']=(map['其他']||0)+repaid;}
+      }
+    }
+  });
+  return map;
 }
 function updateChartFilterUI(){
   const has=!!(chartRangeFrom||chartRangeTo);
@@ -1322,7 +1407,63 @@ function updateChartFilterUI(){
   chartRangeText.textContent=has?fmtRange(chartRangeFrom,chartRangeTo):'选择日期范围';
   chartFilterHint.textContent=has?'':"（全部记录）";
 }
+function renderChart(){
+  const canvas=document.getElementById('categoryChart');
+  const legendEl=document.getElementById('chartLegend');
+  const emptyEl=document.getElementById('chartEmpty');
+  const chartBody=$('chartBody');
+  if(!canvas||!legendEl)return;
+  const map=aggregateChartData();
+  const labels=Object.keys(map).sort((a,b)=>map[b]-map[a]);
+  const values=labels.map(l=>map[l]);
+  const total=values.reduce((s,v)=>s+v,0);
+  if(categoryChart){categoryChart.destroy();categoryChart=null}
+  if(labels.length===0){
+    chartBody.style.display='none';
+    emptyEl.style.display='block';
+    legendEl.innerHTML='';
+    chartHint.style.display='none';
+    return;
+  }
+  chartBody.style.display='flex';
+  emptyEl.style.display='none';
+  chartHint.style.display='block';
+  const colors=labels.map((l,i)=>getColor(l,i));
+  categoryChart=new Chart(canvas.getContext('2d'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:8}]},
+    options:{
+      responsive:true,maintainAspectRatio:true,cutout:'62%',
+      onClick:(event,elements)=>{
+        if(elements && elements.length>0){openCategoryDetail(labels[elements[0].index]);}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(15,23,42,.9)',padding:10,
+          callbacks:{label:ctx=>{const v=ctx.parsed;const pct=total>0?((v/total)*100).toFixed(1):'0';return ` ¥${fmtMoney(v)} (${pct}%)  · 点击查看`}}}
+      },
+      animation:{duration:400}
+    }
+  });
+  let legendHtml='';
+  labels.forEach((l,i)=>{
+    const v=values[i];const pct=total>0?((v/total)*100).toFixed(1):'0';
+    legendHtml+=`<div class="legend-item" data-cat="${esc(l)}" title="点击查看「${esc(l)}」的详细记录">
+      <div class="legend-left">
+        <span class="legend-dot" style="background:${colors[i]}"></span>
+        <span class="legend-name">${esc(l)}</span>
+        <span class="legend-pct">${pct}%</span>
+      </div>
+      <span class="legend-amount">¥${fmtMoney(v)}</span>
+    </div>`;
+  });
+  legendEl.innerHTML=legendHtml;
+  legendEl.querySelectorAll('.legend-item').forEach(el=>{
+    el.addEventListener('click',function(){openCategoryDetail(this.dataset.cat)});
+  });
+}
 
+// ===== 类目可支配（含债务归入"其他"） =====
 function updateCatBudgetFilterUI(){
   const has=!!(catBudgetRangeFrom||catBudgetRangeTo);
   catBudgetRangeBtn.classList.toggle('has-value',has);
@@ -1332,10 +1473,24 @@ function updateCatBudgetFilterUI(){
 function getUsageForPeriod(){
   const usage={};
   for(const e of entries){
-    if((e.type||'expense')!=='expense')continue;
+    const t=e.type||'expense';
+    const amt=Number(e.amount)||0;
+    const repaid=Number(e.repaid)||0;
     let match=true;
     if(catBudgetRangeFrom || catBudgetRangeTo){match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo)}
-    if(match){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+(Number(e.amount)||0)}
+    if(!match)continue;
+    if(t==='expense'){
+      const cat=e.category||'其他';
+      usage[cat]=(usage[cat]||0)+amt;
+    } else if(t==='debt'){
+      // 借出本金算支出（归"其他"）
+      // 借入已还算支出（归"其他"）
+      if(e.debtType==='lent' && amt>0){
+        usage['其他']=(usage['其他']||0)+amt;
+      } else if(e.debtType==='borrowed' && repaid>0){
+        usage['其他']=(usage['其他']||0)+repaid;
+      }
+    }
   }
   return usage;
 }
@@ -1393,11 +1548,8 @@ function renderCategoryBudgets(){
     </div>`;
   });
   catBudgetList.innerHTML=html;
-  // 绑定点击事件
   catBudgetList.querySelectorAll('.cat-budget-item').forEach(el=>{
-    el.addEventListener('click',function(){
-      openCategoryDetailFromCatBudget(this.dataset.cat);
-    });
+    el.addEventListener('click',function(){openCategoryDetailFromCatBudget(this.dataset.cat)});
   });
 }
 function renderCatBudgetInputs(){
@@ -1587,75 +1739,6 @@ function resetImportUI(){
   fileName.style.display='none';fileName.textContent='';
   fileDrop.classList.remove('has-file');
   importPreview.style.display='none';importPreview.innerHTML='';
-}
-
-// ===== 图表 =====
-function renderChart(){
-  const canvas=document.getElementById('categoryChart');
-  const legendEl=document.getElementById('chartLegend');
-  const emptyEl=document.getElementById('chartEmpty');
-  const chartBody=$('chartBody');
-  if(!canvas||!legendEl)return;
-  const filtered=getChartFilteredEntries();
-  const map={};
-  filtered.forEach(e=>{const cat=e.category||'其他';map[cat]=(map[cat]||0)+Number(e.amount)});
-  const labels=Object.keys(map).sort((a,b)=>map[b]-map[a]);
-  const values=labels.map(l=>map[l]);
-  const total=values.reduce((s,v)=>s+v,0);
-  if(categoryChart){categoryChart.destroy();categoryChart=null}
-  if(labels.length===0){
-    chartBody.style.display='none';
-    emptyEl.style.display='block';
-    legendEl.innerHTML='';
-    chartHint.style.display='none';
-    return;
-  }
-  chartBody.style.display='flex';
-  emptyEl.style.display='none';
-  chartHint.style.display='block';
-  const colors=labels.map((l,i)=>getColor(l,i));
-  categoryChart=new Chart(canvas.getContext('2d'),{
-    type:'doughnut',
-    data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#fff',borderWidth:2,hoverOffset:8}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:true,
-      cutout:'62%',
-      onClick:(event,elements)=>{
-        if(elements && elements.length>0){
-          const idx=elements[0].index;
-          openCategoryDetail(labels[idx]);
-        }
-      },
-      plugins:{
-        legend:{display:false},
-        tooltip:{backgroundColor:'rgba(15,23,42,.9)',padding:10,
-          callbacks:{
-            label:ctx=>{const v=ctx.parsed;const pct=total>0?((v/total)*100).toFixed(1):'0';return ` ¥${fmtMoney(v)} (${pct}%)  · 点击查看`}
-          }
-        }
-      },
-      animation:{duration:400}
-    }
-  });
-  let legendHtml='';
-  labels.forEach((l,i)=>{
-    const v=values[i];const pct=total>0?((v/total)*100).toFixed(1):'0';
-    legendHtml+=`<div class="legend-item" data-cat="${esc(l)}" title="点击查看「${esc(l)}」的详细记录">
-      <div class="legend-left">
-        <span class="legend-dot" style="background:${colors[i]}"></span>
-        <span class="legend-name">${esc(l)}</span>
-        <span class="legend-pct">${pct}%</span>
-      </div>
-      <span class="legend-amount">¥${fmtMoney(v)}</span>
-    </div>`;
-  });
-  legendEl.innerHTML=legendHtml;
-  legendEl.querySelectorAll('.legend-item').forEach(el=>{
-    el.addEventListener('click',function(){
-      openCategoryDetail(this.dataset.cat);
-    });
-  });
 }
 
 // ===== 表格 =====
@@ -1936,7 +2019,8 @@ function openRepayModal(id){
   activeRepayId=id;
   const dirLabel=e.debtType==='lent'?'借出（别人欠我）':'借入（我欠别人）';
   repayTitle.textContent=e.debtType==='lent'?'💰 收回款项':'💸 归还欠款';
-  repayInfo.innerHTML=`<strong>${esc(e.description||'无描述')}</strong><br/>方向：${dirLabel}<br/>原始金额：¥${fmtMoney(amt)}<br/>已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/><span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span>`;
+  const effectHint=e.debtType==='lent'?'（将计入收入）':'（将计入支出）';
+  repayInfo.innerHTML=`<strong>${esc(e.description||'无描述')}</strong><br/>方向：${dirLabel}<br/>原始金额：¥${fmtMoney(amt)}<br/>已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/><span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span><br/><span style="color:#94a3b8;font-size:.8rem;">💡 本次还款${effectHint}</span>`;
   repayInput.value='';repayInput.placeholder=`最多 ${fmtMoney(remaining)}`;
   repayModal.classList.add('active');
   setTimeout(()=>repayInput.focus(),100);
