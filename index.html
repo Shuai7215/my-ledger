@@ -174,7 +174,6 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#f6f8fc;color:#1e29
 .cat-budget-progress{height:8px;background:#e2e8f0;border-radius:20px;overflow:hidden}
 .cat-budget-progress .fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:20px;transition:width .4s ease}
 .cat-budget-progress .fill.over{background:linear-gradient(90deg,#ef4444,#dc2626)}
-.cat-budget-hint{font-size:.7rem;color:#94a3b8;margin-top:.35rem;text-align:right;}
 .cat-budget-input-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
 .cat-budget-input-row label{flex:0 0 75px;font-size:.85rem;color:#334155;font-weight:500}
 .cat-budget-input-row input{flex:1;padding:.4rem .7rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;background:#fafbfc;font-family:inherit;color:#0f172a}
@@ -269,6 +268,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .type-badge.expense{background:#fef2f2;color:#dc2626}
 .type-badge.debt-lent{background:#fef3c7;color:#d97706}
 .type-badge.debt-borrowed{background:#ede9fe;color:#7c3aed}
+.type-badge.repay{background:#e0e7ff;color:#3730a3}
 .category-badge{display:inline-block;padding:.2rem .7rem;border-radius:30px;font-size:.75rem;font-weight:500;background:#eef2ff;color:#4338ca}
 .desc-sub{font-size:.72rem;color:#64748b;margin-top:.15rem;line-height:1.4}
 .desc-sub .paid-off-tag{color:#16a34a;font-weight:600}
@@ -308,6 +308,10 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .debt-item-progress{height:6px;background:#e2e8f0;border-radius:20px;overflow:hidden}
 .debt-item-progress .fill{height:100%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:20px;transition:width .4s ease}
 .debt-item-actions{display:flex;justify-content:flex-end;gap:.4rem}
+.debt-repay-history{font-size:.72rem;color:#94a3b8;margin-top:.3rem;line-height:1.5;}
+.debt-repay-history summary{cursor:pointer;color:#64748b;font-weight:500;}
+.debt-repay-history summary:hover{color:#2563eb;}
+.debt-repay-history ul{margin-left:1rem;margin-top:.2rem;}
 .debt-empty{text-align:center;padding:2.5rem 1rem;color:#94a3b8}
 .debt-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
 .debt-summary{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:.7rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem}
@@ -334,7 +338,6 @@ tr.detail-row.over-budget{background-color:#fef2f2}
 .cat-detail-item .ci-amount{font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
 .cat-detail-item .ci-amount.income{color:#16a34a}
 .cat-detail-item .ci-amount.expense{color:#dc2626}
-.cat-detail-item .ci-amount.debt{color:#d97706}
 .cat-detail-empty{text-align:center;padding:2.5rem 1rem;color:#94a3b8}
 .cat-detail-empty .icon{font-size:2.5rem;margin-bottom:.5rem}
 
@@ -458,7 +461,7 @@ tr.detail-row.over-budget{background-color:#fef2f2}
   </div>
 
   <div class="modal-overlay" id="debtListModal">
-    <div class="modal-box" style="max-width:480px;">
+    <div class="modal-box" style="max-width:520px;">
       <button class="close-btn" id="debtListClose">✕</button>
       <h2 id="debtListTitle">💰 应收款项</h2>
       <div class="debt-summary" id="debtListSummary">
@@ -496,12 +499,13 @@ tr.detail-row.over-budget{background-color:#fef2f2}
   </div>
 
   <div class="modal-overlay" id="repayModal">
-    <div class="modal-box" style="max-width:380px;">
+    <div class="modal-box" style="max-width:400px;">
       <button class="close-btn" id="repayClose">✕</button>
       <h2 id="repayTitle">💵 还款</h2>
       <div id="repayInfo" style="color:#475569;font-size:.9rem;line-height:1.7;margin-bottom:1rem;padding:.8rem;background:#f8fafc;border-radius:10px;"></div>
-      <div class="form-group"><label for="repayInput">本次还款金额(¥)</label><input type="number" id="repayInput" placeholder="0.00" step="0.01" min="0.01" /></div>
-      <p style="font-size:.8rem;color:#94a3b8;margin-top:.5rem;">💡 最多可还至剩余未还金额</p>
+      <div class="form-group"><label for="repayDateInput">📅 还款日期</label><input type="date" id="repayDateInput" required /></div>
+      <div class="form-group" style="margin-top:.6rem;"><label for="repayInput">本次还款金额(¥)</label><input type="number" id="repayInput" placeholder="0.00" step="0.01" min="0.01" /></div>
+      <p style="font-size:.8rem;color:#94a3b8;margin-top:.5rem;">💡 最多可还至剩余未还金额，日期决定收支归属</p>
       <div style="display:flex;gap:.5rem;margin-top:1rem;">
         <button class="btn btn-primary" id="repayConfirm" style="flex:1;justify-content:center;">确认还款</button>
         <button class="btn btn-outline" id="repayCancel" style="flex:1;justify-content:center;">取消</button>
@@ -785,7 +789,7 @@ const settingsModal=$('settingsModal'),settingsToggleBtn=$('settingsToggleBtn'),
 const toggleStats=$('toggleStats'),toggleChart=$('toggleChart'),toggleBudget=$('toggleBudget'),toggleCatBudget=$('toggleCatBudget'),toggleSavings=$('toggleSavings'),toggleTemplate=$('toggleTemplate'),toggleForm=$('toggleForm'),toggleTable=$('toggleTable');
 const statsContainer=$('statsContainer'),chartSection=$('chartSection'),budgetSection=$('budgetSection'),categoryBudgetSection=$('categoryBudgetSection'),savingsSection=$('savingsSection'),templateSection=$('templateSection'),entryFormSection=$('entryFormSection'),tableWrapper=$('tableWrapper');
 const saveAmountModal=$('saveAmountModal'),saveAmountTitle=$('saveAmountTitle'),saveAmountGoalName=$('saveAmountGoalName'),saveAmountInput=$('saveAmountInput'),saveAmountConfirm=$('saveAmountConfirm'),saveAmountCancel=$('saveAmountCancel'),saveAmountClose=$('saveAmountClose');
-const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
+const repayModal=$('repayModal'),repayTitle=$('repayTitle'),repayInfo=$('repayInfo'),repayDateInput=$('repayDateInput'),repayInput=$('repayInput'),repayConfirm=$('repayConfirm'),repayCancel=$('repayCancel'),repayClose=$('repayClose');
 const debtListModal=$('debtListModal'),debtListTitle=$('debtListTitle'),debtListSummary=$('debtListSummary'),debtListTotal=$('debtListTotal'),debtListBody=$('debtListBody'),debtListClose=$('debtListClose');
 const catBudgetModal=$('catBudgetModal'),catBudgetClose=$('catBudgetClose'),catBudgetInputs=$('catBudgetInputs'),catBudgetSave=$('catBudgetSave'),catBudgetCancel=$('catBudgetCancel'),freeBudgetInput=$('freeBudgetInput'),editCatBudgetBtn=$('editCatBudgetBtn'),catBudgetList=$('catBudgetList');
 const catBudgetPeriodInfo=$('catBudgetPeriodInfo');
@@ -845,6 +849,14 @@ function minusMonthsPlus1(dateStr,months){
   const base=new Date(newY,newM-1,newD);
   base.setDate(base.getDate()+1);
   return `${base.getFullYear()}-${pad(base.getMonth()+1)}-${pad(base.getDate())}`;
+}
+// 获取某条债务记录的所有还款列表（含历史兼容）
+function getRepayments(e){
+  if(Array.isArray(e.repayments) && e.repayments.length>0) return e.repayments;
+  // 兼容旧数据：把累计的 repaid 视为在原始记录日期一次性还款
+  const repaid=Number(e.repaid)||0;
+  if(repaid>0) return [{date:e.date, amount:repaid}];
+  return [];
 }
 
 let toastTimer=null;
@@ -1021,7 +1033,7 @@ function updateSearchRangeBtn(){
   searchRangeText.textContent=has?fmtRange(searchDateStart,searchDateEnd):'日期范围';
 }
 
-// ===== 分类详情弹窗（支持债务记录归入"其他"） =====
+// ===== 分类详情弹窗 =====
 function renderCategoryDetailModal(category, filtered, viewType){
   const total=filtered.reduce((s,item)=>s+Number(item.displayAmount),0);
   const typeLabel=viewType==='income'?'收入':'支出';
@@ -1048,7 +1060,6 @@ function renderCategoryDetailModal(category, filtered, viewType){
     const amt=Number(item.displayAmount)||0;
     const amtCls=viewType==='income'?'income':'expense';
     const sign=viewType==='income'?'+':'-';
-    // 债务记录显示特殊标记
     const isDebt=(e.type||'expense')==='debt';
     let badge='';
     if(isDebt){
@@ -1068,46 +1079,79 @@ function renderCategoryDetailModal(category, filtered, viewType){
   categoryDetailBody.innerHTML=html;
   categoryDetailModal.classList.add('active');
 }
-
-// 从图表打开分类详情
 function openCategoryDetail(category){
-  const list=getChartFilteredEntries(); // 只按日期过滤
+  const list=getChartFilteredEntries();
   const filtered=[];
   list.forEach(e=>{
     const t=e.type||'expense';
     const amt=Number(e.amount)||0;
-    const repaid=Number(e.repaid)||0;
     if(chartType==='expense'){
       if(t==='expense' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
       else if(category==='其他' && t==='debt'){
-        if(e.debtType==='lent' && amt>0){filtered.push({entry:e,displayAmount:amt});}
-        else if(e.debtType==='borrowed' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+        // 借出本金归"其他"（支出）
+        if(e.debtType==='lent'){
+          const inRange0=!chartRangeFrom && !chartRangeTo ? true : inRange(e.date,chartRangeFrom,chartRangeTo);
+          if(inRange0 && amt>0){filtered.push({entry:e,displayAmount:amt});}
+        }
+        // 借入还款归"其他"（支出），按每笔还款日期
+        if(e.debtType==='borrowed'){
+          const reps=getRepayments(e);
+          reps.forEach(r=>{
+            const rd=r.date||e.date;
+            const ra=Number(r.amount)||0;
+            if(ra<=0)return;
+            const inRangeR=!chartRangeFrom && !chartRangeTo ? true : inRange(rd,chartRangeFrom,chartRangeTo);
+            if(inRangeR){filtered.push({entry:Object.assign({},e,{date:rd}),displayAmount:ra});}
+          });
+        }
       }
     } else {
       if(t==='income' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
       else if(category==='其他' && t==='debt'){
-        if(e.debtType==='borrowed' && amt>0){filtered.push({entry:e,displayAmount:amt});}
-        else if(e.debtType==='lent' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+        if(e.debtType==='borrowed'){
+          const inRange0=!chartRangeFrom && !chartRangeTo ? true : inRange(e.date,chartRangeFrom,chartRangeTo);
+          if(inRange0 && amt>0){filtered.push({entry:e,displayAmount:amt});}
+        }
+        if(e.debtType==='lent'){
+          const reps=getRepayments(e);
+          reps.forEach(r=>{
+            const rd=r.date||e.date;
+            const ra=Number(r.amount)||0;
+            if(ra<=0)return;
+            const inRangeR=!chartRangeFrom && !chartRangeTo ? true : inRange(rd,chartRangeFrom,chartRangeTo);
+            if(inRangeR){filtered.push({entry:Object.assign({},e,{date:rd}),displayAmount:ra});}
+          });
+        }
       }
     }
   });
   renderCategoryDetailModal(category, filtered, chartType);
 }
-
-// 从类目可支配金额打开分类详情（只看支出）
 function openCategoryDetailFromCatBudget(category){
   const filtered=[];
   entries.forEach(e=>{
     const t=e.type||'expense';
     const amt=Number(e.amount)||0;
-    const repaid=Number(e.repaid)||0;
-    if(catBudgetRangeFrom || catBudgetRangeTo){
-      if(!inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo))return;
-    }
-    if(t==='expense' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
-    else if(category==='其他' && t==='debt'){
-      if(e.debtType==='lent' && amt>0){filtered.push({entry:e,displayAmount:amt});}
-      else if(e.debtType==='borrowed' && repaid>0){filtered.push({entry:e,displayAmount:repaid});}
+    if(t==='expense' && (e.category||'其他')===category){
+      const inR=!catBudgetRangeFrom && !catBudgetRangeTo ? true : inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
+      if(inR){filtered.push({entry:e,displayAmount:amt});}
+    } else if(category==='其他' && t==='debt'){
+      // 借出本金
+      if(e.debtType==='lent'){
+        const inR=!catBudgetRangeFrom && !catBudgetRangeTo ? true : inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
+        if(inR && amt>0){filtered.push({entry:e,displayAmount:amt});}
+      }
+      // 借入还款
+      if(e.debtType==='borrowed'){
+        const reps=getRepayments(e);
+        reps.forEach(r=>{
+          const rd=r.date||e.date;
+          const ra=Number(r.amount)||0;
+          if(ra<=0)return;
+          const inR=!catBudgetRangeFrom && !catBudgetRangeTo ? true : inRange(rd,catBudgetRangeFrom,catBudgetRangeTo);
+          if(inR){filtered.push({entry:Object.assign({},e,{date:rd}),displayAmount:ra});}
+        });
+      }
     }
   });
   renderCategoryDetailModal(category, filtered, 'expense');
@@ -1201,7 +1245,17 @@ function isOldFreeBudgetFormat(obj){
 function migrate(){
   entries.forEach(e=>{
     if(!e.type)e.type='expense';
-    if(e.type==='debt'){if(!e.debtType)e.debtType='lent';if(typeof e.repaid!=='number')e.repaid=0}
+    if(e.type==='debt'){
+      if(!e.debtType)e.debtType='lent';
+      if(typeof e.repaid!=='number')e.repaid=0;
+      // 关键：把历史 repaid 迁移为 repayments 数组（按原记录日期）
+      if(!Array.isArray(e.repayments)){
+        e.repayments=[];
+        if(e.repaid>0){
+          e.repayments.push({date:e.date, amount:e.repaid});
+        }
+      }
+    }
   });
   if(!Array.isArray(savingsGoals))savingsGoals=[];
   if(!categoryBudgets||typeof categoryBudgets!=='object'||Array.isArray(categoryBudgets))categoryBudgets={all:{}};
@@ -1294,70 +1348,104 @@ async function pullCloud(){
   }
 }
 
-// ===== 核心计算（含债务对收支的影响） =====
+// ===== 核心计算（含债务对收支的影响，还款按还款日期） =====
 function calc(){
   let totalIncome=0,totalExpense=0;
   let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
   let totalBorrowedOriginal=0,totalBorrowedRepaid=0,totalBorrowedRemaining=0;
   const daily={},dailyExpense={};
+  const ensureDaily=d=>{if(!daily[d])daily[d]={income:0,expense:0,lent:0,borrowed:0}};
   for(const e of entries){
     const amt=Number(e.amount)||0;
     const type=e.type||'expense';
     const d=e.date;
-    if(!daily[d])daily[d]={income:0,expense:0,lent:0,borrowed:0};
+    ensureDaily(d);
     if(type==='income'){totalIncome+=amt;daily[d].income+=amt}
     else if(type==='expense'){totalExpense+=amt;daily[d].expense+=amt;dailyExpense[d]=(dailyExpense[d]||0)+amt}
     else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
       if(e.debtType==='lent'){
-        // 借出算支出（本金）
-        totalExpense+=amt;
-        daily[d].expense+=amt;
-        dailyExpense[d]=(dailyExpense[d]||0)+amt;
-        // 借出还款算收入
-        totalIncome+=repaid;
-        daily[d].income+=repaid;
+        // 借出本金（支出，按原日期）
+        totalExpense+=amt;daily[d].expense+=amt;dailyExpense[d]=(dailyExpense[d]||0)+amt;
         totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt;
       } else {
-        // 借入算收入（本金）
-        totalIncome+=amt;
-        daily[d].income+=amt;
-        // 借入还款算支出
-        totalExpense+=repaid;
-        daily[d].expense+=repaid;
-        dailyExpense[d]=(dailyExpense[d]||0)+repaid;
+        // 借入本金（收入，按原日期）
+        totalIncome+=amt;daily[d].income+=amt;
         totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt;
       }
+      // 还款：按实际还款日期统计
+      const reps=getRepayments(e);
+      reps.forEach(r=>{
+        const rd=r.date||e.date;
+        const ra=Number(r.amount)||0;
+        if(ra<=0)return;
+        ensureDaily(rd);
+        if(e.debtType==='lent'){
+          // 借出收款（收入，按还款日期）
+          totalIncome+=ra;daily[rd].income+=ra;
+        } else {
+          // 借入还款（支出，按还款日期）
+          totalExpense+=ra;daily[rd].expense+=ra;dailyExpense[rd]=(dailyExpense[rd]||0)+ra;
+        }
+      });
     }
   }
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,daily,dailyExpense};
 }
 
+// 判断某条债务记录是否在某区间内有活动（本金或还款）
+function debtTouchesRange(e,from,to){
+  if(!from&&!to)return true;
+  if(inRange(e.date,from,to))return true;
+  const reps=getRepayments(e);
+  return reps.some(r=>inRange(r.date||e.date,from,to));
+}
+
 function getStatsFiltered(){
   if(!statsRangeFrom && !statsRangeTo) return entries;
-  return entries.filter(e=>inRange(e.date,statsRangeFrom,statsRangeTo));
+  // 注意：债务记录只要其本金或任一次还款在范围内，就算命中（详见 calcStats 按日期精确计算）
+  return entries.filter(e=>{
+    if((e.type||'expense')!=='debt') return inRange(e.date,statsRangeFrom,statsRangeTo);
+    return debtTouchesRange(e,statsRangeFrom,statsRangeTo);
+  });
 }
 function calcStats(list){
   let totalIncome=0,totalExpense=0;
   let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
   let totalBorrowedOriginal=0,totalBorrowedRepaid=0,totalBorrowedRemaining=0;
+  const from=statsRangeFrom,to=statsRangeTo;
   for(const e of list){
     const amt=Number(e.amount)||0;
     const type=e.type||'expense';
-    if(type==='income')totalIncome+=amt;
-    else if(type==='expense')totalExpense+=amt;
-    else if(type==='debt'){
+    if(type==='income'){
+      if(inRange(e.date,from,to)) totalIncome+=amt;
+    } else if(type==='expense'){
+      if(inRange(e.date,from,to)) totalExpense+=amt;
+    } else if(type==='debt'){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
+      // 累计未还部分只统计一次（不与日期挂钩）
       if(e.debtType==='lent'){
-        totalExpense+=amt;      // 借出算支出
-        totalIncome+=repaid;    // 借出还款算收入
         totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;
+        // 本金：按原日期
+        if(inRange(e.date,from,to)) totalExpense+=amt;
+        // 还款：按还款日期
+        const reps=getRepayments(e);
+        reps.forEach(r=>{
+          const rd=r.date||e.date;
+          const ra=Number(r.amount)||0;
+          if(ra>0 && inRange(rd,from,to)) totalIncome+=ra;
+        });
       } else {
-        totalIncome+=amt;       // 借入算收入
-        totalExpense+=repaid;   // 借入还款算支出
         totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;
+        if(inRange(e.date,from,to)) totalIncome+=amt;
+        const reps=getRepayments(e);
+        reps.forEach(r=>{
+          const rd=r.date||e.date;
+          const ra=Number(r.amount)||0;
+          if(ra>0 && inRange(rd,from,to)) totalExpense+=ra;
+        });
       }
     }
   }
@@ -1370,32 +1458,47 @@ function updateStatsFilterUI(){
   statsFilterHint.textContent=has?'':"（全部记录）";
 }
 
-// ===== 图表（债务归入"其他"） =====
+// ===== 图表（债务归入"其他"，还款按还款日期） =====
 function getChartFilteredEntries(){
-  let list=entries;
-  if(chartRangeFrom || chartRangeTo){
-    list=list.filter(e=>inRange(e.date,chartRangeFrom,chartRangeTo));
-  }
-  return list;
+  return entries;
 }
 function aggregateChartData(){
-  const list=getChartFilteredEntries();
   const map={};
-  list.forEach(e=>{
+  const from=chartRangeFrom,to=chartRangeTo;
+  entries.forEach(e=>{
     const t=e.type||'expense';
     const amt=Number(e.amount)||0;
-    const repaid=Number(e.repaid)||0;
     if(chartType==='expense'){
-      if(t==='expense'){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
-      else if(t==='debt'){
-        if(e.debtType==='lent' && amt>0){map['其他']=(map['其他']||0)+amt;}
-        else if(e.debtType==='borrowed' && repaid>0){map['其他']=(map['其他']||0)+repaid;}
+      if(t==='expense'){
+        if(inRange(e.date,from,to)){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
+      } else if(t==='debt'){
+        if(e.debtType==='lent'){
+          // 借出本金→支出（按原日期）
+          if(inRange(e.date,from,to) && amt>0){map['其他']=(map['其他']||0)+amt;}
+        } else {
+          // 借入还款→支出（按还款日期）
+          getRepayments(e).forEach(r=>{
+            const rd=r.date||e.date;
+            const ra=Number(r.amount)||0;
+            if(ra>0 && inRange(rd,from,to)){map['其他']=(map['其他']||0)+ra;}
+          });
+        }
       }
     } else {
-      if(t==='income'){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
-      else if(t==='debt'){
-        if(e.debtType==='borrowed' && amt>0){map['其他']=(map['其他']||0)+amt;}
-        else if(e.debtType==='lent' && repaid>0){map['其他']=(map['其他']||0)+repaid;}
+      if(t==='income'){
+        if(inRange(e.date,from,to)){const cat=e.category||'其他';map[cat]=(map[cat]||0)+amt;}
+      } else if(t==='debt'){
+        if(e.debtType==='borrowed'){
+          // 借入本金→收入（按原日期）
+          if(inRange(e.date,from,to) && amt>0){map['其他']=(map['其他']||0)+amt;}
+        } else {
+          // 借出还款→收入（按还款日期）
+          getRepayments(e).forEach(r=>{
+            const rd=r.date||e.date;
+            const ra=Number(r.amount)||0;
+            if(ra>0 && inRange(rd,from,to)){map['其他']=(map['其他']||0)+ra;}
+          });
+        }
       }
     }
   });
@@ -1463,7 +1566,7 @@ function renderChart(){
   });
 }
 
-// ===== 类目可支配（含债务归入"其他"） =====
+// ===== 类目可支配 =====
 function updateCatBudgetFilterUI(){
   const has=!!(catBudgetRangeFrom||catBudgetRangeTo);
   catBudgetRangeBtn.classList.toggle('has-value',has);
@@ -1472,26 +1575,26 @@ function updateCatBudgetFilterUI(){
 }
 function getUsageForPeriod(){
   const usage={};
-  for(const e of entries){
+  const from=catBudgetRangeFrom,to=catBudgetRangeTo;
+  entries.forEach(e=>{
     const t=e.type||'expense';
     const amt=Number(e.amount)||0;
-    const repaid=Number(e.repaid)||0;
-    let match=true;
-    if(catBudgetRangeFrom || catBudgetRangeTo){match=inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo)}
-    if(!match)continue;
     if(t==='expense'){
-      const cat=e.category||'其他';
-      usage[cat]=(usage[cat]||0)+amt;
+      if(inRange(e.date,from,to)){const cat=e.category||'其他';usage[cat]=(usage[cat]||0)+amt;}
     } else if(t==='debt'){
-      // 借出本金算支出（归"其他"）
-      // 借入已还算支出（归"其他"）
-      if(e.debtType==='lent' && amt>0){
-        usage['其他']=(usage['其他']||0)+amt;
-      } else if(e.debtType==='borrowed' && repaid>0){
-        usage['其他']=(usage['其他']||0)+repaid;
+      if(e.debtType==='lent'){
+        // 借出本金→支出（归"其他"，按原日期）
+        if(inRange(e.date,from,to) && amt>0){usage['其他']=(usage['其他']||0)+amt;}
+      } else {
+        // 借入还款→支出（归"其他"，按还款日期）
+        getRepayments(e).forEach(r=>{
+          const rd=r.date||e.date;
+          const ra=Number(r.amount)||0;
+          if(ra>0 && inRange(rd,from,to)){usage['其他']=(usage['其他']||0)+ra;}
+        });
       }
     }
-  }
+  });
   return usage;
 }
 function renderCategoryBudgets(){
@@ -1626,7 +1729,7 @@ function parseRows(rows){
         const typeVal=normalizeType(row[1]);
         if(dateVal&&typeVal&&!isNaN(amountVal)&&amountVal>0){
           const rec={id:uid(),date:dateVal,type:typeVal.type,category:'其他',description:'',amount:Math.round(amountVal*100)/100};
-          if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0}
+          if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0;rec.repayments=[]}
           records.push(rec);return;
         }
       }
@@ -1641,7 +1744,7 @@ function parseRows(rows){
     if(!typeVal){errors.push(`第${rowNum}行类型无法识别`);return}
     if(isNaN(amountVal)||amountVal<=0){errors.push(`第${rowNum}行金额无效`);return}
     const rec={id:uid(),date:dateVal,type:typeVal.type,category:catStr,description:descStr,amount:Math.round(amountVal*100)/100};
-    if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0}
+    if(typeVal.debtType){rec.debtType=typeVal.debtType;rec.repaid=0;rec.repayments=[]}
     records.push(rec);
   });
   return {records,errors};
@@ -1994,10 +2097,21 @@ function openDebtList(direction){
   list.forEach(e=>{
     const amt=Number(e.amount)||0;const repaid=Number(e.repaid)||0;const remaining=Math.max(0,amt-repaid);
     const pct=amt>0?Math.min(100,(repaid/amt)*100):0;
+    const reps=getRepayments(e);
+    let repayHistoryHtml='';
+    if(reps.length>0){
+      const sortedReps=[...reps].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+      repayHistoryHtml=`<details class="debt-repay-history"><summary>📋 还款记录（${sortedReps.length} 笔）</summary><ul>`;
+      sortedReps.forEach(r=>{
+        repayHistoryHtml+=`<li>${fmtDate(r.date)} · ¥${fmtMoney(r.amount)}</li>`;
+      });
+      repayHistoryHtml+=`</ul></details>`;
+    }
     html+=`<div class="debt-item">
       <div class="debt-item-header"><div class="debt-item-desc">${esc(e.description||'无描述')}<span class="debt-item-date">${fmtDate(e.date)}</span></div></div>
       <div class="debt-item-info"><span>原始 ¥${fmtMoney(amt)} · 已${isLent?'收':'还'} ¥${fmtMoney(repaid)}</span><span class="remaining">未${isLent?'收':'还'} ¥${fmtMoney(remaining)}</span></div>
       <div class="debt-item-progress"><div class="fill" style="width:${pct}%"></div></div>
+      ${repayHistoryHtml}
       <div class="debt-item-actions"><button class="btn btn-success btn-sm debt-repay-btn" data-id="${e.id}">${isLent?'💰 收款':'💸 还款'}</button></div>
     </div>`;
   });
@@ -2019,8 +2133,9 @@ function openRepayModal(id){
   activeRepayId=id;
   const dirLabel=e.debtType==='lent'?'借出（别人欠我）':'借入（我欠别人）';
   repayTitle.textContent=e.debtType==='lent'?'💰 收回款项':'💸 归还欠款';
-  const effectHint=e.debtType==='lent'?'（将计入收入）':'（将计入支出）';
-  repayInfo.innerHTML=`<strong>${esc(e.description||'无描述')}</strong><br/>方向：${dirLabel}<br/>原始金额：¥${fmtMoney(amt)}<br/>已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/><span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span><br/><span style="color:#94a3b8;font-size:.8rem;">💡 本次还款${effectHint}</span>`;
+  const effectHint=e.debtType==='lent'?'（将计入该日期的收入）':'（将计入该日期的支出）';
+  repayInfo.innerHTML=`<strong>${esc(e.description||'无描述')}</strong><br/>方向：${dirLabel}<br/>原始金额：¥${fmtMoney(amt)}<br/>已${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(repaid)}<br/><span style="color:#dc2626;font-weight:600;">剩余未${e.debtType==='lent'?'收':'还'}：¥${fmtMoney(remaining)}</span><br/><span style="color:#94a3b8;font-size:.8rem;">💡 本次还款日期${effectHint}</span>`;
+  repayDateInput.value=today();
   repayInput.value='';repayInput.placeholder=`最多 ${fmtMoney(remaining)}`;
   repayModal.classList.add('active');
   setTimeout(()=>repayInput.focus(),100);
@@ -2030,15 +2145,18 @@ function confirmRepay(){
   const e=entries.find(x=>x.id===activeRepayId);if(!e)return;
   const amt=Number(e.amount)||0;const repaid=Number(e.repaid)||0;const remaining=Math.max(0,amt-repaid);
   const input=parseFloat(repayInput.value);
+  const repayDate=repayDateInput.value||today();
   if(isNaN(input)||input<=0){toast('⚠️ 请输入有效还款金额');return}
   if(input>remaining+0.001){toast(`⚠️ 还款金额不能超过剩余 ¥${fmtMoney(remaining)}`);return}
   const rounded=Math.round(input*100)/100;
   e.repaid=Math.round((repaid+rounded)*100)/100;
+  if(!Array.isArray(e.repayments))e.repayments=[];
+  e.repayments.push({date:repayDate, amount:rounded});
   saveLocal();renderAll();pushCloud();
   repayModal.classList.remove('active');activeRepayId=null;
   const newRemaining=Math.max(0,amt-e.repaid);
   if(newRemaining<=0.001)toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
-  else toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}，还剩 ¥${fmtMoney(newRemaining)}`);
+  else toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}（${repayDate}），还剩 ¥${fmtMoney(newRemaining)}`);
 }
 
 // ===== 攒钱目标 =====
@@ -2129,7 +2247,7 @@ function addEntry(){
   if(!amt||isNaN(amt)||amt<=0){toast('⚠️ 请输入有效金额');return}
   if(date>today()){toast('⚠️ 日期不能是未来');return}
   const rec={id:uid(),date,type,category:cat,description:desc,amount:Math.round(amt*100)/100};
-  if(type==='debt'){rec.debtType=entryDebtType.value;rec.repaid=0}
+  if(type==='debt'){rec.debtType=entryDebtType.value;rec.repaid=0;rec.repayments=[]}
   entries.push(rec);
   saveLocal();renderAll();pushCloud();toast('✅ 记录已添加');
   entryDesc.value='';entryAmount.value='';entryDate.value=today();entryDesc.focus();
@@ -2158,8 +2276,13 @@ function exportCSV(){
   if(entries.length===0){toast('📭 没有记录');return}
   const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
   const typeLabel=e=>{if(e.type==='income')return'收入';if(e.type==='debt')return e.debtType==='lent'?'借出':'借入';return'支出'};
-  const rows=[['日期','类型','类别','描述','金额','已还金额','剩余未还']];
-  sorted.forEach(e=>{const repaid=Number(e.repaid)||0;const remaining=e.type==='debt'?Math.max(0,Number(e.amount)-repaid):'';rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2),repaid?repaid.toFixed(2):'',remaining!==''?remaining.toFixed(2):''])});
+  const rows=[['日期','类型','类别','描述','金额','已还金额','剩余未还','还款历史']];
+  sorted.forEach(e=>{
+    const repaid=Number(e.repaid)||0;
+    const remaining=e.type==='debt'?Math.max(0,Number(e.amount)-repaid):'';
+    const reps=e.type==='debt'?getRepayments(e).map(r=>`${r.date}:${fmtMoney(r.amount)}`).join('; '):'';
+    rows.push([e.date,typeLabel(e),e.category||'',(e.description||'').replace(/,/g,'，'),Number(e.amount).toFixed(2),repaid?repaid.toFixed(2):'',remaining!==''?remaining.toFixed(2):'',reps]);
+  });
   const csv=rows.map(r=>r.join(',')).join('\n');
   try{
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -2324,6 +2447,7 @@ function init(){
   repayClose.addEventListener('click',()=>{repayModal.classList.remove('active');activeRepayId=null});
   repayModal.addEventListener('click',function(e){if(e.target===this){this.classList.remove('active');activeRepayId=null}});
   repayInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmRepay()}});
+  repayDateInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmRepay()}});
 
   settingsToggleBtn.addEventListener('click',()=>settingsModal.classList.add('active'));
   settingsCloseBtn.addEventListener('click',()=>settingsModal.classList.remove('active'));
