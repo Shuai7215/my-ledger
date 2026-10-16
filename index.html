@@ -258,7 +258,7 @@ tr.group-header.over-budget:hover{background:#fde2e2!important}
 tr.group-header.over-budget .group-total{color:#dc2626}
 tr.detail-row td{padding:.7rem 1rem;border-bottom:1px solid #f1f4f8;vertical-align:middle}
 tr.detail-row.over-budget{background-color:#fef2f2}
-/* 新增：还款虚拟行样式 */
+/* 还款虚拟行样式 */
 tr.detail-row.repay-row{background:linear-gradient(90deg,#fafbff,#f5f3ff)}
 tr.detail-row.repay-row:hover{background:linear-gradient(90deg,#f5f3ff,#ede9fe)}
 tr.detail-row.repay-row td{border-bottom:1px dashed #e9e5ff}
@@ -279,6 +279,9 @@ tr.detail-row.repay-row td{border-bottom:1px dashed #e9e5ff}
 .desc-sub .progress-text{color:#d97706;font-weight:600}
 .delete-btn{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:1.1rem;padding:.2rem .4rem;border-radius:8px}
 .delete-btn:hover{color:#ef4444;background:#fef2f2}
+/* 还款虚拟行的删除按钮：紫色系，与行背景呼应 */
+.delete-repay-btn{background:none;border:none;color:#c4b5fd;cursor:pointer;font-size:1.1rem;padding:.2rem .4rem;border-radius:8px;transition:all .15s}
+.delete-repay-btn:hover{color:#ef4444;background:#fef2f2}
 .repay-btn{background:#fef3c7;border:none;color:#d97706;cursor:pointer;font-size:.9rem;padding:.25rem .5rem;border-radius:8px;font-weight:600;margin-right:.2rem;transition:all .15s}
 .repay-btn:hover{background:#fde68a;transform:scale(1.05)}
 .empty-state{text-align:center;padding:3rem 1rem;color:#94a3b8}
@@ -860,13 +863,12 @@ function minusMonthsPlus1(dateStr,months){
 // 获取某条债务记录的所有还款列表（含历史兼容）
 function getRepayments(e){
   if(Array.isArray(e.repayments) && e.repayments.length>0) return e.repayments;
-  // 兼容旧数据：把累计的 repaid 视为在原始记录日期一次性还款
   const repaid=Number(e.repaid)||0;
   if(repaid>0) return [{date:e.date, amount:repaid}];
   return [];
 }
 
-// ===== 新增：把 entries 展开为"表格展示列表"（原记录 + 虚拟还款记录） =====
+// ===== 把 entries 展开为"表格展示列表"（原记录 + 虚拟还款记录） =====
 // 说明：虚拟还款记录仅用于表格展示，不影响 calc() / calcStats() / 图表 / 类目预算等
 function getDisplayEntries(){
   const list=[];
@@ -1127,12 +1129,10 @@ function openCategoryDetail(category){
     if(chartType==='expense'){
       if(t==='expense' && (e.category||'其他')===category){filtered.push({entry:e,displayAmount:amt});}
       else if(category==='其他' && t==='debt'){
-        // 借出本金归"其他"（支出）
         if(e.debtType==='lent'){
           const inRange0=!chartRangeFrom && !chartRangeTo ? true : inRange(e.date,chartRangeFrom,chartRangeTo);
           if(inRange0 && amt>0){filtered.push({entry:e,displayAmount:amt});}
         }
-        // 借入还款归"其他"（支出），按每笔还款日期
         if(e.debtType==='borrowed'){
           const reps=getRepayments(e);
           reps.forEach(r=>{
@@ -1175,12 +1175,10 @@ function openCategoryDetailFromCatBudget(category){
       const inR=!catBudgetRangeFrom && !catBudgetRangeTo ? true : inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
       if(inR){filtered.push({entry:e,displayAmount:amt});}
     } else if(category==='其他' && t==='debt'){
-      // 借出本金
       if(e.debtType==='lent'){
         const inR=!catBudgetRangeFrom && !catBudgetRangeTo ? true : inRange(e.date,catBudgetRangeFrom,catBudgetRangeTo);
         if(inR && amt>0){filtered.push({entry:e,displayAmount:amt});}
       }
-      // 借入还款
       if(e.debtType==='borrowed'){
         const reps=getRepayments(e);
         reps.forEach(r=>{
@@ -1241,7 +1239,6 @@ function updateSearchUI(){
   if(searchInput.value){searchClearBtn.style.display='block'}else{searchClearBtn.style.display='none'}
   updateSearchRangeBtn();
   if(isSearchActive()){
-    // 用展示列表（含虚拟还款记录）参与计数
     const filtered=filterEntriesBySearch(getDisplayEntries());
     searchInfo.style.display='inline-block';
     searchInfo.innerHTML=`找到 <strong>${filtered.length}</strong> 条 <span class="clear-link" id="searchClearLink">清空搜索</span>`;
@@ -1288,7 +1285,6 @@ function migrate(){
     if(e.type==='debt'){
       if(!e.debtType)e.debtType='lent';
       if(typeof e.repaid!=='number')e.repaid=0;
-      // 关键：把历史 repaid 迁移为 repayments 数组（按原记录日期）
       if(!Array.isArray(e.repayments)){
         e.repayments=[];
         if(e.repaid>0){
@@ -1376,7 +1372,6 @@ function loadLocal(){
   migrate();
 }
 
-// saveLocal(updateTime) —— updateTime!==false 时刷新本地时间戳（表示用户主动修改）
 function saveLocal(updateTime){
   if(!currentUser)return;
   if(updateTime!==false)localUpdatedAt=Date.now();
@@ -1394,7 +1389,6 @@ function saveLocal(updateTime){
   try{localStorage.removeItem(localKey('dailyLedger_freeBudget'))}catch(_){}
 }
 
-// ===== 无守卫的底层推送；pushCloud 做并发守卫；pullCloud 内部直接 await doPush =====
 async function doPush(){
   if(!currentUser)return;
   const data={
@@ -1424,7 +1418,6 @@ async function pushCloud(){
   }
 }
 
-// 云端数据应用到本地（云端更新时的分支）
 function applyCloudData(c){
   if(!c)return;
   if(Array.isArray(c.entries))entries=c.entries;
@@ -1445,24 +1438,20 @@ function applyCloudData(c){
   if(!isNaN(t)&&t>0)localUpdatedAt=t;
 }
 
-// 本地更新时，把云端数据合并进本地（避免覆盖丢数据）
 function mergeFromCloud(c){
   if(!c)return;
-  // entries：按 id 合并，本地覆盖云端（本地是新改动的一方）
   if(Array.isArray(c.entries)&&c.entries.length){
     const map=new Map();
     c.entries.forEach(e=>{if(e&&e.id!==undefined)map.set(String(e.id),e)});
     entries.forEach(e=>{if(e&&e.id!==undefined)map.set(String(e.id),e)});
     entries=[...map.values()];
   }
-  // savingsGoals：按 id 合并
   if(Array.isArray(c.savingsGoals)&&c.savingsGoals.length){
     const map=new Map();
     c.savingsGoals.forEach(g=>{if(g&&g.id!==undefined)map.set(String(g.id),g)});
     savingsGoals.forEach(g=>{if(g&&g.id!==undefined)map.set(String(g.id),g)});
     savingsGoals=[...map.values()];
   }
-  // templates：按 name|category|amount 去重合并
   if(Array.isArray(c.templates)&&c.templates.length){
     const seen=new Set(templates.map(t=>`${t.name}|${t.category}|${t.amount}`));
     c.templates.forEach(t=>{
@@ -1471,29 +1460,23 @@ function mergeFromCloud(c){
       if(!seen.has(k)){templates.push(t);seen.add(k)}
     });
   }
-  // hiddenModules：并集（保守合并）
   if(Array.isArray(c.hiddenModules)&&c.hiddenModules.length){
     const s=new Set([...hiddenModules,...c.hiddenModules]);
     hiddenModules=[...s];
   }
-  // groupState：合并，本地优先
   if(c.groupState&&typeof c.groupState==='object'){
     const merged=Object.assign({},c.groupState);
     for(const k in groupState)merged[k]=groupState[k];
     groupState=merged;
   }
-  // budget：本地缺省时用云端兜底
   const budgetEmpty=!budget||(budget.daily===null&&budget.weekly===null&&budget.monthly===null);
   if(budgetEmpty&&c.budget)budget=c.budget;
-  // categoryBudgets：本地为空时用云端
   const cbEmpty=!categoryBudgets||!categoryBudgets.all||Object.keys(categoryBudgets.all).length===0;
   if(cbEmpty&&c.categoryBudgets)categoryBudgets=c.categoryBudgets;
-  // freeBudgets：本地为 null 时用云端
   if((freeBudgets.all===null||freeBudgets.all===undefined)){
     if(c.freeBudgets&&c.freeBudgets.all!==undefined&&c.freeBudgets.all!==null)freeBudgets.all=c.freeBudgets.all;
     else if(c.freeBudget!==undefined&&c.freeBudget!==null)freeBudgets.all=c.freeBudget;
   }
-  // dateRanges：本地全空时用云端
   const drEmpty=!statsRangeFrom&&!statsRangeTo&&!chartRangeFrom&&!chartRangeTo&&!catBudgetRangeFrom&&!catBudgetRangeTo&&!searchDateStart&&!searchDateEnd;
   if(drEmpty&&c.dateRanges)unpackDateRanges(c.dateRanges);
 }
@@ -1506,7 +1489,6 @@ async function pullCloud(){
     if(error)throw error;
 
     if(!data){
-      // 云端无记录：把当前本地数据推上去
       await doPush();
       setSync('synced','✅ 已同步');
       isSyncing=false;
@@ -1518,20 +1500,18 @@ async function pullCloud(){
     const myTime=getLocalUpdatedAt();
 
     if(myTime>cloudTime && hasLocalContent()){
-      // 本地有未推送的更新：合并云端内容，保留本地改动，再回推
       mergeFromCloud(c);
       migrate();
-      saveLocal(false);       // 保持 localUpdatedAt 不变
+      saveLocal(false);
       renderAll();
       setSync('syncing','☁️ 合并上传中...');
       await doPush();
       setSync('synced','✅ 已同步');
       toast('✅ 已合并本地与云端数据');
     }else{
-      // 云端为准，覆盖本地
       applyCloudData(c);
       migrate();
-      saveLocal(false);       // 保留云端时间戳
+      saveLocal(false);
       renderAll();
       setSync('synced','✅ 已同步');
       toast('✅ 已从云端加载数据');
@@ -1547,7 +1527,7 @@ async function pullCloud(){
   }
 }
 
-// ===== 核心计算（含债务对收支的影响，还款按还款日期） =====
+// ===== 核心计算 =====
 function calc(){
   let totalIncome=0,totalExpense=0;
   let totalLentOriginal=0,totalLentRepaid=0,totalLentRemaining=0;
@@ -1565,15 +1545,12 @@ function calc(){
       const repaid=Number(e.repaid)||0;
       const remaining=Math.max(0,amt-repaid);
       if(e.debtType==='lent'){
-        // 借出本金（支出，按原日期）
         totalExpense+=amt;daily[d].expense+=amt;dailyExpense[d]=(dailyExpense[d]||0)+amt;
         totalLentOriginal+=amt;totalLentRepaid+=repaid;totalLentRemaining+=remaining;daily[d].lent+=amt;
       } else {
-        // 借入本金（收入，按原日期）
         totalIncome+=amt;daily[d].income+=amt;
         totalBorrowedOriginal+=amt;totalBorrowedRepaid+=repaid;totalBorrowedRemaining+=remaining;daily[d].borrowed+=amt;
       }
-      // 还款：按实际还款日期统计
       const reps=getRepayments(e);
       reps.forEach(r=>{
         const rd=r.date||e.date;
@@ -1581,10 +1558,8 @@ function calc(){
         if(ra<=0)return;
         ensureDaily(rd);
         if(e.debtType==='lent'){
-          // 借出收款（收入，按还款日期）
           totalIncome+=ra;daily[rd].income+=ra;
         } else {
-          // 借入还款（支出，按还款日期）
           totalExpense+=ra;daily[rd].expense+=ra;dailyExpense[rd]=(dailyExpense[rd]||0)+ra;
         }
       });
@@ -1593,7 +1568,6 @@ function calc(){
   return {totalIncome,totalExpense,netBalance:totalIncome-totalExpense,totalLent:totalLentRemaining,totalBorrowed:totalBorrowedRemaining,totalLentOriginal,totalLentRepaid,totalBorrowedOriginal,totalBorrowedRepaid,daily,dailyExpense};
 }
 
-// 判断某条债务记录是否在某区间内有活动（本金或还款）
 function debtTouchesRange(e,from,to){
   if(!from&&!to)return true;
   if(inRange(e.date,from,to))return true;
@@ -1653,7 +1627,7 @@ function updateStatsFilterUI(){
   statsFilterHint.textContent=has?'':"（全部记录）";
 }
 
-// ===== 图表（债务归入"其他"，还款按还款日期） =====
+// ===== 图表 =====
 function getChartFilteredEntries(){
   return entries;
 }
@@ -2039,7 +2013,7 @@ function getDetailRowHtml(e,ancestors){
   const kw=searchKeyword.trim();
   const ancAttr=ancestors.join(',');
 
-  // 虚拟还款记录的特殊渲染
+  // 虚拟还款记录：带删除按钮，可删除该笔还款
   if(e.isRepay){
     const isLent=e.repayDirection==='lent';
     const amtCls=isLent?'income':'expense';
@@ -2048,12 +2022,14 @@ function getDetailRowHtml(e,ancestors){
       ?`<span class="type-badge repay">💰 收回</span>`
       :`<span class="type-badge repay">💸 还款</span>`;
     const subLabel=isLent?'借出款项已收回':'借入款项已归还';
+    // parentId 用于定位父债务，_repayIdx 用于定位 repayments 数组下标
+    const parentIdAttr=String(e.parentId==null?'':e.parentId).replace(/"/g,'&quot;');
     return `<tr class="detail-row repay-row" data-ancestors="${ancAttr}">
       <td>${highlight(e.description||'-',kw)||'-'}<div class="desc-sub" style="color:#a78bfa;">${subLabel}</div></td>
       <td>${badge}</td>
       <td><span class="category-badge ${catClass(e.category)}">${highlight(e.category||'其他',kw)}</span></td>
       <td style="text-align:right;"><span class="amount ${amtCls}">${sign}¥${highlight(fmtMoney(e.amount),kw)}</span></td>
-      <td style="text-align:center;"><span style="color:#cbd5e1;font-size:.85rem;">—</span></td>
+      <td style="text-align:center;"><button class="delete-repay-btn" data-repay-parent="${parentIdAttr}" data-repay-idx="${e._repayIdx}" title="删除该笔还款记录">✕</button></td>
     </tr>`;
   }
 
@@ -2248,7 +2224,6 @@ function renderEntries(){
   renderCategoryBudgets();
   updateSearchUI();
 
-  // 关键升级：使用展示列表（原 entries + 虚拟还款记录）
   const displayList=getDisplayEntries();
   const visibleEntries=filterEntriesBySearch(displayList);
 
@@ -2261,7 +2236,7 @@ function renderEntries(){
     return;
   }
 
-  // 排序：同一天内，原始记录在前，虚拟还款记录紧随其后；同一父记录的多笔还款按 idx 顺序
+  // 排序：同一天内，原始记录在前，虚拟还款记录紧随其后
   const sorted=[...visibleEntries].sort((a,b)=>{
     if(a.date!==b.date)return b.date.localeCompare(a.date);
     const aid=a._origId!=null?a._origId:(typeof a.id==='number'?a.id:0);
@@ -2286,7 +2261,18 @@ function renderEntries(){
       pushCloud();
     });
   });
+  // 普通记录删除
   tbody.querySelectorAll('.delete-btn').forEach(b=>{b.addEventListener('click',function(e){e.stopPropagation();delEntry(Number(this.dataset.id))})});
+  // 虚拟还款记录删除
+  tbody.querySelectorAll('.delete-repay-btn').forEach(b=>{
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      const parentId=this.dataset.repayParent;
+      const idx=parseInt(this.dataset.repayIdx,10);
+      delRepayment(parentId, idx);
+    });
+  });
+  // 债务还款按钮
   tbody.querySelectorAll('.repay-btn').forEach(b=>{b.addEventListener('click',function(e){e.stopPropagation();openRepayModal(Number(this.dataset.id))})});
   updateVisibility();
 }
@@ -2392,6 +2378,30 @@ function confirmRepay(){
   const newRemaining=Math.max(0,amt-e.repaid);
   if(newRemaining<=0.001)toast(e.debtType==='lent'?`🎉 已全额收回 ¥${fmtMoney(amt)}`:`🎉 已全额还清 ¥${fmtMoney(amt)}`);
   else toast(`✅ 已${e.debtType==='lent'?'收回':'还款'} ¥${fmtMoney(rounded)}（${repayDate}），还剩 ¥${fmtMoney(newRemaining)}`);
+}
+// ===== 新增：删除某笔还款记录（从父债务的 repayments 数组中移除，重算 repaid） =====
+function delRepayment(parentId, idx){
+  const parent=entries.find(x=>String(x.id)===String(parentId));
+  if(!parent||parent.type!=='debt'){toast('⚠️ 找不到对应的债务记录');return}
+  if(!Array.isArray(parent.repayments)){
+    // 极端兜底：没有数组却出现虚拟还款行，不应发生（migrate 已保证）
+    toast('⚠️ 该债务无还款列表，无法删除');return;
+  }
+  if(isNaN(idx)||idx<0||idx>=parent.repayments.length){
+    toast('⚠️ 该还款记录已不存在');return;
+  }
+  const r=parent.repayments[idx];
+  const amt=Number(r.amount)||0;
+  const rd=r.date||parent.date;
+  const dirLabel=parent.debtType==='lent'?'收回':'归还';
+  const effectHint=parent.debtType==='lent'
+    ?'删除后该日期的收入会相应减少'
+    :'删除后该日期的支出会相应减少';
+  if(!confirm(`确定删除这笔「${dirLabel} ¥${fmtMoney(amt)}」（${fmtDate(rd)}）的记录吗？\n${effectHint}，债务的已${parent.debtType==='lent'?'收':'还'}金额也会减少。`))return;
+  parent.repayments.splice(idx, 1);
+  parent.repaid=Math.round(parent.repayments.reduce((s,rr)=>s+(Number(rr.amount)||0),0)*100)/100;
+  saveLocal();renderAll();pushCloud();
+  toast('🗑 已删除该笔还款记录');
 }
 
 // ===== 攒钱目标 =====
@@ -2572,8 +2582,6 @@ function enterMainApp(email){
   renderAll();
   pullCloud();
 }
-
-// 注册需判断 session；未确认邮箱时提示用户去邮箱确认
 async function handleAuth(e){
   e.preventDefault();
   const email=authEmail.value.trim(),pwd=authPassword.value;
@@ -2606,8 +2614,6 @@ async function handleAuth(e){
     }
   }catch(err){console.error(err);authMessage.textContent=err.message||'认证失败';authMessage.className='auth-msg error'}
 }
-
-// 退出时彻底重置内存状态
 function logout(){
   if(!confirm('确定退出？'))return;
   supabase.auth.signOut();
